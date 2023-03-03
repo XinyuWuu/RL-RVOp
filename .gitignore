@@ -1,13 +1,10 @@
 __pycache__
 .mypy_cache/
-.vscode/
-assets/*
-!/assets/robot.xml
 envs/
 stub/
-samples/
 CppClass/build/
-CppClass/cython_idle/
-CppClass/d__init__.py
 CppClass/*.so
-draft.ipynb
+CppClass/cython_idle/build/
+CppClass/cython_idle/*.so
+assets/*.mp4
+assets/*.png
