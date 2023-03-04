@@ -32,8 +32,8 @@ importlib.reload(reward_cpp)
 importlib.reload(ctrlConverter)
 importlib.reload(simulator_cpp)
 
-isdraw = True
-isrender = True
+isdraw = False
+isrender = False
 codec = 'h264'
 
 SMLT = simulator_cpp.Simulator(dmax=3.0)
