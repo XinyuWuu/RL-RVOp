@@ -11,7 +11,8 @@ source_list = [
     "funcsdef.cpp",
     "RVOcalculator.cpp",
     "observator.cpp",
-    "myreward.cpp"
+    "myreward.cpp",
+    "ctrlConverter.cpp",
 ]
 ext_modules = [
     Pybind11Extension(
@@ -22,6 +23,10 @@ ext_modules = [
         "RVOcalculator",
         source_list
     ),
+    Pybind11Extension(
+        "CtrlConverter",
+        source_list
+    ),
 ]
 
 setup(name="CppClass", ext_modules=ext_modules)
@@ -30,3 +35,5 @@ stubgen.generate_stubs(stubgen.parse_options(
     ["-p" "RVOcalculator", "-o", "../stub/CppClass/"]))
 stubgen.generate_stubs(stubgen.parse_options(
     ["-p" "Observator", "-o", "../stub/CppClass/"]))
+stubgen.generate_stubs(stubgen.parse_options(
+    ["-p" "CtrlConverter", "-o", "../stub/CppClass/"]))

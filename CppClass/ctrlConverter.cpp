@@ -1,0 +1,60 @@
+#include "ctrlConverter.hpp"
+#include "funcsdef.hpp"
+#include <iostream>
+namespace CTRL
+{
+    point_t CtrlConverter::vw2ctrl(const double vl, const double w)
+    {
+        return point_t{
+            fmax(-this->rmax, fmin((vl - w / 2 / this->wd) / this->wr, this->rmax)) * this->gain,
+            fmax(-this->rmax, fmin((vl + w / 2 / this->wd) / this->wr, this->rmax)) * this->gain};
+    }
+    void CtrlConverter::vw2ctrl(const double &vl, const double &w, double *ctrl)
+    {
+        ctrl[0] = fmax(-this->rmax, fmin((vl - w / 2 / this->wd) / this->wr, this->rmax)) * this->gain;
+        ctrl[1] = fmax(-this->rmax, fmin((vl + w / 2 / this->wd) / this->wr, this->rmax)) * this->gain;
+    }
+    point_t CtrlConverter::v2ctrl(double ori, point_t v)
+    {
+        return this->vw2ctrl(DOT(v[0], v[1], cos(ori), sin(ori)),
+                             atan2(CROSS(cos(ori), sin(ori),
+                                         v[0], v[1]),
+                                   DOT(v[0], v[1], cos(ori), sin(ori))) /
+                                 this->tau);
+    }
+    void CtrlConverter::v2ctrl(const double &ori, const point_t &v, double *ctrl)
+    {
+        this->vw2ctrl(DOT(v[0], v[1], cos(ori), sin(ori)),
+                      atan2(CROSS(cos(ori), sin(ori),
+                                  v[0], v[1]),
+                            DOT(v[0], v[1], cos(ori), sin(ori))) /
+                          this->tau,
+                      ctrl);
+    }
+    std::vector<double> CtrlConverter::v2ctrlbatch(posvels_t posvels, points_t vs)
+    {
+        std::vector<double> ctrl(2 * posvels.size());
+        for (size_t i = 0; i < posvels.size(); i++)
+        {
+            this->v2ctrl(posvels[i][2], vs[i], ctrl.data() + i * 2);
+        }
+        return ctrl;
+    }
+    CtrlConverter::CtrlConverter() {}
+    CtrlConverter::CtrlConverter(double vmax, double tau, double wheel_r, double wheel_d, double gain)
+    {
+        this->vmax = vmax;
+        this->tau = tau;
+        this->wr = wheel_r;
+        this->wd = wheel_d;
+        this->gain = gain;
+        this->rmax = this->vmax / this->wr;
+        std::cout << this->vmax << "," << this->tau << "," << this->wr << "," << this->wd << "," << this->rmax << "," << this->gain << std::endl;
+    }
+    double CtrlConverter::get_rmax()
+    {
+        return this->rmax;
+    }
+    CtrlConverter::~CtrlConverter() {}
+
+} // namespace CTRL
