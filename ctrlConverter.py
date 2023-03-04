@@ -13,7 +13,7 @@ class CtrlConverter():
         self.gain = 7  # convert omega to real ctrl, determined by mujoco
 
     def vw2ctrl(self, vl: float, w: float):
-        return clip(array([vl - w / 2 / self.wd, vl + w / 2 / self.wd]) / self.wr, -self.wmax, self.wmax) * self.gain
+        return clip(array([vl - w / 2 / self.wd, vl + w / 2 / self.wd]) / self.wr * self.gain, -self.wmax, self.wmax)
 
     def v2ctrl(self, ori: float, v: np.ndarray):
         vl = dot(v, array([cos(ori), sin(ori)]))
