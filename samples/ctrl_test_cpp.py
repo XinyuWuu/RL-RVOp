@@ -9,6 +9,7 @@ from time import sleep, time
 # import simulator
 import simulator_cpp
 import ctrlConverter
+from CppClass.CtrlConverter import CtrlConverter
 import reward_cpp
 import render
 import envCreator
@@ -32,7 +33,7 @@ importlib.reload(ctrlConverter)
 importlib.reload(simulator_cpp)
 
 isdraw = True
-isrender = False
+isrender = True
 codec = 'h264'
 
 SMLT = simulator_cpp.Simulator(dmax=3.0)
@@ -58,15 +59,19 @@ if isdraw:
 
 
 CC = ctrlConverter.CtrlConverter(vmax=1, tau=0.5)
-start_t = time()
+CC.wmax
+CCcpp = CtrlConverter(vmax=1.0, tau=0.5)
+CCcpp.get_rmax()
 total_frames = 400
+ctrl = np.zeros((2 * SMLT.Nrobot,))
+ctrlcpp = np.zeros((2 * SMLT.Nrobot,))
+vs = np.zeros((SMLT.Nrobot, 2))
+start_t = time()
 for stepi in range(total_frames):
-    ctrl = np.zeros((2 * SMLT.Nrobot,))
-    for Nth in range(Nrobot):
-        ctrl[Nth * 2:Nth * 2 + 2] = CC.v2ctrl(pos_vel[Nth][2], v=(
-            SMLT.target[Nth] - pos_vel[Nth][0:2]) / 2 / norm((SMLT.target[Nth] - pos_vel[Nth][0:2])))
-    # ctrl = np.ones((2 * SMLT.Nrobot,)) * 25
-    pos_vel, observation, r = SMLT.step(ctrl, True)
+    vsbatch = SMLT.target - pos_vel[:, 0:2]
+    vsbatch = vsbatch / norm(vsbatch, axis=1, keepdims=True)
+    ctrlcpp = CCcpp.v2ctrlbatch(pos_vel, vsbatch)
+    pos_vel, observation, r = SMLT.step(ctrlcpp, True)
     # mj.mj_step(SMLT.mjMODEL,SMLT.mjDATA,SMLT.step_num)
     # rpy = RW.reward(pos_vel, observation, SMLT.target)
     # print("________________________________")
