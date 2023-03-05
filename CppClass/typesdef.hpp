@@ -47,7 +47,18 @@ typedef std::vector<observation_t> observations_t;
 //     lines_t lines;
 //     arcs_t arcs;
 // };
+
+typedef std::array<double, 10> obs_sur_t;
+typedef std::array<double, 4> observation_self_t;
+typedef std::vector<obs_sur_t> observation_sur_t;
+
+typedef std::vector<observation_self_t> observations_self_t;
+typedef std::vector<observation_sur_t> observations_sur_t;
+
 typedef std::pair<lines_t, arcs_t> contour_t;
 typedef std::vector<contour_t> contours_t;
+
+typedef std::pair<observations_self_t, observations_sur_t> NNinput_t;
+typedef std::tuple<observations_t, std::vector<double>, NNinput_t> OBSreturn;
 
 #endif

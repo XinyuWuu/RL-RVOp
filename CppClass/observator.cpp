@@ -27,7 +27,7 @@ namespace OBS
         this->RVOp = RVO::RVOcalculator(dmax, robot_r);
     }
 
-    std::pair<observations_t, std::vector<double>> Observator::get_obs(posvels_t posvels)
+    OBSreturn Observator::get_obs(posvels_t posvels)
     {
 
         observations_t observations;
@@ -106,7 +106,59 @@ namespace OBS
                 observations[j].push_back(obs);
             }
         }
-        return std::pair<observations_t, std::vector<double>>{observations, this->Rwd.calreward(posvels, observations, this->target)};
+        NNinput_t NNinput{observations_self_t(posvels.size()), observations_sur_t(posvels.size())};
+        this->get_NNinput(posvels, observations, target, NNinput);
+        return OBSreturn{
+            observations,
+            this->Rwd.calreward(posvels, observations, this->target),
+            NNinput};
+    }
+    void Observator::get_NNinput(const posvels_t &posvels, const observations_t &observations, const points_t &target, NNinput_t &NNinput)
+    {
+        std::array<std::array<double, 2>, 2> tranM;
+        obs_sur_t obs_sur;
+        for (size_t Nth = 0; Nth < posvels.size(); Nth++)
+        {
+            tranM[0][0] = cos(posvels[Nth][2]);
+            tranM[0][1] = sin(posvels[Nth][2]);
+            tranM[1][0] = -tranM[0][1];
+            tranM[1][1] = tranM[0][0];
+            // self
+            NNinput.first[Nth][0] = tranM[0][0] * (target[Nth][0] - posvels[Nth][0]) + tranM[0][1] * (target[Nth][1] - posvels[Nth][1]);
+            NNinput.first[Nth][1] = tranM[1][0] * (target[Nth][0] - posvels[Nth][0]) + tranM[1][1] * (target[Nth][1] - posvels[Nth][1]);
+            NNinput.first[Nth][2] = NORM(posvels[Nth][3], posvels[Nth][4]);
+            NNinput.first[Nth][3] = posvels[Nth][5];
+            // surrounding
+            for (const obs_t &o : observations[Nth])
+            {
+                obs_sur[0] = tranM[0][0] * o[0] + tranM[0][1] * o[1];
+                obs_sur[1] = tranM[1][0] * o[0] + tranM[1][1] * o[1];
+
+                obs_sur[2] = tranM[0][0] * o[2] + tranM[0][1] * o[3];
+                obs_sur[3] = tranM[1][0] * o[2] + tranM[1][1] * o[3];
+
+                obs_sur[4] = tranM[0][0] * o[4] + tranM[0][1] * o[5];
+                obs_sur[5] = tranM[1][0] * o[4] + tranM[1][1] * o[5];
+
+                obs_sur[6] = tranM[0][0] * o[6] + tranM[0][1] * o[7];
+                obs_sur[7] = tranM[1][0] * o[6] + tranM[1][1] * o[7];
+
+                if (o[15] > 1000)
+                {
+                    // static obstacle
+                    obs_sur[8] = 0;
+                    obs_sur[9] = 0;
+                }
+                else
+                {
+                    // other robot
+                    obs_sur[8] = tranM[0][0] * o[14] + tranM[0][1] * o[15];
+                    obs_sur[9] = tranM[1][0] * o[14] + tranM[1][1] * o[15];
+                }
+
+                NNinput.second[Nth].push_back(obs_sur);
+            }
+        }
     }
     Observator::~Observator()
     {
