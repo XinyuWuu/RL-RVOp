@@ -152,8 +152,8 @@ namespace OBS
                 else
                 {
                     // other robot
-                    obs_sur[8] = tranM[0][0] * o[14] + tranM[0][1] * o[15];
-                    obs_sur[9] = tranM[1][0] * o[14] + tranM[1][1] * o[15];
+                    obs_sur[8] = tranM[0][0] * (o[14] - o[8]) + tranM[0][1] * (o[15] - o[9]);
+                    obs_sur[9] = tranM[1][0] * (o[14] - o[8]) + tranM[1][1] * (o[15] - o[9]);
                 }
 
                 NNinput.second[Nth].push_back(obs_sur);
