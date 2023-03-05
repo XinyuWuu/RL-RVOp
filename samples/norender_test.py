@@ -4,6 +4,7 @@ from mujoco import MjModel
 from mujoco import MjData
 import numpy as np
 import matplotlib.pyplot as plt
+from math import pi, remainder
 
 model = MjModel.from_xml_path("assets/test.xml")
 data = MjData(model)
@@ -11,11 +12,12 @@ data = MjData(model)
 total_sim_time = 12
 step_size = 0.01
 step_num = int(step_size / 0.002)
+step_num = 5
 flag = False
 # TODO set controller callback
 nth = 0
-omegal = -7.0
-omegar = 7.0
+omegal = 7.0
+omegar = -7.0
 data.ctrl[nth * 2:nth * 2 + 2] = np.array([omegal, omegar]) * 7
 
 # data.ctrl[0:2]=np.array([5,5])
@@ -26,7 +28,14 @@ data.ctrl[nth * 2:nth * 2 + 2] = np.array([omegal, omegar]) * 7
 # data.joint("robot_1").qvel
 
 # qvel=[data.joint("robot_0").qvel,data.joint("robot_1").qvel]
+angle_org = pi * 0.56
+data.joint("robot_0").qpos = [0, 0, 0, np.cos(
+    angle_org / 2), 0, 0, np.sin(angle_org / 2)]
 
+angle = np.arctan2(2 * data.joint("robot_0").qpos[3] * data.joint(
+    "robot_0").qpos[6], 1 - 2 * data.joint("robot_0").qpos[6]**2)
+
+data.joint("robot_0").qvel
 
 linv = np.zeros((int(np.ceil(total_sim_time / step_size)),))
 rotv = np.zeros((int(np.ceil(total_sim_time / step_size)),))
@@ -37,6 +46,8 @@ while True:
     time_prev = data.time
     p0 = np.copy(data.joint(f"robot_{nth}").qpos[0:2])
     mj.mj_step(model, data, step_num)
+    # angle += data.joint("robot_0").qvel[5] * step_num * 0.002
+    angle += data.joint("robot_0").qvel[5] * (data.time - time_prev)
     p1 = np.copy(data.joint(f"robot_{nth}").qpos[0:2])
     linv[step] = np.linalg.norm(p1 - p0) / (data.time - time_prev)
     rotv[step] = data.joint(f"robot_{nth}").qvel[5]
@@ -65,3 +76,8 @@ a = np.linalg.norm(data.joint(f"robot_{nth}").qvel[0:2])
 b = (data.joint(f"right-wheel_{nth}").qvel[0] +
      data.joint(f"left-wheel_{nth}").qvel[0]) * 0.04 / 2
 b / a
+
+angle
+np.arctan2(
+    2 * data.joint("robot_0").qpos[3] * data.joint("robot_0").qpos[6], 1 - 2 * data.joint("robot_0").qpos[6]**2)
+remainder(angle, 2 * pi)

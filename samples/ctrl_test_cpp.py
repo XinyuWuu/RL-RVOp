@@ -4,6 +4,7 @@ if sys.path[0] != '':
 import mujoco as mj
 from numpy.linalg import norm
 from numpy import array, arctan2, flipud, zeros
+from math import pi, remainder
 import numpy as np
 from time import sleep, time
 # import simulator
@@ -21,7 +22,6 @@ import videoIO
 import importlib
 import os
 
-
 importlib.reload(envCreator)
 importlib.reload(contourGenerator)
 # importlib.reload(RVOcalculator)
@@ -35,14 +35,15 @@ importlib.reload(simulator_cpp)
 isdraw = False
 isrender = False
 codec = 'h264'
+framerate = 500
 
-SMLT = simulator_cpp.Simulator(dmax=3.0)
+SMLT = simulator_cpp.Simulator(dmax=3.0, framerate=framerate)
 Nrobot = 11
 robot_text = SMLT.EC.circle_robot(Nrobot)
 obs_text1, obs1 = SMLT.EC.circle_obstacle(9, 'l')
 obs_text2, obs2 = SMLT.EC.circle_obstacle(5, 's')
-pos_vel, observation, r = SMLT.set_model(Nrobot, robot_text, obs_text1 +
-                                         obs_text2, obs1 + obs2, "circle")
+pos_vel, observation, r, NNinput = SMLT.set_model(Nrobot, robot_text, obs_text1 +
+                                                  obs_text2, obs1 + obs2, "circle")
 RW = reward_cpp.Reward()
 # SMLT.set_reward(tolerance=10)
 # RW = reward_cpp.Reward(tolerance=10)
@@ -62,16 +63,19 @@ CC = ctrlConverter.CtrlConverter(vmax=1, tau=0.5)
 CC.wmax
 CCcpp = CtrlConverter(vmax=1.0, tau=0.5)
 CCcpp.get_rmax()
-total_frames = 400
+total_frames = 1000
 ctrl = np.zeros((2 * SMLT.Nrobot,))
 ctrlcpp = np.zeros((2 * SMLT.Nrobot,))
 vs = np.zeros((SMLT.Nrobot, 2))
+pos_accumulation = pos_vel[:, 0:3]
 start_t = time()
 for stepi in range(total_frames):
     vsbatch = SMLT.target - pos_vel[:, 0:2]
     vsbatch = vsbatch / norm(vsbatch, axis=1, keepdims=True)
     ctrlcpp = CCcpp.v2ctrlbatch(pos_vel, vsbatch)
-    pos_vel, observation, r = SMLT.step(ctrlcpp, True)
+    pos_accumulation += pos_vel[:, 3:6] / SMLT.framerate / 2
+    pos_vel, observation, r, NNinput = SMLT.step(ctrlcpp, True)
+    pos_accumulation += pos_vel[:, 3:6] / SMLT.framerate / 2
     # mj.mj_step(SMLT.mjMODEL,SMLT.mjDATA,SMLT.step_num)
     # rpy = RW.reward(pos_vel, observation, SMLT.target)
     # print("________________________________")
@@ -105,3 +109,14 @@ if isrender:
 end_t = time()
 print((end_t - start_t) / SMLT.mjDATA.time)
 print((end_t - start_t) / ((total_frames + 1) / 50))
+# pos_accumulation[:,2] =remainder(pos_accumulation[:,2], 2 * pi)
+for i in range(Nrobot):
+    pos_accumulation[i][2] = remainder(pos_accumulation[i][2], 2 * pi)
+i = 0
+j = 0
+pos_vel[i]
+pos_accumulation[i]
+SMLT.target[i]
+NNinput[0][i]
+observation[i][j]
+NNinput[1][i][j]
