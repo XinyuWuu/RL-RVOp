@@ -107,17 +107,21 @@ if isrender:
     videofp.close()
 
 end_t = time()
+print((end_t - start_t))
 print((end_t - start_t) / SMLT.mjDATA.time)
 print((end_t - start_t) / ((total_frames + 1) / 50))
 # pos_accumulation[:,2] =remainder(pos_accumulation[:,2], 2 * pi)
 # for i in range(Nrobot):
 #     pos_accumulation[i][2] = remainder(pos_accumulation[i][2], 2 * pi)
 
-i = 1
-j = 0
+i = 3
+j = 5
 pos_vel[i]
 # pos_accumulation[i]
 SMLT.target[i]
 NNinput[0][i]
 observation[i][j]
 NNinput[1][i][j]
+norm(array([-1.6649447610237569, 4.714653639742749]) -
+     array([-0.38443684053361626, 0.2806528706393403]))
+norm(array([-3.984259272259159, -2.3293220915675263]))
