@@ -35,7 +35,7 @@ importlib.reload(simulator_cpp)
 isdraw = False
 isrender = False
 codec = 'h264'
-framerate = 500
+framerate = 50
 
 SMLT = simulator_cpp.Simulator(dmax=3.0, framerate=framerate)
 Nrobot = 11
@@ -67,15 +67,15 @@ total_frames = 1000
 ctrl = np.zeros((2 * SMLT.Nrobot,))
 ctrlcpp = np.zeros((2 * SMLT.Nrobot,))
 vs = np.zeros((SMLT.Nrobot, 2))
-pos_accumulation = pos_vel[:, 0:3]
+# pos_accumulation = pos_vel[:, 0:3]
 start_t = time()
 for stepi in range(total_frames):
     vsbatch = SMLT.target - pos_vel[:, 0:2]
     vsbatch = vsbatch / norm(vsbatch, axis=1, keepdims=True)
     ctrlcpp = CCcpp.v2ctrlbatch(pos_vel, vsbatch)
-    pos_accumulation += pos_vel[:, 3:6] / SMLT.framerate / 2
+    # pos_accumulation += pos_vel[:, 3:6] / SMLT.framerate / 2
     pos_vel, observation, r, NNinput = SMLT.step(ctrlcpp, True)
-    pos_accumulation += pos_vel[:, 3:6] / SMLT.framerate / 2
+    # pos_accumulation += pos_vel[:, 3:6] / SMLT.framerate / 2
     # mj.mj_step(SMLT.mjMODEL,SMLT.mjDATA,SMLT.step_num)
     # rpy = RW.reward(pos_vel, observation, SMLT.target)
     # print("________________________________")
@@ -110,12 +110,13 @@ end_t = time()
 print((end_t - start_t) / SMLT.mjDATA.time)
 print((end_t - start_t) / ((total_frames + 1) / 50))
 # pos_accumulation[:,2] =remainder(pos_accumulation[:,2], 2 * pi)
-for i in range(Nrobot):
-    pos_accumulation[i][2] = remainder(pos_accumulation[i][2], 2 * pi)
-i = 0
+# for i in range(Nrobot):
+#     pos_accumulation[i][2] = remainder(pos_accumulation[i][2], 2 * pi)
+
+i = 1
 j = 0
 pos_vel[i]
-pos_accumulation[i]
+# pos_accumulation[i]
 SMLT.target[i]
 NNinput[0][i]
 observation[i][j]
