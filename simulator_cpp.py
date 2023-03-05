@@ -117,6 +117,6 @@ class Simulator():
         #             'target': self.target[i]
         #         })
         # observations = self.RVO.get_obs(pos_vel)
-        observation, r = self.OBS.get_obs(pos_vel)
+        observation, r, NNinput = self.OBS.get_obs(pos_vel)
 
-        return pos_vel, observation, r
+        return pos_vel, observation, r, NNinput
