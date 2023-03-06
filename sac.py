@@ -5,7 +5,7 @@ import numpy as np
 import torch
 from numpy.lib.npyio import save
 from torch.optim import Adam
-import gym
+# import gym
 import random
 import importlib
 
@@ -37,24 +37,27 @@ num_test_episodes = 1
 max_ep_len = 3000
 
 
-env = gym.make(
-    'InvertedPendulum-v4',
-    new_step_api=True,
-)
+# env = gym.make(
+#     'InvertedPendulum-v4',
+#     new_step_api=True,
+# )
 
-test_env = gym.make(
-    'InvertedPendulum-v4',
-    render_mode="human",
-    new_step_api=True,
-)
+# test_env = gym.make(
+#     'InvertedPendulum-v4',
+#     render_mode="human",
+#     new_step_api=True,
+# )
 
 act_dim = 2
-obs_dim = 14
+obs_dim = 10
+obs_self_dim = 4
+max_obs = 16
 act_limit = np.array([1, 25])
-
-Pi = core.Policy(obs_dim, act_dim, act_limit)
-Qf1 = core.Qfunc(obs_dim, act_dim)
-Qf2 = core.Qfunc(obs_dim, act_dim)
+rnn_state_size = 512
+rnn_layer = 3
+Pi = core.Policy(obs_dim, act_dim, act_limit, rnn_state_size, rnn_layer)
+Qf1 = core.Qfunc(obs_dim, act_dim, rnn_state_size, rnn_layer)
+Qf2 = core.Qfunc(obs_dim, act_dim, rnn_state_size, rnn_layer)
 Qf1_targ = deepcopy(Qf1)
 Qf2_targ = deepcopy(Qf2)
 Pi.to(device)
@@ -80,7 +83,7 @@ for p in Qf2_targ.parameters():
 
 
 replay_buffer = core.ReplayBuffer(
-    obs_dim=obs_dim, act_dim=act_dim, max_size=replay_size)
+    obs_dim=obs_dim, obs_self_dim=obs_self_dim, act_dim=act_dim, max_obs=max_obs, max_size=replay_size)
 
 
 def compute_loss_q(data):
@@ -164,74 +167,87 @@ def get_action(o, deterministic=False):
     with torch.no_grad():
         a, _ = Pi(torch.as_tensor(o, dtype=torch.float32).to(
             device), deterministic, False)
-        return a.cpu().detach().numpy() * act_limit
+        return a.cpu().detach().numpy()
 
 
-def test_agent():
-    total_ret, total_len, succ_rate = 0, 0, 0
-    for j in range(num_test_episodes):
-        o, d, ep_ret, ep_len, succ, = test_env.reset(), False, 0, 0, False
-        while not (d or (ep_len == max_ep_len)):
-            # Take deterministic actions at test time
-            a = get_action(o, True)
-            o, r, d, truncated, info = test_env.step(a)
-            ep_ret += r
-            ep_len += 1
-            total_ret += r
-            total_len += 1
-            if d == 1 and r > 0:
-                succ = True
-                succ_rate += 1
-        print(
-            f"test result: ret: {ep_ret:.2f}, len: {ep_len}, success: {succ}")
+# def test_agent():
+#     total_ret, total_len, succ_rate = 0, 0, 0
+#     for j in range(num_test_episodes):
+#         o, d, ep_ret, ep_len, succ, = test_env.reset(), False, 0, 0, False
+#         while not (d or (ep_len == max_ep_len)):
+#             # Take deterministic actions at test time
+#             a = get_action(o, True)
+#             o, r, d, truncated, info = test_env.step(a)
+#             ep_ret += r
+#             ep_len += 1
+#             total_ret += r
+#             total_len += 1
+#             if d == 1 and r > 0:
+#                 succ = True
+#                 succ_rate += 1
+#         print(
+#             f"test result: ret: {ep_ret:.2f}, len: {ep_len}, success: {succ}")
 
-    return total_ret / num_test_episodes, total_len / num_test_episodes, succ_rate / num_test_episodes
+#     return total_ret / num_test_episodes, total_len / num_test_episodes, succ_rate / num_test_episodes
 
 
 # Prepare for interaction with environment
 total_steps = steps_per_epoch * epochs
 
-o, ep_ret, ep_len = env.reset(), 0, 0
+# o, ep_ret, ep_len = env.reset(), 0, 0
+###########################################################
+# TODO init environment get initial observation
+ep_ret = 0
+ep_len = 0
 
 start_time = time.time()
 max_ret, max_ret_time, max_ret_rel_time =  \
     -1e6, time.time(), (time.time() - start_time) / 3600
 
+##################### test#########################
+# BUG
+replay_buffer.size = 1000
+
 # Main loop: collect experience in env and update/log each epoch
 for t in range(total_steps):
 
-    if t > random_steps:
-        a = get_action(o)
-    else:
-        a = (np.random.rand(act_dim) * 2 - 1) * act_limit
+    # if t > random_steps:
+    #     a = get_action(o)
+    # else:
+    #     a = (np.random.rand(act_dim) * 2 - 1) * act_limit
 
     # Step the env
-    o2, r, d, truncated, info = env.step(a)
-    ep_ret += r
-    ep_len += 1
+    # o2, r, d, truncated, info = env.step(a)
+    # ep_ret += r
+    # ep_len += 1
 
     # Ignore the "done" signal if it comes from hitting the time
     # horizon (that is, when it's an artificial terminal signal
     # that isn't based on the agent's state)
-    d = False if ep_len == max_ep_len else d
+    # d = False if ep_len == max_ep_len else d
 
     # Store experience to replay buffer
-    replay_buffer.store(o, a, r, o2, d)
+    # replay_buffer.store(o, a, r, o2, d)
 
     # Super critical, easy to overlook step: make sure to update
     # most recent observation!
-    o = o2
+    # o = o2
 
     # End of trajectory handling
-    if d or (ep_len == max_ep_len):
-        print(
-            f"t: {t}, ep_ret: {ep_ret:.2f}, ep_len: {ep_len}, last_r: {r:.2f}, alpha: {alpha:.4f}")
-        o, ep_ret, ep_len = env.reset(), 0, 0
+    # if d or (ep_len == max_ep_len):
+    #     print(
+    #         f"t: {t}, ep_ret: {ep_ret:.2f}, ep_len: {ep_len}, last_r: {r:.2f}, alpha: {alpha:.4f}")
+    #     o, ep_ret, ep_len = env.reset(), 0, 0
 
     # Update handling
     if t >= update_after and t % update_every == 0:
         for j in range(update_every):
             batch = replay_buffer.sample_batch(batch_size, device)
+            # indexs = list(range(x_seqs.__len__()))
+            # indexs = sorted(indexs, key=lambda x: x_seqs[x].size()[
+            #                 0], reverse=True)
+            # y = y[indexs]
+            # x_pack = rnn_utils.pack_sequence([x_seqs[ind] for ind in indexs])
             update(data=batch)
             alpha = np.exp(log_alpha.cpu().detach().numpy())
 
@@ -240,19 +256,19 @@ for t in range(total_steps):
         epoch = (t + 1) // steps_per_epoch
 
         # Test the performance of the deterministic version of the agent.
-        print("!!!!!!!!!!!!!!!!test!!!!!!!!!!!!!!!!!")
-        ave_ret, ave_len, succ_rate = test_agent()
-        print(
-            f"test result: ret: {ave_ret:.2f}, len: {ave_len:.2f}, time: {((time.time() - start_time) / 3600):.2f}, alpha: {alpha:.2f}")
-        if ave_ret > max_ret or succ_rate > 0.9:
-            max_ret = ave_ret
-            max_ret_time = time.time()
-            max_ret_rel_time = (time.time() - start_time) / 3600
-            save_prefix = f"{time.ctime(max_ret_time)}_{max_ret_rel_time:.2f}h_{max_ret:.2f}_{ave_len:.0f}"
-            # torch.save(ac.state_dict(),
-            #            f'module_saves/rew/{save_prefix}_ac.ptd')
-            # torch.save(ac_targ.state_dict(),
-            #            f'module_saves/rew/{save_prefix}_ac_targ.ptd')
+        # print("!!!!!!!!!!!!!!!!test!!!!!!!!!!!!!!!!!")
+        # ave_ret, ave_len, succ_rate = test_agent()
+        # print(
+        #     f"test result: ret: {ave_ret:.2f}, len: {ave_len:.2f}, time: {((time.time() - start_time) / 3600):.2f}, alpha: {alpha:.2f}")
+        # if ave_ret > max_ret or succ_rate > 0.9:
+        #     max_ret = ave_ret
+        #     max_ret_time = time.time()
+        #     max_ret_rel_time = (time.time() - start_time) / 3600
+        #     save_prefix = f"{time.ctime(max_ret_time)}_{max_ret_rel_time:.2f}h_{max_ret:.2f}_{ave_len:.0f}"
+        # torch.save(ac.state_dict(),
+        #            f'module_saves/rew/{save_prefix}_ac.ptd')
+        # torch.save(ac_targ.state_dict(),
+        #            f'module_saves/rew/{save_prefix}_ac_targ.ptd')
 
 
 # env=simulator.Simulator(2, show_figure=False),
@@ -277,6 +293,9 @@ for t in range(total_steps):
 # update_every=50,
 # num_test_episodes=1,
 # max_ep_len=3000
-a = torch.tensor(np.arange(100).reshape(-1, 2))
-b = torch.tensor(np.array([2, 1]))
-a / b
+
+# a = torch.tensor(np.arange(100).reshape(-1, 2)).to('cuda')
+# b = torch.tensor(np.array([2, 1])).to('cuda')
+# a / b
+# torch.broadcast_to(b, [a.shape[0], b.shape[0]])
+# torch.hstack([a, torch.broadcast_to(b, [a.shape[0], b.shape[0]])])
