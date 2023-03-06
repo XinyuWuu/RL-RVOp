@@ -49,7 +49,7 @@ namespace CTRL
         this->wd = wheel_d;
         this->gain = gain;
         this->rmax = this->vmax / this->wr;
-        std::cout << this->vmax << "," << this->tau << "," << this->wr << "," << this->wd << "," << this->rmax << "," << this->gain << std::endl;
+        // std::cout << this->vmax << "," << this->tau << "," << this->wr << "," << this->wd << "," << this->rmax << "," << this->gain << std::endl;
     }
     double CtrlConverter::get_rmax()
     {
