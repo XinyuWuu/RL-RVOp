@@ -78,19 +78,6 @@ max_obs = 17
 replay_buffer = sac.core.ReplayBufferLite(
     obs_dim=obs_dim, act_dim=act_dim, max_obs=max_obs, max_size=replay_size)
 
-
-# config training process
-steps_per_epoch = 6000
-epochs = 1000
-batch_size = 256
-random_steps = 10000
-update_after = 1000
-update_every = 50
-num_test_episodes = 1
-max_simu_second = 30
-max_ep_len = int(max_simu_second * framerate)
-
-
 # def get_action(o, deterministic=False):
 #     with torch.no_grad():
 #         a, _ = Pi(torch.as_tensor(o, dtype=torch.float32).to(
@@ -116,6 +103,7 @@ max_ep_len = int(max_simu_second * framerate)
 #             f"test result: ret: {ep_ret:.2f}, len: {ep_len}, success: {succ}")
 
 #     return total_ret / num_test_episodes, total_len / num_test_episodes, succ_rate / num_test_episodes
+
 
 def preNNinput(NNinput: tuple, max_obs: int, device):
     # NNinput[0] Oself
@@ -146,6 +134,17 @@ o = preNNinput(NNinput, max_obs, device)
 ep_ret = 0
 ep_len = 0
 
+# config training process
+steps_per_epoch = 6000
+epochs = 1000
+batch_size = 256
+random_steps = 10000
+update_after = 1000
+update_every = 50
+num_test_episodes = 1
+max_simu_second = 30
+max_ep_len = int(max_simu_second * framerate)
+
 total_steps = steps_per_epoch * epochs
 start_time = time.time()
 max_ret, max_ret_time, max_ret_rel_time =  \
@@ -158,7 +157,8 @@ for t in range(total_steps):
     if t > random_steps:
         # TODO only d == 0
         with torch.no_grad():
-            a = SAC.Pi(o).cpu().detach().numpy()
+            a, logp = SAC.Pi(o, with_logprob=False)
+            a = a.cpu().detach().numpy()
     else:
         a = (np.random.rand(Nrobot, act_dim) * 2 - 1) * act_limit
 
@@ -198,12 +198,12 @@ for t in range(total_steps):
         pos_vel, observation, r, NNinput, d = SMLT.set_model(Nrobot, robot_text, obs_text1 +
                                                              obs_text2, obs1 + obs2, "circle")
         o = preNNinput(NNinput, max_obs, device)
-        ep_ret=0
-        ep_len=0
+        ep_ret = 0
+        ep_len = 0
 
     # Update handling
     if t >= update_after and t % update_every == 0:
-        update_num= int(update_every * (Nrobot/4))
+        update_num = int(update_every * (Nrobot / 4))
         losspi_log = np.zeros(update_num)
         lossq_log = np.zeros(update_num)
         alpha_log = np.zeros(update_num)
