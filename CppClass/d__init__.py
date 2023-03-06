@@ -1,1 +1,0 @@
-from PyRVOcalculator.RVOcalculator import *
