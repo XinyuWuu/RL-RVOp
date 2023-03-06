@@ -28,9 +28,10 @@ importlib.reload(ctrlConverter)
 
 class Simulator():
 
-    def __init__(self, robot_r=0.17, dmax=4.0, framerate=50):
+    def __init__(self, robot_r=0.17, dmax=4.0, framerate=50, dreach=0.02):
         self.robot_r = robot_r
         self.dmax = dmax
+        self.dreach = dreach
         self.EC = envCreator.EnvCreator()
         self.CG = contourGenerator.ContourGenrator(self.robot_r)
         self.OBS = Observator(self.dmax, self.robot_r)
@@ -40,10 +41,10 @@ class Simulator():
         self.step_time = self.step_num * 0.002
         self.set_reward()
 
-    def set_reward(self, vmax=1, rmax=3, tolerance=0.005,
-                   a=2, b=1, c=10,
-                   d=1, e=1, f=20,
-                   g=1, eta=0.5,
+    def set_reward(self, vmax=1.0, rmax=3.0, tolerance=0.005,
+                   a=2.0, b=1.0, c=10.0,
+                   d=1.0, e=1.0, f=20.0,
+                   g=1.0, eta=0.5,
                    h=0.5, mu=0.75):
         self.OBS.set_reward(robot_r=self.robot_r, vmax=vmax, rmax=rmax, tolerance=tolerance,
                             a=a, b=b, c=c, d=d, e=e, f=f, g=g, eta=eta, h=h, mu=mu)
@@ -78,6 +79,7 @@ class Simulator():
         # self.RVO = RVOcalculator(
         #     self.dmax, self.robot_r, self.contours, self.target)
         self.OBS.set_model(self.contours, self.target)
+        self.d = np.zeros((self.Nrobot))
         return self.step(np.zeros((2 * self.Nrobot,)))
 
     def step(self, ctrl: np.ndarray, observe=True):
@@ -91,32 +93,12 @@ class Simulator():
                                 arctan2(
                                     2 * self.qpos[j][3] * self.qpos[j][6], 1 - 2 * self.qpos[j][6]**2),
                                 self.qvel[j][0], self.qvel[j][1], self.qvel[j][5]])
-            # observation.append([])
         if not observe:
-            return pos_vel, observation, np.zeros((self.Nrobot,))
-        # for j in range(self.Nrobot):  # for jth robot
-        #     for i in range(len(self.contours)):  # for obstacles
-        #         observation[j].append({
-        #             'rvop': self.RVO.RVOplus(
-        #                 self.contours[i][0], self.contours[i][1], pos_vel[j][0:2], pos_vel[j][3:5], np.zeros((2,))),
-        #             "pos": self.obs[i][0:2],
-        #             "vel": array([-1, -1]),
-        #             "target": array([-1, -1])})
+            return array([]),[],[],[],array([])
 
-        # for j in range(self.Nrobot):  # for jth robot
-        #     for i in range(self.Nrobot):  # for other robot
-        #         if i == j:
-        #             continue
-        #         con = self.CG.cylinder_contour(
-        #             np.array([pos_vel[i][0], pos_vel[i][1], self.robot_r]))
-        #         observation[j].append({
-        #             'rvop': self.RVO.RVOplus(
-        #                 con[0], con[1], pos_vel[j][0:2], pos_vel[j][3:5], pos_vel[i][3:5]),
-        #             'pos': pos_vel[i, 0:3],
-        #             'vel': pos_vel[i, 3:6],
-        #             'target': self.target[i]
-        #         })
-        # observations = self.RVO.get_obs(pos_vel)
+        self.d = array([1 if norm(self.target[Nth] - pos_vel[Nth][0:2]) <
+                        self.dreach else 0
+                        for Nth in range(self.Nrobot)])
         observation, r, NNinput = self.OBS.get_obs(pos_vel)
 
-        return pos_vel, observation, r, NNinput
+        return pos_vel, observation, r, NNinput, self.d
