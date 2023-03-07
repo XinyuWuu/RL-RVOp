@@ -67,7 +67,7 @@ class EnvCreator():
         text += "</body>"
         return '\n' + text + '\n'
 
-    def circle_robot(self, n: int = 1, size: str = 'l'):
+    def circle_robot(self, n: int = 1, size: str = 'l', start_id=0):
         # max 60 robots for size large, 36 for size small
         r_l = 5
         r_s = 3
@@ -85,7 +85,7 @@ class EnvCreator():
                 theta_s + np.random.rand() * 2 * np.pi
             center = array([[np.cos(e), np.sin(e)] for e in theta]) * r_s
 
-        id = 0
+        id = start_id
         text = ""
         for c in center:
             text += self.robot(id, c, np.random.rand() * 2 * np.pi)
@@ -133,7 +133,7 @@ class EnvCreator():
 
         return self.obstacle(center, t)
 
-    def line_robot(self, n: int = 1, size: str = 'l'):
+    def line_robot(self, n: int = 1, size: str = 'l',start_id=0):
         # max 20 robots for size large, 10 for size small
         len_l = 10
         len_s = 5
@@ -153,7 +153,7 @@ class EnvCreator():
                             for x in random.sample(range(-int(n_s / 2), int(n_s / 2)), int(np.ceil(n / 2)))])
             center = np.vstack((center1, center2))
 
-        id = 0
+        id = start_id
         text = ""
         for c in center:
             text += self.robot(id, c, np.random.rand() * 2 * np.pi)
@@ -182,7 +182,7 @@ class EnvCreator():
 
         return self.obstacle(center, t)
 
-    def gate_robot(self, n: int = 1):
+    def gate_robot(self, n: int = 1, start_id=0):
         # max 15 robots
         n_max = 15
         d = 0.5
@@ -193,7 +193,7 @@ class EnvCreator():
                         for x in random.sample(range(-int(n_max / 2), int(n_max / 2)), int(np.ceil(n / 2)))])
         center = np.vstack((center1, center2))
         text = ""
-        id = 0
+        id = start_id
         for c in center:
             text += self.robot(id, c, np.random.rand() * 2 * np.pi)
             id += 1
