@@ -30,12 +30,13 @@ class Policy(nn.Module):
             nn.Linear(rnn_state_size, rnn_state_size),
             nn.ReLU(),
             nn.Linear(rnn_state_size, rnn_state_size),
-            nn.ReLU()
+            nn.ReLU(),
         )
         self.mu_layer = nn.Linear(rnn_state_size, act_dim)
         self.log_std_layer = nn.Linear(rnn_state_size, act_dim)
         self.act_limit = torch.tensor(act_limit)
         self.act_limit_prod_log = np.log(self.act_limit.prod())
+        self.bidir = bidir
 
     def forward(self, obs, deterministic=False, with_logprob=True):
         x0 = rnn_utils.pack_sequence(obs, False)
@@ -45,7 +46,11 @@ class Policy(nn.Module):
             sorted_indices=x0.sorted_indices,
             unsorted_indices=x0.unsorted_indices)
         h, ht = self.rnn(x1)
-        y = self.net(torch.concat([ht[-1], ht[-2]], dim=1))
+
+        if self.bidir:
+            y = self.net(torch.concat([ht[-1], ht[-2]], dim=1))
+        else:
+            y = self.net(ht[-1])
 
         mu = self.mu_layer(y)
         log_std = self.log_std_layer(y)
@@ -79,7 +84,7 @@ class Policy(nn.Module):
 
 class Qfunc(nn.Module):
 
-    def __init__(self, obs_dim, act_dim, rnn_state_size, rnn_layer,bidir):
+    def __init__(self, obs_dim, act_dim, rnn_state_size, rnn_layer, bidir):
         super().__init__()
         self.net0 = nn.Sequential(
             nn.Linear(obs_dim + act_dim, rnn_state_size),
@@ -99,6 +104,7 @@ class Qfunc(nn.Module):
             nn.ReLU(),
             nn.Linear(rnn_state_size, 1),
         )
+        self.bidir = bidir
 
     def forward(self, obs, act):
         obsact = list(map(lambda i: torch.hstack([obs[i], torch.broadcast_to(
@@ -110,7 +116,10 @@ class Qfunc(nn.Module):
             sorted_indices=obsact.sorted_indices,
             unsorted_indices=obsact.unsorted_indices)
         h, ht = self.rnn(x0)
-        q = self.net(torch.concat([ht[-1], ht[-2]], dim=1))
+        if self.bidir:
+            q = self.net(torch.concat([ht[-1], ht[-2]], dim=1))
+        else:
+            q = self.net(ht[-1])
         return torch.squeeze(q, -1)  # Critical to ensure q has right shape.
 
 
