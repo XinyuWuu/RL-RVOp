@@ -46,7 +46,7 @@ torch.set_num_threads(torch.get_num_threads())
 isdraw = False
 isrender = False
 codec = 'h264'
-framerate = 25
+framerate = 10
 dreach = 0.02
 rreach = 30
 dmax = 3.0
@@ -55,7 +55,7 @@ tau = 0.5
 CCcpp = CtrlConverter(vmax=vmax, tau=tau)
 rmax = CCcpp.get_rmax()
 SMLT = simulator_cpp.Simulator(dmax=dmax, framerate=framerate, dreach=dreach)
-SMLT.set_reward(vmax=vmax, rmax=rmax)
+SMLT.set_reward(vmax=vmax, rmax=rmax, a=4.0)
 
 # cofig SAC
 device = "cuda"
@@ -66,9 +66,9 @@ alpha = 0.005
 act_dim = 2
 obs_dim = 14
 act_limit = np.array([vmax, rmax], dtype=np.float32)
-rnn_state_size = 256
-rnn_layer = 3
-bidir = False
+rnn_state_size = 512
+rnn_layer = 1
+bidir = True
 SAC = sac.SAC(obs_dim=obs_dim, act_dim=act_dim, act_limit=act_limit, rnn_layer=rnn_layer, bidir=bidir,
               rnn_state_size=rnn_state_size, lr=lr, gamma=gamma, polyak=polyak, alpha=alpha, device=device)
 
@@ -135,15 +135,16 @@ ep_ret = 0
 ep_len = 0
 
 # config training process
-steps_per_epoch = 6000
-epochs = 1000
-batch_size = 256
-random_steps = 10000
-update_after = 1000
-update_every = 50
-num_test_episodes = 1
 max_simu_second = 30
 max_ep_len = int(max_simu_second * framerate)
+steps_per_epoch = 6000
+epochs = 1000
+batch_size = 512
+random_steps = max_ep_len * 10
+update_after = max_ep_len * 2
+update_every = 50
+num_test_episodes = 1
+
 
 total_steps = steps_per_epoch * epochs
 start_time = time.time()
@@ -191,10 +192,28 @@ for t in range(total_steps):
         print(
             f"t: {t}, ep_ret: {ep_ret:.2f}, ep_len: {ep_len}, alpha: {SAC.alpha:.4f}")
         # TODO change environment according to t
-        Nrobot = 4
-        robot_text = SMLT.EC.circle_robot(Nrobot)
-        obs_text1, obs1 = SMLT.EC.circle_obstacle(3, 'l')
-        obs_text2, obs2 = SMLT.EC.circle_obstacle(1, 's')
+        if (t - random_steps) < max_ep_len * 20:
+            Nrobot = 4
+            robot_text = SMLT.EC.circle_robot(Nrobot)
+            obs_text1, obs1 = SMLT.EC.circle_obstacle(3, 'l')
+            obs_text2, obs2 = SMLT.EC.circle_obstacle(1, 's')
+        elif (t - random_steps) < max_ep_len * 80:
+            Nrobot = 8
+            robot_text = SMLT.EC.circle_robot(Nrobot)
+            obs_text1, obs1 = SMLT.EC.circle_obstacle(6, 'l')
+            obs_text2, obs2 = SMLT.EC.circle_obstacle(2, 's')
+        elif (t - random_steps) < max_ep_len * 160:
+            Nrobot = 12
+            robot_text = SMLT.EC.circle_robot(Nrobot)
+            obs_text1, obs1 = SMLT.EC.circle_obstacle(8, 'l')
+            obs_text2, obs2 = SMLT.EC.circle_obstacle(3, 's')
+        else:
+            Nrobot = 16 + 6
+            robot_text = SMLT.EC.circle_robot(16)
+            robot_text += SMLT.EC.circle_robot(6, 's', 16)
+            obs_text1, obs1 = SMLT.EC.circle_obstacle(8, 'l')
+            obs_text2, obs2 = SMLT.EC.circle_obstacle(3, 's')
+
         pos_vel, observation, r, NNinput, d = SMLT.set_model(Nrobot, robot_text, obs_text1 +
                                                              obs_text2, obs1 + obs2, "circle")
         o = preNNinput(NNinput, max_obs, device)
@@ -216,9 +235,10 @@ for t in range(total_steps):
         time_for_NN_update += timeend - timebegin
 
         print(
-            f"update {NN_update_count}~{NN_update_count+update_num}:\n\
+            f"update {NN_update_count}~{NN_update_count+update_num}; step {t}:\n\
             \tmean losspi: {losspi_log.mean():.4f}; mean lossq: {lossq_log.mean():.4f}; mean alpha: {alpha_log.mean():.4f}\n\
-            \ttime for NN update / total time: {time_for_NN_update / (timeend - start_time)*100:.4f} %")
+            \ttime for NN update / total time: {time_for_NN_update / (timeend - start_time)*100:.4f} %\n\
+            \ttotal_time: {int((timeend-start_time)/3600)}h, {int((int(timeend-start_time)%3600)/60)}min; update per second {(NN_update_count+update_num)/(timeend - start_time):.4f}\n")
         NN_update_count += update_num
     # End of epoch handling
     if (t + 1) % steps_per_epoch == 0:
@@ -233,11 +253,9 @@ for t in range(total_steps):
         #     max_ret = ave_ret
         #     max_ret_time = time.time()
         #     max_ret_rel_time = (time.time() - start_time) / 3600
-        #     save_prefix = f"{time.ctime(max_ret_time)}_{max_ret_rel_time:.2f}h_{max_ret:.2f}_{ave_len:.0f}"
-        # torch.save(ac.state_dict(),
-        #            f'module_saves/rew/{save_prefix}_ac.ptd')
-        # torch.save(ac_targ.state_dict(),
-        #            f'module_saves/rew/{save_prefix}_ac_targ.ptd')
+        save_prefix = f"{int((time.time()-start_time)/3600)}h_{int((int(time.time()-start_time)%3600)/60)}min_{t}steps"
+        torch.save(SAC.Pi.state_dict(),
+                   f'module_saves/{save_prefix}_policy.ptd')
 
 
 # env=simulator.Simulator(2, show_figure=False),

@@ -8,3 +8,4 @@ CppClass/cython_idle/build/
 CppClass/cython_idle/*.so
 assets/*.mp4
 assets/*.png
+module_saves
