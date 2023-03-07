@@ -133,7 +133,7 @@ class EnvCreator():
 
         return self.obstacle(center, t)
 
-    def line_robot(self, n: int = 1, size: str = 'l',start_id=0):
+    def line_robot(self, n: int = 1, size: str = 'l', start_id=0):
         # max 20 robots for size large, 10 for size small
         len_l = 10
         len_s = 5
@@ -289,6 +289,9 @@ class EnvCreator():
 
     def env_text(self, robot_text, obs_text, actuator_text):
         text = '<mujoco>\n'
+        text += '<default>\n'
+        text += '\t<geom friction="0.1 0.005 0.0001"/>\n'
+        text += '</default>\n'
         text += '<visual>\n\t <global offwidth="1920" offheight="1080" />\n</visual>\n'
         text += '<worldbody>\n'
         text += '<light name="uplight_0" diffuse="0.4 0.4 0.4" pos="0 0 20" dir="0 0 -1" />\n'
@@ -296,7 +299,7 @@ class EnvCreator():
         text += '<light name="uplight_2" diffuse="0.4 0.4 0.4" pos="-10 -10 20" dir="0 0 -1" />\n'
         text += '<light name="uplight_3" diffuse="0.4 0.4 0.4" pos="10 -10 20" dir="0 0 -1" />\n'
         text += '<light name="uplight_4" diffuse="0.4 0.4 0.4" pos="-10 10 20" dir="0 0 -1" />\n'
-        text += '<geom contype="2" pos="0 0 0" euler="0 0 0" type="plane" size="20 20 0.01" rgba="0.5 0.5 0.5 1"/>\n'
+        text += '<geom contype="2" friction="1 0.005 0.0001" pos="0 0 0" euler="0 0 0" type="plane" size="20 20 0.01" rgba="0.5 0.5 0.5 1"/>\n'
         text += '<camera mode="fixed" pos="0 0 15" ></camera>\n'
         text += robot_text
         text += obs_text
