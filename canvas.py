@@ -1,6 +1,6 @@
 import numpy as np
 from numpy import rad2deg, pi, arctan2, array
-from PIL import Image, ImageDraw, ImageColor
+from PIL import Image, ImageDraw, ImageColor, ImageFont
 
 
 class Canvas():
@@ -81,3 +81,8 @@ class Canvas():
     def draw_dmax(self, xr: np.ndarray, dmax, color='green', linewidth=2):
         self.imgDraw.arc(self.box(self.point_convert(xr - dmax), self.point_convert(xr + dmax)), 0,
                          360, fill=ImageColor.getcolor(color, "RGB"), width=linewidth)
+
+    def draw_text(self, point, text, color="red", font=ImageFont.truetype(
+                    "/usr/share/fonts/truetype/freefont/FreeMonoBold.ttf",25), fontsize = 10):
+        self.imgDraw.text(self.point_convert(point), text,
+                          fill = ImageColor.getcolor(color, "RGB"), font = font, fontsize = fontsize, align = 'center')
