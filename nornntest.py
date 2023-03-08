@@ -71,8 +71,8 @@ act_limit = np.array([vmax, vmax], dtype=np.float32)
 hidden_sizes = [1024, 1024, 1024]
 
 Pi = nornnsac.nornncore.Policy(obs_dim, act_dim, act_limit, hidden_sizes)
-Pi.load_state_dict(torch.load(
-    "module_saves/nornn_6/0h_6min_5999steps_policy.ptd"))
+# Pi.load_state_dict(torch.load(
+#     "module_saves/max_67.34_4robots_0h_7min_6899steps_policy.ptd"))
 Pi.to(device)
 Pi.act_limit = Pi.act_limit.to(device)
 
@@ -81,7 +81,7 @@ def preNNinput(NNinput: tuple, obs_sur_dim: int, max_obs: int, device):
     # NNinput[0] Oself
     # NNinput[1] Osur
     Osur = np.ones((NNinput[0].__len__(), max_obs,
-                    obs_sur_dim + 1), dtype=np.float32) * SMLT.dmax
+                    obs_sur_dim + 1), dtype=np.float32) * 2 * SMLT.dmax
     for Nth in range(NNinput[0].__len__()):
         total_len = NNinput[1][Nth].__len__()
         idxs = list(range(total_len))
