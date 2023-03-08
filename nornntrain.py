@@ -166,7 +166,14 @@ for t in range(total_steps):
 
     # Step the env
     timebegin = time.time()
-    ctrl = CCcpp.v2ctrlbatch(posvels=pos_vel, vs=a)
+    aglobal = a
+    for Nth in range(SMLT.Nrobot):
+        aglobal[Nth * 2: Nth * 2 + 2] = np.matmul(
+            np.array([[np.cos(pos_vel[Nth][2]), -np.sin(pos_vel[Nth][2])],
+                      [np.sin(pos_vel[Nth][2]), np.cos(pos_vel[Nth][2])]]),
+            aglobal[Nth * 2: Nth * 2 + 2]
+        )
+    ctrl = CCcpp.v2ctrlbatch(posvels=pos_vel, vs=aglobal)
     for Nth in range(SMLT.Nrobot):
         if d[Nth] == 1:
             ctrl[Nth * 2: Nth * 2 + 2] = [0, 0]
