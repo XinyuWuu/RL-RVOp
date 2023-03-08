@@ -72,7 +72,7 @@ hidden_sizes = [1024, 1024, 1024]
 
 Pi = nornnsac.nornncore.Policy(obs_dim, act_dim, act_limit, hidden_sizes)
 Pi.load_state_dict(torch.load(
-    "module_saves/0h_6min_5999steps_policy.ptd"))
+    "module_saves/nornn_6/0h_6min_5999steps_policy.ptd"))
 Pi.to(device)
 Pi.act_limit = Pi.act_limit.to(device)
 
@@ -80,14 +80,14 @@ Pi.act_limit = Pi.act_limit.to(device)
 def preNNinput(NNinput: tuple, obs_sur_dim: int, max_obs: int, device):
     # NNinput[0] Oself
     # NNinput[1] Osur
-    Osur = np.zeros((NNinput[0].__len__(), max_obs,
-                    obs_sur_dim + 1), dtype=np.float32)
+    Osur = np.ones((NNinput[0].__len__(), max_obs,
+                    obs_sur_dim + 1), dtype=np.float32) * SMLT.dmax
     for Nth in range(NNinput[0].__len__()):
         total_len = NNinput[1][Nth].__len__()
         idxs = list(range(total_len))
         idxs.sort(key=lambda i: norm(NNinput[1][Nth][i][6:8]))
         for iobs in range(min(total_len, max_obs)):
-            Osur[Nth][iobs] = [1] + NNinput[1][Nth][idxs[iobs]]
+            Osur[Nth][iobs] = [0] + NNinput[1][Nth][idxs[iobs]]
 
     return torch.as_tensor(np.array([np.hstack([NNinput[0][Nth], Osur[Nth].flatten()]) for Nth in range(NNinput[0].__len__())]), dtype=torch.float32, device=device)
 
@@ -126,17 +126,23 @@ if isdraw:
 # Main loop: collect experience in env and update/log each epoch
 for t in range(total_steps):
 
-    a, logp = Pi(o, with_logprob=False)
+    a, logp = Pi(o, True, with_logprob=False)
     a = a.cpu().detach().numpy()
 
     # Step the env
     aglobal = a
+    onumpy = o.cpu().detach().numpy()
     for Nth in range(SMLT.Nrobot):
-        aglobal[Nth * 2: Nth * 2 + 2] = np.matmul(
+        aglobal[Nth] = np.matmul(
             np.array([[np.cos(pos_vel[Nth][2]), -np.sin(pos_vel[Nth][2])],
                       [np.sin(pos_vel[Nth][2]), np.cos(pos_vel[Nth][2])]]),
-            aglobal[Nth * 2: Nth * 2 + 2]
+            aglobal[Nth]
         )
+        # aglobal[Nth] = np.matmul(
+        #     np.array([[np.cos(pos_vel[Nth][2]), -np.sin(pos_vel[Nth][2])],
+        #               [np.sin(pos_vel[Nth][2]), np.cos(pos_vel[Nth][2])]]),
+        #     onumpy[Nth][0:2] / norm(onumpy[Nth][0:2])
+        # )
     ctrl = CCcpp.v2ctrlbatch(posvels=pos_vel, vs=aglobal)
     for Nth in range(SMLT.Nrobot):
         if d[Nth] == 1:
@@ -168,6 +174,9 @@ for t in range(total_steps):
             # draw velocity
             CV.draw_line(pos_vel[i][0:2], pos_vel[i]
                          [0:2] + pos_vel[i][3:5], "purple", 2)
+            # draw action
+            CV.draw_line(pos_vel[i][0:2], pos_vel[i]
+                         [0:2] + aglobal[i], "green", 2)
             # draw target
             CV.draw_line(pos_vel[i][0:2], np.matmul(
                 tranM, oi[0:2]) + pos_vel[i][0:2])
@@ -220,6 +229,7 @@ for t in range(total_steps):
         o = preNNinput(NNinput, obs_sur_dim, max_obs, device)
         ep_ret = 0
         ep_len = 0
+
         if isdraw:
             canvasfp.close()
         if isrender:
