@@ -26,11 +26,38 @@ from torch.optim import Adam
 import random
 import nornnsac
 import importlib
+PARAMs = {
+    "seed": 0,
+    "isdraw": False,
+    "isrender": False,
+    "codec": 'h264',
+    "framerate": 10,
+    "dreach": 0.02,
+    "rreach": 30,
+    "dmax": 3.0,
+    "vmax": 1.0,
+    "tau": 0.5,
+    "device": "cuda",
+    "gamma": 0.99,
+    "polyak": 0.995,
+    "lr": 5e-4,
+    "alpha": 0.005,
+    "act_dim": 2,
+    "max_obs": 16,
+    "obs_self_dim": 4,
+    "obs_sur_dim": 10,
+    "hidden_sizes": [1024, 1024, 1024],
+    "replay_size" : int(1e6),
+}
+PARAMs["obs_dim"] = PARAMs["obs_self_dim"] + \
+    PARAMs["max_obs"] * (PARAMs["obs_sur_dim"] + 1)
+PARAMs["act_limit"] = np.array(
+    [PARAMs["vmax"], PARAMs["vmax"]], dtype=np.float32)
 
-seed = 0
-torch.manual_seed(seed)
-np.random.seed(seed)
-random.seed(seed)
+# seed = 0
+torch.manual_seed(PARAMs["seed"])
+np.random.seed(PARAMs["seed"])
+random.seed(PARAMs["seed"])
 
 importlib.reload(nornnsac)
 importlib.reload(envCreator)
@@ -43,41 +70,41 @@ importlib.reload(simulator_cpp)
 torch.set_num_threads(torch.get_num_threads())
 
 # config environment
-isdraw = False
-isrender = False
-codec = 'h264'
-framerate = 10
-dreach = 0.02
-rreach = 30
-dmax = 3.0
-vmax = 1.0
-tau = 0.5
-CCcpp = CtrlConverter(vmax=vmax, tau=tau)
-rmax = CCcpp.get_rmax()
-SMLT = simulator_cpp.Simulator(dmax=dmax, framerate=framerate, dreach=dreach)
-SMLT.set_reward(vmax=vmax, rmax=rmax, tolerance=0.015,
+# isdraw = False
+# isrender = False
+# codec = 'h264'
+# framerate = 10
+# dreach = 0.02
+# rreach = 30
+# dmax = 3.0
+# vmax = 1.0
+# tau = 0.5
+CCcpp = CtrlConverter(vmax=PARAMs["vmax"], tau=PARAMs["tau"])
+PARAMs["rmax"] = CCcpp.get_rmax()
+SMLT = simulator_cpp.Simulator(
+    dmax=PARAMs["dmax"], framerate=PARAMs["framerate"], dreach=PARAMs["dreach"])
+SMLT.set_reward(vmax=PARAMs["vmax"], rmax=PARAMs["rmax"], tolerance=0.015,
                 a=4.0, b=0.5, c=2, d=0.5, e=0.5, f=4, g=0.1, eta=0.125, h=0.15, mu=0.375)
 
 # cofig SAC
-device = "cuda"
-gamma = 0.99
-polyak = 0.995
-lr = 5e-4
-alpha = 0.005
-act_dim = 2
-max_obs = 16
-obs_self_dim = 4
-obs_sur_dim = 10
-obs_dim = obs_self_dim + max_obs * (obs_sur_dim + 1)
-act_limit = np.array([vmax, vmax], dtype=np.float32)
-hidden_sizes = [1024, 1024, 1024]
-SAC = nornnsac.SAC(obs_dim=obs_dim, act_dim=act_dim, act_limit=act_limit,
-                   hidden_sizes=hidden_sizes, lr=lr, gamma=gamma, polyak=polyak, alpha=alpha, device=device)
+# device = "cuda"
+# gamma = 0.99
+# polyak = 0.995
+# lr = 5e-4
+# alpha = 0.005
+# act_dim = 2
+# max_obs = 16
+# obs_self_dim = 4
+# obs_sur_dim = 10
+# obs_dim = obs_self_dim + max_obs * (obs_sur_dim + 1)
+# act_limit = np.array([vmax, vmax], dtype=np.float32)
+# hidden_sizes = [1024, 1024, 1024]
+SAC = nornnsac.SAC(obs_dim=PARAMs["obs_dim"], act_dim=PARAMs["act_dim"], act_limit=PARAMs["act_limit"],
+                   hidden_sizes=PARAMs["hidden_sizes"], lr=PARAMs["lr"], gamma=PARAMs["gamma"], polyak=PARAMs["polyak"], alpha=PARAMs["alpha"], device=PARAMs["device"])
 
 # config replay buffer
-replay_size = int(1e6)
 replay_buffer = nornnsac.nornncore.ReplayBufferLite(
-    obs_dim=obs_dim, act_dim=act_dim, max_size=replay_size)
+    obs_dim=PARAMs["obs_dim"], act_dim=PARAMs["act_dim"], max_size=PARAMs["replay_size"])
 
 # def get_action(o, deterministic=False):
 #     with torch.no_grad():
@@ -130,13 +157,13 @@ obs_text1, obs1 = SMLT.EC.circle_obstacle(3, 'l')
 obs_text2, obs2 = SMLT.EC.circle_obstacle(1, 's')
 pos_vel, observation, r, NNinput, d = SMLT.set_model(Nrobot, robot_text, obs_text1 +
                                                      obs_text2, obs1 + obs2, "circle")
-o = preNNinput(NNinput, obs_sur_dim, max_obs, device)
+o = preNNinput(NNinput, PARAMs["obs_sur_dim"], PARAMs["max_obs"], PARAMs["device"])
 ep_ret = 0
 ep_len = 0
 
 # config training process
 max_simu_second = 30
-max_ep_len = int(max_simu_second * framerate)
+max_ep_len = int(max_simu_second * PARAMs["framerate"])
 steps_per_epoch = 6000
 epochs = 1000
 batch_size = 1024
@@ -162,7 +189,7 @@ for t in range(total_steps):
             a, logp = SAC.Pi(o, with_logprob=False)
             a = a.cpu().detach().numpy()
     else:
-        a = (np.random.rand(Nrobot, act_dim) * 2 - 1) * act_limit
+        a = (np.random.rand(Nrobot, PARAMs["act_dim"]) * 2 - 1) * PARAMs["act_limit"]
 
     # Step the env
     timebegin = time.time()
@@ -182,9 +209,9 @@ for t in range(total_steps):
     time_for_step += time.time() - timebegin
     d = array([1 if dpre[i] == 1 or d[i] ==
               1 else 0 for i in range(d.shape[0])])
-    r = array([r[rNth] + rreach if d[rNth] == 1 and dpre[rNth] ==
+    r = array([r[rNth] + PARAMs["rreach"] if d[rNth] == 1 and dpre[rNth] ==
               0 else r[rNth] for rNth in range(r.__len__())], dtype=np.float32)
-    o2 = preNNinput(NNinput, obs_sur_dim, max_obs, device)
+    o2 = preNNinput(NNinput, PARAMs["obs_sur_dim"], PARAMs["max_obs"], PARAMs["device"])
     ep_ret += r.mean()
     ep_len += 1
 
@@ -233,7 +260,8 @@ for t in range(total_steps):
 
         pos_vel, observation, r, NNinput, d = SMLT.set_model(Nrobot, robot_text, obs_text1 +
                                                              obs_text2, obs1 + obs2, "circle")
-        o = preNNinput(NNinput, obs_sur_dim, max_obs, device)
+        o = preNNinput(NNinput, PARAMs["obs_sur_dim"],
+                       PARAMs["max_obs"], PARAMs["device"])
         ep_ret = 0
         ep_len = 0
 
@@ -245,7 +273,7 @@ for t in range(total_steps):
         alpha_log = np.zeros(update_num)
         timebegin = time.time()
         for j in range(update_num):
-            batch = replay_buffer.sample_batch(batch_size, device)
+            batch = replay_buffer.sample_batch(batch_size, PARAMs["device"])
             losspi_log[j], lossq_log[j], alpha_log[j] = SAC.update(data=batch)
             # alpha = np.exp(log_alpha.cpu().detach().numpy())
         timeend = time.time()
