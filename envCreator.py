@@ -139,7 +139,7 @@ class EnvCreator():
         len_s = 5
         n_l = 20
         n_s = 10
-        d = 0.5
+        d = 0.35
         if size == 'l':
             center1 = array([[-len_l / 2, (x + np.random.rand() / 8) * d]
                             for x in random.sample(range(-int(n_l / 2), int(n_l / 2)), int(np.floor(n / 2)))])
