@@ -28,7 +28,7 @@ import random
 import nornnsac
 import importlib
 
-seed = 0
+seed = 16
 torch.manual_seed(seed)
 np.random.seed(seed)
 random.seed(seed)
@@ -95,12 +95,21 @@ def preNNinput(NNinput: tuple, obs_sur_dim: int, max_obs: int, device):
 ###########################################################
 # init environment get initial observation
 # init model
-Nrobot = 1
-robot_text = SMLT.EC.circle_robot(Nrobot)
-obs_text1, obs1 = SMLT.EC.circle_obstacle(3, 'l')
-obs_text2, obs2 = SMLT.EC.circle_obstacle(1, 's')
-pos_vel, observation, r, NNinput, d = SMLT.set_model(Nrobot, robot_text, obs_text1 +
-                                                     obs_text2, obs1 + obs2, "circle")
+Nrobot = 11
+# robot_text = SMLT.EC.circle_robot(Nrobot)
+# obs_text1, obs1 = SMLT.EC.circle_obstacle(11, 'l')
+# obs_text2, obs2 = SMLT.EC.circle_obstacle(3, 's')
+# pos_vel, observation, r, NNinput, d = SMLT.set_model(
+#     Nrobot, robot_text, obs_text1 + obs_text2, obs1 + obs2, "circle")
+
+robot_text = SMLT.EC.line_robot(Nrobot)
+obs_text1, obs1 = SMLT.EC.gate_obstacle(True)
+pos_vel, observation, r, NNinput, d = SMLT.set_model(
+    Nrobot, robot_text, obs_text1, obs1, "circle")
+SMLT.EC.actuator(Nrobot)
+text = SMLT.EC.env_text(robot_text, obs_text1, SMLT.EC.actuator(Nrobot))
+with open("assets/test.xml", 'w') as fp:
+    fp.write(text)
 o = preNNinput(NNinput, obs_sur_dim, max_obs, device)
 ep_ret = 0
 ep_len = 0
@@ -136,24 +145,24 @@ for t in range(total_steps):
         aglobal[Nth] = np.matmul(
             np.array([[np.cos(pos_vel[Nth][2]), -np.sin(pos_vel[Nth][2])],
                       [np.sin(pos_vel[Nth][2]), np.cos(pos_vel[Nth][2])]]),
-            aglobal[Nth]
+            aglobal[Nth] + onumpy[Nth][0:2] / norm(onumpy[Nth][0:2])
         )
         # aglobal[Nth] = np.matmul(
         #     np.array([[np.cos(pos_vel[Nth][2]), -np.sin(pos_vel[Nth][2])],
         #               [np.sin(pos_vel[Nth][2]), np.cos(pos_vel[Nth][2])]]),
         #     onumpy[Nth][0:2] / norm(onumpy[Nth][0:2])
         # )
-    ctrl = CCcpp.v2ctrlbatch(posvels=pos_vel, vs=aglobal)
+    ctrl=CCcpp.v2ctrlbatch(posvels=pos_vel, vs=aglobal)
     for Nth in range(SMLT.Nrobot):
         if d[Nth] == 1:
-            ctrl[Nth * 2: Nth * 2 + 2] = [0, 0]
-    dpre = d
-    pos_vel, observation, r, NNinput, d = SMLT.step(ctrl)
-    d = array([1 if dpre[i] == 1 or d[i] ==
+            ctrl[Nth * 2: Nth * 2 + 2]=[0, 0]
+    dpre=d
+    pos_vel, observation, r, NNinput, d=SMLT.step(ctrl)
+    d=array([1 if dpre[i] == 1 or d[i] ==
               1 else 0 for i in range(d.shape[0])])
-    r = array([r[rNth] + rreach if d[rNth] == 1 and dpre[rNth] ==
+    r=array([r[rNth] + rreach if d[rNth] == 1 and dpre[rNth] ==
               0 else r[rNth] for rNth in range(r.__len__())], dtype=np.float32)
-    o2 = preNNinput(NNinput, obs_sur_dim, max_obs, device)
+    o2=preNNinput(NNinput, obs_sur_dim, max_obs, device)
     ep_ret += r.mean()
     ep_len += 1
 
@@ -164,10 +173,10 @@ for t in range(total_steps):
         CV.newCanvas()
         CV.draw_contour(SMLT.contours)
         # print(o2)
-        onumpy = o2.cpu().detach().numpy()
+        onumpy=o2.cpu().detach().numpy()
         for i in range(SMLT.Nrobot):
-            oi = onumpy[i]
-            tranM = np.array([[np.cos(pos_vel[i][2]), -np.sin(pos_vel[i][2])],
+            oi=onumpy[i]
+            tranM=np.array([[np.cos(pos_vel[i][2]), -np.sin(pos_vel[i][2])],
                               [np.sin(pos_vel[i][2]), np.cos(pos_vel[i][2])]])
             # draw reward
             CV.draw_text(pos_vel[i][0:2], f"{r[i]:.2f}", font=font)
@@ -175,27 +184,28 @@ for t in range(total_steps):
             CV.draw_line(pos_vel[i][0:2], pos_vel[i]
                          [0:2] + pos_vel[i][3:5], "purple", 2)
             # draw action
-            CV.draw_line(pos_vel[i][0:2], pos_vel[i]
-                         [0:2] + aglobal[i], "green", 2)
+            # CV.draw_line(pos_vel[i][0:2], pos_vel[i]
+            #              [0:2] + aglobal[i], "green", 2)
             # draw target
-            CV.draw_line(pos_vel[i][0:2], np.matmul(
-                tranM, oi[0:2]) + pos_vel[i][0:2])
+            # CV.draw_line(pos_vel[i][0:2], np.matmul(
+            #     tranM, oi[0:2]) + pos_vel[i][0:2])
             for o in range(observation[i].__len__()):
-                o2draw = oi[5 + o * 11:5 + o * 11 + 8]
-                o2draw[0:2] = np.matmul(tranM, o2draw[0:2])
-                o2draw[2:4] = np.matmul(tranM, o2draw[2:4])
-                o2draw[4:6] = np.matmul(tranM, o2draw[4:6])
-                o2draw[6:8] = np.matmul(tranM, o2draw[6:8])
+                o2draw=oi[5 + o * 11:5 + o * 11 + 8]
+                o2draw[0:2]=np.matmul(tranM, o2draw[0:2])
+                o2draw[2:4]=np.matmul(tranM, o2draw[2:4])
+                o2draw[4:6]=np.matmul(tranM, o2draw[4:6])
+                o2draw[6:8]=np.matmul(tranM, o2draw[6:8])
                 CV.draw_rvop(o2draw, pos_vel[i][0:2])
         for pos in pos_vel:
             CV.draw_dmax(pos[0:2], SMLT.dmax)
             CV.draw_dmax(pos[0:2], 2 * SMLT.robot_r, 'black', 4)
+            pass
 
         canvasfp.write_frame(array(CV.img))
 
     # Super critical, easy to overlook step: make sure to update
     # most recent observation!
-    o = o2
+    o=o2
 
     # End of trajectory handling
     if (d == 1).all() or (ep_len == max_ep_len):
@@ -203,32 +213,32 @@ for t in range(total_steps):
             f"t: {t}, {Nrobot} robots, ep_ret: {ep_ret:.2f}, ep_len: {ep_len}, Nreach: {d.sum()}")
         # TODO change environment according to t
         if t < max_ep_len * 1:
-            Nrobot = 1
-            robot_text = SMLT.EC.circle_robot(Nrobot)
-            obs_text1, obs1 = SMLT.EC.circle_obstacle(3, 'l')
-            obs_text2, obs2 = SMLT.EC.circle_obstacle(1, 's')
+            Nrobot=1
+            robot_text=SMLT.EC.circle_robot(Nrobot)
+            obs_text1, obs1=SMLT.EC.circle_obstacle(3, 'l')
+            obs_text2, obs2=SMLT.EC.circle_obstacle(1, 's')
         elif t < max_ep_len * 4:
-            Nrobot = 4
-            robot_text = SMLT.EC.circle_robot(Nrobot)
-            obs_text1, obs1 = SMLT.EC.circle_obstacle(6, 'l')
-            obs_text2, obs2 = SMLT.EC.circle_obstacle(2, 's')
+            Nrobot=4
+            robot_text=SMLT.EC.circle_robot(Nrobot)
+            obs_text1, obs1=SMLT.EC.circle_obstacle(6, 'l')
+            obs_text2, obs2=SMLT.EC.circle_obstacle(2, 's')
         elif t < max_ep_len * 8:
-            Nrobot = 8
-            robot_text = SMLT.EC.circle_robot(Nrobot)
-            obs_text1, obs1 = SMLT.EC.circle_obstacle(8, 'l')
-            obs_text2, obs2 = SMLT.EC.circle_obstacle(3, 's')
+            Nrobot=8
+            robot_text=SMLT.EC.circle_robot(Nrobot)
+            obs_text1, obs1=SMLT.EC.circle_obstacle(8, 'l')
+            obs_text2, obs2=SMLT.EC.circle_obstacle(3, 's')
         else:
-            Nrobot = 12
-            robot_text = SMLT.EC.circle_robot(16)
+            Nrobot=12
+            robot_text=SMLT.EC.circle_robot(16)
             robot_text += SMLT.EC.circle_robot(6, 's', 16)
-            obs_text1, obs1 = SMLT.EC.circle_obstacle(8, 'l')
-            obs_text2, obs2 = SMLT.EC.circle_obstacle(3, 's')
+            obs_text1, obs1=SMLT.EC.circle_obstacle(8, 'l')
+            obs_text2, obs2=SMLT.EC.circle_obstacle(3, 's')
 
-        pos_vel, observation, r, NNinput, d = SMLT.set_model(Nrobot, robot_text, obs_text1 +
+        pos_vel, observation, r, NNinput, d=SMLT.set_model(Nrobot, robot_text, obs_text1 +
                                                              obs_text2, obs1 + obs2, "circle")
-        o = preNNinput(NNinput, obs_sur_dim, max_obs, device)
-        ep_ret = 0
-        ep_len = 0
+        o=preNNinput(NNinput, obs_sur_dim, max_obs, device)
+        ep_ret=0
+        ep_len=0
 
         if isdraw:
             canvasfp.close()
@@ -238,8 +248,8 @@ for t in range(total_steps):
         if isrender:
             RD.set_model(SMLT.mjMODEL, SMLT.mjDATA)
             RD.switchCam()
-            videofp = videoIO.VideoIO("", SMLT.framerate, codec=codec)
+            videofp=videoIO.VideoIO("", SMLT.framerate, codec=codec)
 
         if isdraw:
-            canvasfp = videoIO.VideoIO(
+            canvasfp=videoIO.VideoIO(
                 "", SMLT.framerate, codec=codec, w=CV.w * CV.dpi, h=CV.h * CV.dpi, vf_end="draw")
