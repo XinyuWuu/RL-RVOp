@@ -149,7 +149,7 @@ num_test_episodes = 1
 total_steps = steps_per_epoch * epochs
 start_time = time.time()
 max_ret, max_ret_time, max_ret_rel_time =  \
-    -1e6, time.time(), (time.time() - start_time) / 3600
+    0, time.time(), (time.time() - start_time) / 3600
 time_for_NN_update = 0
 NN_update_count = 0
 # Main loop: collect experience in env and update/log each epoch
@@ -166,10 +166,10 @@ for t in range(total_steps):
     # Step the env
     aglobal = a
     for Nth in range(SMLT.Nrobot):
-        aglobal[Nth * 2: Nth * 2 + 2] = np.matmul(
+        aglobal[Nth] = np.matmul(
             np.array([[np.cos(pos_vel[Nth][2]), -np.sin(pos_vel[Nth][2])],
                       [np.sin(pos_vel[Nth][2]), np.cos(pos_vel[Nth][2])]]),
-            aglobal[Nth * 2: Nth * 2 + 2]
+            aglobal[Nth]
         )
     ctrl = CCcpp.v2ctrlbatch(posvels=pos_vel, vs=aglobal)
     for Nth in range(SMLT.Nrobot):
@@ -198,6 +198,12 @@ for t in range(total_steps):
     if (d == 1).all() or (ep_len == max_ep_len):
         print(
             f"t: {t}, ep_ret: {ep_ret:.2f}, ep_len: {ep_len}, alpha: {SAC.alpha:.4f}")
+        if (ep_ret * Nrobot > max_ret):
+            max_ret = ep_ret * Nrobot
+            time_prefix = f"{int((time.time()-start_time)/3600)}h_{int((int(time.time()-start_time)%3600)/60)}min_{t}steps"
+            torch.save(SAC.Pi.state_dict(),
+                       f'module_saves/max_{ep_ret:.2f}_{Nrobot}robots_{time_prefix}_policy.ptd')
+
         # TODO change environment according to t
         if (t - random_steps) < max_ep_len * 20:
             Nrobot = 4

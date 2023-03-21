@@ -109,14 +109,14 @@ replay_buffer = nornnsac.nornncore.ReplayBufferLite(
 def preNNinput(NNinput: tuple, obs_sur_dim: int, max_obs: int, device):
     # NNinput[0] Oself
     # NNinput[1] Osur
-    Osur = np.zeros((NNinput[0].__len__(), max_obs,
-                    obs_sur_dim + 1), dtype=np.float32)
+    Osur = np.ones((NNinput[0].__len__(), max_obs,
+                    obs_sur_dim + 1), dtype=np.float32) * 2 * SMLT.dmax
     for Nth in range(NNinput[0].__len__()):
         total_len = NNinput[1][Nth].__len__()
         idxs = list(range(total_len))
         idxs.sort(key=lambda i: norm(NNinput[1][Nth][i][6:8]))
         for iobs in range(min(total_len, max_obs)):
-            Osur[Nth][iobs] = [1] + NNinput[1][Nth][idxs[iobs]]
+            Osur[Nth][iobs] = [0] + NNinput[1][Nth][idxs[iobs]]
 
     return torch.as_tensor(np.array([np.hstack([NNinput[0][Nth], Osur[Nth].flatten()]) for Nth in range(NNinput[0].__len__())]), dtype=torch.float32, device=device)
 
@@ -149,7 +149,7 @@ num_test_episodes = 1
 total_steps = steps_per_epoch * epochs
 start_time = time.time()
 max_ret, max_ret_time, max_ret_rel_time =  \
-    -1e6, time.time(), (time.time() - start_time) / 3600
+    0, time.time(), (time.time() - start_time) / 3600
 time_for_NN_update = 0
 time_for_step = 0
 NN_update_count = 0
@@ -168,10 +168,10 @@ for t in range(total_steps):
     timebegin = time.time()
     aglobal = a
     for Nth in range(SMLT.Nrobot):
-        aglobal[Nth * 2: Nth * 2 + 2] = np.matmul(
+        aglobal[Nth] = np.matmul(
             np.array([[np.cos(pos_vel[Nth][2]), -np.sin(pos_vel[Nth][2])],
                       [np.sin(pos_vel[Nth][2]), np.cos(pos_vel[Nth][2])]]),
-            aglobal[Nth * 2: Nth * 2 + 2]
+            aglobal[Nth]
         )
     ctrl = CCcpp.v2ctrlbatch(posvels=pos_vel, vs=aglobal)
     for Nth in range(SMLT.Nrobot):
@@ -201,26 +201,33 @@ for t in range(total_steps):
     if (d == 1).all() or (ep_len == max_ep_len):
         print(
             f"t: {t}, {Nrobot} robots, ep_ret: {ep_ret:.2f}, ep_len: {ep_len}, Nreach: {d.sum()}, alpha: {SAC.alpha:.4f}")
+        # save model
+        if (ep_ret * Nrobot > max_ret):
+            max_ret = ep_ret * Nrobot
+            time_prefix = f"{int((time.time()-start_time)/3600)}h_{int((int(time.time()-start_time)%3600)/60)}min_{t}steps"
+            torch.save(SAC.Pi.state_dict(),
+                       f'module_saves/max_{ep_ret:.2f}_{Nrobot}robots_{time_prefix}_policy.ptd')
+
         # TODO change environment according to t
-        if (t - random_steps) < max_ep_len * 40:
+        if (t - random_steps) < max_ep_len * 80:
             Nrobot = 4
             robot_text = SMLT.EC.circle_robot(Nrobot)
             obs_text1, obs1 = SMLT.EC.circle_obstacle(3, 'l')
             obs_text2, obs2 = SMLT.EC.circle_obstacle(1, 's')
-        elif (t - random_steps) < max_ep_len * 120:
+        elif (t - random_steps) < max_ep_len * 240:
             Nrobot = 8
             robot_text = SMLT.EC.circle_robot(Nrobot)
             obs_text1, obs1 = SMLT.EC.circle_obstacle(6, 'l')
             obs_text2, obs2 = SMLT.EC.circle_obstacle(2, 's')
-        elif (t - random_steps) < max_ep_len * 240:
+        elif (t - random_steps) < max_ep_len * 480:
             Nrobot = 12
             robot_text = SMLT.EC.circle_robot(Nrobot)
             obs_text1, obs1 = SMLT.EC.circle_obstacle(8, 'l')
-            obs_text2, obs2 = SMLT.EC.circle_obstacle(3, 's')
+            obs_text2, obs2 = SMLT.EC.circle_obstacle(2, 's')
         else:
-            Nrobot = 16 + 6
-            robot_text = SMLT.EC.circle_robot(16)
-            robot_text += SMLT.EC.circle_robot(6, 's', 16)
+            Nrobot = 12 + 4
+            robot_text = SMLT.EC.circle_robot(12)
+            robot_text += SMLT.EC.circle_robot(4, 's', 12)
             obs_text1, obs1 = SMLT.EC.circle_obstacle(8, 'l')
             obs_text2, obs2 = SMLT.EC.circle_obstacle(3, 's')
 
