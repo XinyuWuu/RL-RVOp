@@ -12,3 +12,4 @@ CppClass/d__init__.py
 CppClass/*.so
 draft.ipynb
 module_saves
+log*.txt
