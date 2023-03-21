@@ -14,7 +14,7 @@
 <geom contype="2" friction="1 0.005 0.0001" pos="0 0 0" euler="0 0 0" type="plane" size="20 20 0.01" rgba="0.5 0.5 0.5 1"/>
 <camera mode="fixed" pos="0 0 15" ></camera>
 
-<body name="robot_0" pos="-5.0 0.3597689847129673 0" euler="0 0 28.077242180395345">
+<body name="robot_0" pos="-5.0 0.7240105907968204 0" euler="0 0 190.40217111104562">
     <!-- shell radius 17cm, wheel radius 4cm, distance between wheels 28cm -->
     <freejoint name="robot_0"></freejoint>
     <site name="front-flag_0" rgba="0.3 0.3 0.9 1" pos="0.12 0 0.22" type="sphere" size="0.05"></site>
@@ -48,7 +48,7 @@
 </body>
 
 
-<body name="robot_1" pos="-5.0 1.7728883961862794 0" euler="0 0 260.15058400494235">
+<body name="robot_1" pos="-5.0 1.0812895347787934 0" euler="0 0 204.49604199381562">
     <!-- shell radius 17cm, wheel radius 4cm, distance between wheels 28cm -->
     <freejoint name="robot_1"></freejoint>
     <site name="front-flag_1" rgba="0.3 0.3 0.9 1" pos="0.12 0 0.22" type="sphere" size="0.05"></site>
@@ -82,7 +82,7 @@
 </body>
 
 
-<body name="robot_2" pos="-5.0 2.8240931887254264 0" euler="0 0 57.04278246833991">
+<body name="robot_2" pos="-5.0 -3.123629102296865 0" euler="0 0 333.21478978535794">
     <!-- shell radius 17cm, wheel radius 4cm, distance between wheels 28cm -->
     <freejoint name="robot_2"></freejoint>
     <site name="front-flag_2" rgba="0.3 0.3 0.9 1" pos="0.12 0 0.22" type="sphere" size="0.05"></site>
@@ -116,7 +116,7 @@
 </body>
 
 
-<body name="robot_3" pos="-5.0 -0.3480049146816897 0" euler="0 0 90.10127042784842">
+<body name="robot_3" pos="-5.0 -0.6761613607438858 0" euler="0 0 25.572980951239302">
     <!-- shell radius 17cm, wheel radius 4cm, distance between wheels 28cm -->
     <freejoint name="robot_3"></freejoint>
     <site name="front-flag_3" rgba="0.3 0.3 0.9 1" pos="0.12 0 0.22" type="sphere" size="0.05"></site>
@@ -150,7 +150,7 @@
 </body>
 
 
-<body name="robot_4" pos="-5.0 1.065781886546465 0" euler="0 0 105.6554121967911">
+<body name="robot_4" pos="-5.0 1.768534897471077 0" euler="0 0 31.366547892554657">
     <!-- shell radius 17cm, wheel radius 4cm, distance between wheels 28cm -->
     <freejoint name="robot_4"></freejoint>
     <site name="front-flag_4" rgba="0.3 0.3 0.9 1" pos="0.12 0 0.22" type="sphere" size="0.05"></site>
@@ -184,7 +184,7 @@
 </body>
 
 
-<body name="robot_5" pos="5.0 -1.040240208801006 0" euler="0 0 250.77985711509413">
+<body name="robot_5" pos="5.0 0.7282578674466662 0" euler="0 0 7.278623078517259">
     <!-- shell radius 17cm, wheel radius 4cm, distance between wheels 28cm -->
     <freejoint name="robot_5"></freejoint>
     <site name="front-flag_5" rgba="0.3 0.3 0.9 1" pos="0.12 0 0.22" type="sphere" size="0.05"></site>
@@ -218,7 +218,7 @@
 </body>
 
 
-<body name="robot_6" pos="5.0 1.4301317695796842 0" euler="0 0 167.13507169445464">
+<body name="robot_6" pos="5.0 -0.3308555595072572 0" euler="0 0 299.7431443972577">
     <!-- shell radius 17cm, wheel radius 4cm, distance between wheels 28cm -->
     <freejoint name="robot_6"></freejoint>
     <site name="front-flag_6" rgba="0.3 0.3 0.9 1" pos="0.12 0 0.22" type="sphere" size="0.05"></site>
@@ -252,7 +252,7 @@
 </body>
 
 
-<body name="robot_7" pos="5.0 -3.49283675015621 0" euler="0 0 77.42237173716222">
+<body name="robot_7" pos="5.0 1.789015068784216 0" euler="0 0 280.13643034194615">
     <!-- shell radius 17cm, wheel radius 4cm, distance between wheels 28cm -->
     <freejoint name="robot_7"></freejoint>
     <site name="front-flag_7" rgba="0.3 0.3 0.9 1" pos="0.12 0 0.22" type="sphere" size="0.05"></site>
@@ -286,7 +286,7 @@
 </body>
 
 
-<body name="robot_8" pos="5.0 1.0530767129227405 0" euler="0 0 160.85745434867673">
+<body name="robot_8" pos="5.0 0.39216024577192 0" euler="0 0 313.20437336885493">
     <!-- shell radius 17cm, wheel radius 4cm, distance between wheels 28cm -->
     <freejoint name="robot_8"></freejoint>
     <site name="front-flag_8" rgba="0.3 0.3 0.9 1" pos="0.12 0 0.22" type="sphere" size="0.05"></site>
@@ -320,7 +320,7 @@
 </body>
 
 
-<body name="robot_9" pos="5.0 -0.6588307748642447 0" euler="0 0 43.516350554024484">
+<body name="robot_9" pos="5.0 -1.3832244335513721 0" euler="0 0 352.30260320379506">
     <!-- shell radius 17cm, wheel radius 4cm, distance between wheels 28cm -->
     <freejoint name="robot_9"></freejoint>
     <site name="front-flag_9" rgba="0.3 0.3 0.9 1" pos="0.12 0 0.22" type="sphere" size="0.05"></site>
@@ -354,7 +354,7 @@
 </body>
 
 
-<body name="robot_10" pos="5.0 -2.425338939614726 0" euler="0 0 330.367322788101">
+<body name="robot_10" pos="5.0 -0.6653620295838835 0" euler="0 0 287.6970831180205">
     <!-- shell radius 17cm, wheel radius 4cm, distance between wheels 28cm -->
     <freejoint name="robot_10"></freejoint>
     <site name="front-flag_10" rgba="0.3 0.3 0.9 1" pos="0.12 0 0.22" type="sphere" size="0.05"></site>
@@ -390,8 +390,8 @@
 <body  pos="0 0 0.25">
 	<geom rgba="0.5 0 0 1" type="box" pos="0 -4.0 0" size="20.0 5e-06 0.25" />
 	<geom rgba="0.5 0 0 1" type="box" pos="0 4.0 0" size="20.0 5e-06 0.25" />
-	<geom rgba="0.5 0 0 1" type="box" pos="-2.25 1.6 0" size="5e-06 2.4  0.25" />
-	<geom rgba="0.5 0 0 1" type="box" pos="2.25 -1.6 0" size="5e-06 2.4  0.25" />
+	<geom rgba="0.5 0 0 1" type="box" pos="2.25 1.6 0" size="5e-06 2.4  0.25" />
+	<geom rgba="0.5 0 0 1" type="box" pos="-2.25 -1.6 0" size="5e-06 2.4  0.25" />
 </body></worldbody>
 
 <actuator>
