@@ -45,17 +45,13 @@ class Simulator():
                    a=2.0, b=1.0, c=10.0,
                    d=1.0, e=1.0, f=20.0,
                    g=1.0, eta=0.5,
-                   h=0.5, mu=0.75):
+                   h=0.5, mu=0.75, rreach=30):
         self.OBS.set_reward(robot_r=self.robot_r, vmax=vmax, rmax=rmax, tolerance=tolerance,
                             a=a, b=b, c=c, d=d, e=e, f=f, g=g, eta=eta, h=h, mu=mu)
+        self.rreach = rreach
 
     def set_model(self, Nrobot=0, robot_text="", obs_text="", obs=[], target_type='circle'):
         self.Nrobot = Nrobot
-        # robot_text = self.EC.gate_robot(self.Nrobot)
-        # obs_text, obs = self.EC.line_obstacle(10)
-        # obs_text, obs = self.EC.circle_obstacle(10)
-        # obs_text, obs = self.EC.gate_obstacle(True)
-        # obs_text, obs = self.EC.bigObs_obstacle(False, 1)
         actuator_text = self.EC.actuator(self.Nrobot)
         text = self.EC.env_text(robot_text, obs_text, actuator_text)
         self.obs = obs
@@ -69,20 +65,23 @@ class Simulator():
             f"robot_{id}").qpos for id in range(self.Nrobot)]
         self.qvel = [self.mjDATA.joint(
             f"robot_{id}").qvel for id in range(self.Nrobot)]
+
         if target_type == "random":
             pass
         elif target_type == "line":
-            self.target = array(self.qpos)[:, 0:2] * array([-1, 1])
+            self.target = array(self.qpos)[:, 0:2] * array([-1.0, 1.0])
         else:  # "circle"
             self.target = -array(self.qpos)[:, 0:2]
 
-        # self.RVO = RVOcalculator(
-        #     self.dmax, self.robot_r, self.contours, self.target)
         self.OBS.set_model(self.contours, self.target)
         self.d = np.zeros((self.Nrobot))
+        self.dpre = self.d.copy()
         return self.step(np.zeros((2 * self.Nrobot,)))
 
     def step(self, ctrl: np.ndarray, observe=True):
+        for Nth in range(self.Nrobot):
+            if self.d[Nth] == 1:
+                ctrl[Nth * 2: Nth * 2 + 2] = [0, 0]
         self.mjDATA.ctrl = ctrl
         mj.mj_step(self.mjMODEL, self.mjDATA, self.step_num)
 
@@ -92,13 +91,22 @@ class Simulator():
             pos_vel[j] = array([self.qpos[j][0], self.qpos[j][1],
                                 arctan2(
                                     2 * self.qpos[j][3] * self.qpos[j][6], 1 - 2 * self.qpos[j][6]**2),
-                                self.qvel[j][0], self.qvel[j][1], self.qvel[j][5]])
+                                self.qvel[j][0], self.qvel[j][1], self.qvel[j][5]], dtype=np.float32)
         if not observe:
-            return array([]),[],[],[],array([])
+            return array([]), [], array([]), [], array([]), array([])
 
+        self.dpre = self.d.copy()
         self.d = array([1 if norm(self.target[Nth] - pos_vel[Nth][0:2]) <
                         self.dreach else 0
                         for Nth in range(self.Nrobot)])
+        self.d = array([1 if self.dpre[i] == 1 or self.d[i] ==
+                        1 else 0 for i in range(self.Nrobot)])
+
         observation, r, NNinput = self.OBS.get_obs(pos_vel)
 
-        return pos_vel, observation, r, NNinput, self.d
+        r = array([r[rNth] + self.rreach if self.d[rNth] == 1 and self.dpre[rNth] ==
+                   0 else r[rNth] for rNth in range(self.Nrobot)], dtype=np.float32)
+        r = array([0 if self.dpre[rNth] == 1 else r[rNth]
+                  for rNth in range(self.Nrobot)], dtype=np.float32)
+
+        return pos_vel, observation, r, NNinput, self.d, self.dpre
