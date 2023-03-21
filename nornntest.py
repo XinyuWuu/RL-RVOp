@@ -67,12 +67,12 @@ max_obs = 16
 obs_self_dim = 4
 obs_sur_dim = 10
 obs_dim = obs_self_dim + max_obs * (obs_sur_dim + 1)
-act_limit = np.array([vmax, rmax], dtype=np.float32)
+act_limit = np.array([vmax, vmax], dtype=np.float32)
 hidden_sizes = [1024, 1024, 1024]
 
 Pi = nornnsac.nornncore.Policy(obs_dim, act_dim, act_limit, hidden_sizes)
 Pi.load_state_dict(torch.load(
-    "module_saves/nornn_2/0h_42min_23999steps_policy.ptd"))
+    "module_saves/0h_6min_5999steps_policy.ptd"))
 Pi.to(device)
 Pi.act_limit = Pi.act_limit.to(device)
 
@@ -130,7 +130,14 @@ for t in range(total_steps):
     a = a.cpu().detach().numpy()
 
     # Step the env
-    ctrl = CCcpp.v2ctrlbatch(posvels=pos_vel, vs=a)
+    aglobal = a
+    for Nth in range(SMLT.Nrobot):
+        aglobal[Nth * 2: Nth * 2 + 2] = np.matmul(
+            np.array([[np.cos(pos_vel[Nth][2]), -np.sin(pos_vel[Nth][2])],
+                      [np.sin(pos_vel[Nth][2]), np.cos(pos_vel[Nth][2])]]),
+            aglobal[Nth * 2: Nth * 2 + 2]
+        )
+    ctrl = CCcpp.v2ctrlbatch(posvels=pos_vel, vs=aglobal)
     for Nth in range(SMLT.Nrobot):
         if d[Nth] == 1:
             ctrl[Nth * 2: Nth * 2 + 2] = [0, 0]

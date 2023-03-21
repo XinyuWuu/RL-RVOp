@@ -65,7 +65,7 @@ lr = 5e-4
 alpha = 0.005
 act_dim = 2
 obs_dim = 14
-act_limit = np.array([vmax, rmax], dtype=np.float32)
+act_limit = np.array([vmax, vmax], dtype=np.float32)
 rnn_state_size = 512
 rnn_layer = 1
 bidir = True
@@ -164,7 +164,14 @@ for t in range(total_steps):
         a = (np.random.rand(Nrobot, act_dim) * 2 - 1) * act_limit
 
     # Step the env
-    ctrl = CCcpp.v2ctrlbatch(posvels=pos_vel, vs=a)
+    aglobal = a
+    for Nth in range(SMLT.Nrobot):
+        aglobal[Nth * 2: Nth * 2 + 2] = np.matmul(
+            np.array([[np.cos(pos_vel[Nth][2]), -np.sin(pos_vel[Nth][2])],
+                      [np.sin(pos_vel[Nth][2]), np.cos(pos_vel[Nth][2])]]),
+            aglobal[Nth * 2: Nth * 2 + 2]
+        )
+    ctrl = CCcpp.v2ctrlbatch(posvels=pos_vel, vs=aglobal)
     for Nth in range(SMLT.Nrobot):
         if d[Nth] == 1:
             ctrl[Nth * 2: Nth * 2 + 2] = [0, 0]
