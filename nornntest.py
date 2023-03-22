@@ -33,7 +33,7 @@ PARAMs = {
     "isdraw": True,
     "isrender": True,
     "codec": 'h264',
-    "framerate": 10,
+    "framerate": 30,
     "dreach": 0.02,
     "rreach": 30.0,
     "dmax": 3.0,
@@ -84,7 +84,7 @@ font = ImageFont.truetype(
 Pi = nornnsac.nornncore.Policy(obs_dim=PARAMs["obs_dim"], act_dim=PARAMs["act_dim"],
                                act_limit=PARAMs["act_limit"], hidden_sizes=PARAMs["hidden_sizes"])
 Pi.load_state_dict(torch.load(
-    "module_saves/2h_12min_65999steps_policy.ptd"))
+    "module_saves/14h_38min_281999steps_policy.ptd"))
 Pi.to(device=PARAMs["device"])
 Pi.act_limit = Pi.act_limit.to(device=PARAMs["device"])
 
@@ -215,12 +215,12 @@ for t in range(total_steps):
             robot_text = SMLT.EC.circle_robot(Nrobot)
             obs_text1, obs1 = SMLT.EC.circle_obstacle(3, 'l')
             obs_text2, obs2 = SMLT.EC.circle_obstacle(1, 's')
-        elif t < max_ep_len * 4:
+        elif t < max_ep_len * 3:
             Nrobot = 4
             robot_text = SMLT.EC.circle_robot(Nrobot)
             obs_text1, obs1 = SMLT.EC.circle_obstacle(6, 'l')
             obs_text2, obs2 = SMLT.EC.circle_obstacle(2, 's')
-        elif t < max_ep_len * 8:
+        elif t < max_ep_len * 6:
             Nrobot = 8
             robot_text = SMLT.EC.circle_robot(Nrobot)
             obs_text1, obs1 = SMLT.EC.circle_obstacle(8, 'l')
