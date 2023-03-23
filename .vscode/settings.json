@@ -3,4 +3,8 @@
     "python.autoComplete.extraPaths": [
         "./stub"
     ],
+    "files.watcherExclude": {
+        "envs/": true,
+        "envs/1": true
+    }
 }
