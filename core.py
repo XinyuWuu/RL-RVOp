@@ -21,7 +21,7 @@ class Policy(nn.Module):
         #     nn.Linear(rnn_state_size, rnn_state_size),
         #     nn.ReLU(),
         # )
-        self.rnn = nn.GRU(input_size=rnn_state_size, hidden_size=rnn_state_size,
+        self.rnn = nn.GRU(input_size=obs_dim, hidden_size=rnn_state_size,
                           num_layers=rnn_layer, bidirectional=bidir, batch_first=True)
 
         self.net = nn.Sequential(
@@ -92,7 +92,7 @@ class Qfunc(nn.Module):
         #     nn.Linear(rnn_state_size, rnn_state_size),
         #     nn.ReLU(),
         # )
-        self.rnn = nn.GRU(input_size=rnn_state_size, hidden_size=rnn_state_size,
+        self.rnn = nn.GRU(input_size=obs_dim + act_dim, hidden_size=rnn_state_size,
                           num_layers=rnn_layer, bidirectional=bidir, batch_first=True)
 
         self.net = nn.Sequential(
@@ -149,8 +149,8 @@ class ReplayBufferLite:
         self.obsbegin_buf[self.ptr + 1] = self.obsend_buf[self.ptr]
         self.obs2begin_buf[self.ptr + 1] = self.obs2end_buf[self.ptr]
 
-        self.policy_buf1[self.obsbegin_buf[self.ptr]                         :self.obsend_buf[self.ptr]] = obs
-        self.policy_buf2[self.obs2begin_buf[self.ptr]                         :self.obs2end_buf[self.ptr]] = next_obs
+        self.policy_buf1[self.obsbegin_buf[self.ptr]:self.obsend_buf[self.ptr]] = obs
+        self.policy_buf2[self.obs2begin_buf[self.ptr]:self.obs2end_buf[self.ptr]] = next_obs
         self.act_buf[self.ptr] = act
         self.rew_buf[self.ptr] = rew
         self.done_buf[self.ptr] = done
@@ -162,10 +162,11 @@ class ReplayBufferLite:
         idxs = list(np.random.randint(0, self.size, size=batch_size))
         return dict(
             obs=[torch.as_tensor(
-                self.policy_buf1[self.obsbegin_buf[idx]                                 :self.obsend_buf[idx]], dtype=torch.float32
+                self.policy_buf1[self.obsbegin_buf[idx]:self.obsend_buf[idx]], dtype=torch.float32
             ).to(device) for idx in idxs],
             obs2=[torch.as_tensor(
-                self.policy_buf2[self.obsbegin_buf[idx]:self.obsend_buf[idx]], dtype=torch.float32
+                self.policy_buf2[self.obsbegin_buf[idx]
+                    :self.obsend_buf[idx]], dtype=torch.float32
             ).to(device) for idx in idxs],
             act=torch.as_tensor(
                 self.act_buf[idxs], dtype=torch.float32).to(device),
@@ -211,10 +212,12 @@ class ReplayBuffer:
         self.obs2begin_buf[self.ptr + 1] = self.obs2end_buf[self.ptr]
 
         self.obs_self_buf[self.ptr] = obs_self
-        self.obs_buf[self.obsbegin_buf[self.ptr]:self.obsend_buf[self.ptr]] = obs
+        self.obs_buf[self.obsbegin_buf[self.ptr]
+            :self.obsend_buf[self.ptr]] = obs
 
         self.obs2_self_buf[self.ptr] = next_obs_self
-        self.obs2_buf[self.obs2begin_buf[self.ptr]:self.obs2end_buf[self.ptr]] = next_obs
+        self.obs2_buf[self.obs2begin_buf[self.ptr]
+            :self.obs2end_buf[self.ptr]] = next_obs
 
         self.act_buf[self.ptr] = act
         self.rew_buf[self.ptr] = rew
@@ -233,22 +236,22 @@ class ReplayBuffer:
 
         return dict(
             obs_sur=[torch.as_tensor(
-                self.obs_buf[self.obsbegin_buf[idx]:self.obsend_buf[idx]], dtype=torch.float32
+                self.obs_buf[self.obsbegin_buf[idx]
+                    :self.obsend_buf[idx]], dtype=torch.float32
             ).to(device) for idx in idxs],
             obs2_sur=[torch.as_tensor(
-                self.obs2_buf[self.obs2begin_buf[idx]:self.obs2end_buf[idx]], dtype=torch.float32
+                self.obs2_buf[self.obs2begin_buf[idx]
+                    :self.obs2end_buf[idx]], dtype=torch.float32
             ).to(device) for idx in idxs],
             obs_self=torch.as_tensor(
                 self.obs_self_buf[idxs], dtype=torch.float32).to(device),
             obs2_self=torch.as_tensor(
                 self.obs2_self_buf[idxs], dtype=torch.float32).to(device),
             obs=[torch.as_tensor(
-                self.policy_buf1[self.obsbegin_buf[idx]
-                    :self.obsend_buf[idx]], dtype=torch.float32
+                self.policy_buf1[self.obsbegin_buf[idx]                                 :self.obsend_buf[idx]], dtype=torch.float32
             ).to(device) for idx in idxs],
             obs2=[torch.as_tensor(
-                self.policy_buf2[self.obsbegin_buf[idx]
-                    :self.obsend_buf[idx]], dtype=torch.float32
+                self.policy_buf2[self.obsbegin_buf[idx]                                 :self.obsend_buf[idx]], dtype=torch.float32
             ).to(device) for idx in idxs],
             act=torch.as_tensor(
                 self.act_buf[idxs], dtype=torch.float32).to(device),
@@ -265,10 +268,11 @@ class ReplayBuffer:
         #     idxs, key=lambda x: self.obs2end_buf[x] - self.obs2begin_buf[x])
         return dict(
             obs=[torch.as_tensor(
-                self.policy_buf1[self.obsbegin_buf[idx]                                 :self.obsend_buf[idx]], dtype=torch.float32
+                self.policy_buf1[self.obsbegin_buf[idx]:self.obsend_buf[idx]], dtype=torch.float32
             ).to(device) for idx in idxs],
             obs2=[torch.as_tensor(
-                self.policy_buf2[self.obsbegin_buf[idx]:self.obsend_buf[idx]], dtype=torch.float32
+                self.policy_buf2[self.obsbegin_buf[idx]
+                    :self.obsend_buf[idx]], dtype=torch.float32
             ).to(device) for idx in idxs],
             act=torch.as_tensor(
                 self.act_buf[idxs], dtype=torch.float32).to(device),
