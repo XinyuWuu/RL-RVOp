@@ -33,7 +33,7 @@ PARAMs = {
     "isdraw": True,
     "isrender": True,
     "codec": 'h264',
-    "framerate": 30,
+    "framerate": 10,
     "dreach": 0.02,
     "rreach": 30.0,
     "dmax": 3.0,
@@ -76,15 +76,18 @@ CCcpp = CtrlConverter(vmax=PARAMs["vmax"], tau=PARAMs["tau"])
 PARAMs["rmax"] = CCcpp.get_rmax()
 SMLT = simulator_cpp.Simulator(
     dmax=PARAMs["dmax"], framerate=PARAMs["framerate"], dreach=PARAMs["dreach"])
+# SMLT.set_reward(vmax=PARAMs["vmax"], rmax=PARAMs["rmax"], tolerance=0.015,
+#                 a=4.0, b=0.5, c=2, d=0.5, e=0.5, f=4, g=0.1, eta=0.125, h=0.15, mu=0.375, rreach=PARAMs["rreach"])
 SMLT.set_reward(vmax=PARAMs["vmax"], rmax=PARAMs["rmax"], tolerance=0.015,
-                a=4.0, b=0.5, c=2, d=0.5, e=0.5, f=4, g=0.1, eta=0.125, h=0.15, mu=0.375, rreach=PARAMs["rreach"])
+                a=4.0)
+
 font = ImageFont.truetype(
     "/usr/share/fonts/truetype/freefont/FreeMonoBold.ttf", 25)
 # cofig SAC
 Pi = nornnsac.nornncore.Policy(obs_dim=PARAMs["obs_dim"], act_dim=PARAMs["act_dim"],
                                act_limit=PARAMs["act_limit"], hidden_sizes=PARAMs["hidden_sizes"])
 Pi.load_state_dict(torch.load(
-    "module_saves/14h_38min_281999steps_policy.ptd"))
+    "module_saves/nornn2/41h_2min_1349999steps_policy.ptd"))
 Pi.to(device=PARAMs["device"])
 Pi.act_limit = Pi.act_limit.to(device=PARAMs["device"])
 
