@@ -15,12 +15,12 @@ class Policy(nn.Module):
 
     def __init__(self, obs_dim, act_dim, act_limit, rnn_state_size, rnn_layer, bidir):
         super().__init__()
-        self.net0 = nn.Sequential(
-            nn.Linear(obs_dim, rnn_state_size),
-            nn.ReLU(),
-            nn.Linear(rnn_state_size, rnn_state_size),
-            nn.ReLU(),
-        )
+        # self.net0 = nn.Sequential(
+        #     nn.Linear(obs_dim, rnn_state_size),
+        #     nn.ReLU(),
+        #     nn.Linear(rnn_state_size, rnn_state_size),
+        #     nn.ReLU(),
+        # )
         self.rnn = nn.GRU(input_size=rnn_state_size, hidden_size=rnn_state_size,
                           num_layers=rnn_layer, bidirectional=bidir, batch_first=True)
 
@@ -40,12 +40,12 @@ class Policy(nn.Module):
 
     def forward(self, obs, deterministic=False, with_logprob=True):
         x0 = rnn_utils.pack_sequence(obs, False)
-        x1 = rnn_utils.PackedSequence(
-            data=self.net0(x0.data),
-            batch_sizes=x0.batch_sizes,
-            sorted_indices=x0.sorted_indices,
-            unsorted_indices=x0.unsorted_indices)
-        h, ht = self.rnn(x1)
+        # x1 = rnn_utils.PackedSequence(
+        #     data=self.net0(x0.data),
+        #     batch_sizes=x0.batch_sizes,
+        #     sorted_indices=x0.sorted_indices,
+        #     unsorted_indices=x0.unsorted_indices)
+        h, ht = self.rnn(x0)
 
         if self.bidir:
             y = self.net(torch.concat([ht[-1], ht[-2]], dim=1))
@@ -86,12 +86,12 @@ class Qfunc(nn.Module):
 
     def __init__(self, obs_dim, act_dim, rnn_state_size, rnn_layer, bidir):
         super().__init__()
-        self.net0 = nn.Sequential(
-            nn.Linear(obs_dim + act_dim, rnn_state_size),
-            nn.ReLU(),
-            nn.Linear(rnn_state_size, rnn_state_size),
-            nn.ReLU(),
-        )
+        # self.net0 = nn.Sequential(
+        #     nn.Linear(obs_dim + act_dim, rnn_state_size),
+        #     nn.ReLU(),
+        #     nn.Linear(rnn_state_size, rnn_state_size),
+        #     nn.ReLU(),
+        # )
         self.rnn = nn.GRU(input_size=rnn_state_size, hidden_size=rnn_state_size,
                           num_layers=rnn_layer, bidirectional=bidir, batch_first=True)
 
@@ -110,12 +110,12 @@ class Qfunc(nn.Module):
         obsact = list(map(lambda i: torch.hstack([obs[i], torch.broadcast_to(
             act[i], (obs[i].shape[0], act[i].shape[0]))]), range(obs.__len__())))
         obsact = rnn_utils.pack_sequence(obsact, False)
-        x0 = rnn_utils.PackedSequence(
-            data=self.net0(obsact.data),
-            batch_sizes=obsact.batch_sizes,
-            sorted_indices=obsact.sorted_indices,
-            unsorted_indices=obsact.unsorted_indices)
-        h, ht = self.rnn(x0)
+        # x0 = rnn_utils.PackedSequence(
+        #     data=self.net0(obsact.data),
+        #     batch_sizes=obsact.batch_sizes,
+        #     sorted_indices=obsact.sorted_indices,
+        #     unsorted_indices=obsact.unsorted_indices)
+        h, ht = self.rnn(obsact)
         if self.bidir:
             q = self.net(torch.concat([ht[-1], ht[-2]], dim=1))
         else:
