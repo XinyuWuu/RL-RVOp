@@ -32,7 +32,8 @@ PARAMs = {
     "isrender": False,
     "codec": 'h264',
     "framerate": 10,
-    "dreach": 0.02,
+    "dreach": 0.05,
+    "tolerance" : 0.02,
     "rreach": 30.0,
     "dmax": 3.0,
     "vmax": 1.0,
@@ -74,7 +75,7 @@ CCcpp = CtrlConverter(vmax=PARAMs["vmax"], tau=PARAMs["tau"])
 PARAMs["rmax"] = CCcpp.get_rmax()
 SMLT = simulator_cpp.Simulator(
     dmax=PARAMs["dmax"], framerate=PARAMs["framerate"], dreach=PARAMs["dreach"])
-SMLT.set_reward(vmax=PARAMs["vmax"], rmax=PARAMs["rmax"], tolerance=0.015,
+SMLT.set_reward(vmax=PARAMs["vmax"], rmax=PARAMs["rmax"], tolerance=PARAMs["tolerance"],
                 a=4.0, b=0.5, c=2, d=0.5, e=0.5, f=4, g=0.1, eta=0.125, h=0.15, mu=0.375, rreach=PARAMs["rreach"])
 
 # cofig SAC
@@ -116,6 +117,7 @@ ep_ret = 0
 ep_len = 0
 
 # config training process
+
 max_simu_second = 30
 max_ep_len = int(max_simu_second * PARAMs["framerate"])
 steps_per_epoch = 6000
@@ -233,6 +235,7 @@ for t in range(total_steps):
             \ttime for step / total time: {time_for_step / (timeend - start_time)*100:.4f} %\n\
             \ttotal_time: {int((timeend-start_time)/3600)}h, {int((int(timeend-start_time)%3600)/60)}min; update per second {(NN_update_count+update_num)/(timeend - start_time):.4f}\n")
         NN_update_count += update_num
+
     # End of epoch handling
     if (t + 1) % steps_per_epoch == 0:
         epoch = (t + 1) // steps_per_epoch

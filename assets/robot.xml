@@ -27,6 +27,6 @@
         <geom friction="1 0.005 0.0001" contype="2" conaffinity="2" rgba="0.1 0.1 0.1 1" type="cylinder" size="0.04 0.005"></geom>
     </body>
     <body name="shell">
-      <geom type="cylinder" rgba="0.3 0.9 0.3 1" pos="0 0 0.12" size="0.175 0.1"></geom>
+      <geom type="cylinder" rgba="0.3 0.9 0.3 1" pos="0 0 0.12" size="0.18 0.1"></geom>
     </body>
 </body>

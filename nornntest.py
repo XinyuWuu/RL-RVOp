@@ -34,7 +34,8 @@ PARAMs = {
     "isrender": True,
     "codec": 'h264',
     "framerate": 10,
-    "dreach": 0.02,
+    "dreach": 0.05,
+    "tolerance": 0.02,
     "rreach": 30.0,
     "dmax": 3.0,
     "vmax": 1.0,
@@ -87,7 +88,7 @@ font = ImageFont.truetype(
 Pi = nornnsac.nornncore.Policy(obs_dim=PARAMs["obs_dim"], act_dim=PARAMs["act_dim"],
                                act_limit=PARAMs["act_limit"], hidden_sizes=PARAMs["hidden_sizes"])
 Pi.load_state_dict(torch.load(
-    "module_saves/nornn2/41h_2min_1349999steps_policy.ptd"))
+    "module_saves/nornn4/70h_48min_2207999steps_policy.ptd", map_location=torch.device(PARAMs["device"])))
 Pi.to(device=PARAMs["device"])
 Pi.act_limit = Pi.act_limit.to(device=PARAMs["device"])
 
@@ -190,7 +191,7 @@ for t in range(total_steps):
             # draw target
             # CV.draw_line(pos_vel[i][0:2], np.matmul(
             #     tranM, oi[0:2]) + pos_vel[i][0:2])
-            for o in range(min(observation[i].__len__(),PARAMs["max_obs"])):
+            for o in range(min(observation[i].__len__(), PARAMs["max_obs"])):
                 o2draw = oi[5 + o * 11:5 + o * 11 + 8]
                 o2draw[0:2] = np.matmul(tranM, o2draw[0:2])
                 o2draw[2:4] = np.matmul(tranM, o2draw[2:4])
@@ -238,7 +239,7 @@ for t in range(total_steps):
         pos_vel, observation, r, NNinput, d, dpre = SMLT.set_model(Nrobot, robot_text, obs_text1 +
                                                                    obs_text2, obs1 + obs2, "circle")
         o = preNNinput(NNinput, PARAMs["obs_sur_dim"],
-                        PARAMs["max_obs"], PARAMs["device"])
+                       PARAMs["max_obs"], PARAMs["device"])
         ep_ret = 0
         ep_len = 0
 
