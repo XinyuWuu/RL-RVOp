@@ -1,6 +1,7 @@
 __pycache__
 .mypy_cache/
 envs/
+envs1/
 stub/
 CppClass/build/
 CppClass/*.so
