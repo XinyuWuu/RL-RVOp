@@ -157,9 +157,9 @@ for t in range(total_steps):
     ctrl = CCcpp.v2ctrlbatch(posvels=pos_vel, vs=aglobal)
 
     pos_vel, observation, r, NNinput, d, dpre = SMLT.step(ctrl)
-    time_for_step += time.time() - timebegin
     o2 = preNNinput(NNinput, PARAMs["obs_sur_dim"],
                     PARAMs["max_obs"], PARAMs["device"])
+    time_for_step += time.time() - timebegin
     ep_ret += r.mean()
     ep_len += 1
 
@@ -247,7 +247,8 @@ for t in range(total_steps):
             \tmean losspi: {losspi_log.mean():.4f}; mean lossq: {lossq_log.mean():.4f}; mean alpha: {alpha_log.mean():.4f}\n\
             \ttime for NN update / total time: {time_for_NN_update / (timeend - start_time)*100:.4f} %\n\
             \ttime for step / total time: {time_for_step / (timeend - start_time)*100:.4f} %\n\
-            \ttotal_time: {int((timeend-start_time)/3600)}h, {int((int(timeend-start_time)%3600)/60)}min; update per second {(NN_update_count+update_num)/(timeend - start_time):.4f}\n")
+            \tstep per second {(t+1)/time_for_step:.4f},update per second {(NN_update_count+update_num)/time_for_NN_update:.4f}\n\
+            \ttotal_time: {int((timeend-start_time)/3600)}h, {int((int(timeend-start_time)%3600)/60)}min;")
         NN_update_count += update_num
 
     # End of epoch handling
