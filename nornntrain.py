@@ -76,7 +76,7 @@ PARAMs["rmax"] = CCcpp.get_rmax()
 SMLT = simulator_cpp.Simulator(
     dmax=PARAMs["dmax"], framerate=PARAMs["framerate"], dreach=PARAMs["dreach"])
 SMLT.set_reward(vmax=PARAMs["vmax"], rmax=PARAMs["rmax"], tolerance=PARAMs["tolerance"],
-                a=4.0, b=0.5, c=2, d=0.5, e=0.5, f=4, g=0.1, eta=0.125, h=0.15, mu=0.375, rreach=PARAMs["rreach"])
+                a=4.0)
 
 # cofig SAC
 SAC = nornnsac.SAC(obs_dim=PARAMs["obs_dim"], act_dim=PARAMs["act_dim"], act_limit=PARAMs["act_limit"],
@@ -105,8 +105,9 @@ def preNNinput(NNinput: tuple, obs_sur_dim: int, max_obs: int, device):
 ###########################################################
 # init environment get initial observation
 # init model
+MODE, mode = 0, 0
 Nrobot, robot_text, obs_text, obs, target_mode = SMLT.EC.env_create(
-    MODE=2, mode=0)
+    MODE=MODE, mode=mode)
 pos_vel, observation, r, NNinput, d, dpre = SMLT.set_model(
     Nrobot, robot_text, obs_text, obs, target_mode)
 o = preNNinput(NNinput, PARAMs["obs_sur_dim"],
@@ -118,7 +119,7 @@ ep_len = 0
 
 max_simu_second = 30
 max_ep_len = int(max_simu_second * PARAMs["framerate"])
-steps_per_epoch = 6000
+steps_per_epoch = 20000
 epochs = 1000
 batch_size = 1024
 random_steps = max_ep_len * 10
@@ -175,7 +176,7 @@ for t in range(total_steps):
     # End of trajectory handling
     if (d == 1).all() or (ep_len == max_ep_len):
         print(
-            f"t: {t}, {Nrobot} robots, ep_ret: {ep_ret:.2f}, ep_len: {ep_len}, Nreach: {d.sum()}, alpha: {SAC.alpha:.4f}")
+            f"t: {t}, {Nrobot} robots, mode: {MODE}_{mode}, ep_ret: {ep_ret:.2f}, ep_len: {ep_len}, Nreach: {d.sum()}, alpha: {SAC.alpha:.4f}")
         # save model
         if (ep_ret * Nrobot > max_ret):
             max_ret = ep_ret * Nrobot
@@ -195,7 +196,7 @@ for t in range(total_steps):
                 mode = 3
             else:
                 mode = 4
-        elif (t - random_steps) < max_ep_len * 240:
+        elif (t - random_steps) < max_ep_len * 1500:
             MODE = 1
             if random_num < 0.2:
                 mode = 0
