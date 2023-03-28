@@ -19,7 +19,7 @@ class EnvCreator():
         self.circle_split_num = 16
         self.obstacle_rgba = "0.5 0 0 1"
         self.obs_r = 0.25  # radius of circumcircle of small obstacles, half for sylinder
-        self.gate_ratio = 3 / 5
+        self.gate_ratio = 1 / 2
         with open("assets/robot.xml", 'r') as fp:
             self.robot_base = fp.read()
 
@@ -70,7 +70,7 @@ class EnvCreator():
     def circle_robot(self, n: int = 1, size: str = 'l', start_id=0):
         # max 60 robots for size large, 36 for size small
         r_l = 5
-        r_s = 3
+        r_s = 3.3
         n_l = 60
         theta_l = np.deg2rad(360 / n_l)
         n_s = 36
@@ -139,7 +139,7 @@ class EnvCreator():
         len_s = 5
         n_l = 20
         n_s = 10
-        d = 0.35
+        d = 0.5
         if size == 'l':
             center1 = array([[-len_l / 2, (x + np.random.rand() / 8) * d]
                             for x in random.sample(range(-int(n_l / 2), int(n_l / 2)), int(np.floor(n / 2)))])
@@ -174,9 +174,9 @@ class EnvCreator():
                             for x in random.sample(range(-int(n_l / 2), int(n_l / 2)), int(np.ceil(n / 2)))])
             center = np.vstack((center1, center2))
         else:
-            center1 = array([[-len_s / 6, (x + np.random.rand() / 8) * d]
+            center1 = array([[-len_s / 5, (x + np.random.rand() / 8) * d]
                             for x in random.sample(range(-int(n_s / 2), int(n_s / 2)), int(np.floor(n / 2)))])
-            center2 = array([[len_s / 6, (x + np.random.rand() / 8) * d]
+            center2 = array([[len_s / 5, (x + np.random.rand() / 8) * d]
                             for x in random.sample(range(-int(n_s / 2), int(n_s / 2)), int(np.ceil(n / 2)))])
             center = np.vstack((center1, center2))
 
@@ -251,7 +251,7 @@ class EnvCreator():
         center2 = array([-xoffset, -yoffset])
 
         if not t:
-            if np.random.rand() < 0.5:
+            if mode == 0:
                 es = array(
                     sorted([np.deg2rad(-90), np.deg2rad(30), np.deg2rad(150)]))
                 vs = array([[np.cos(e), np.sin(e)]
@@ -265,8 +265,8 @@ class EnvCreator():
                 text += self.polygon(center2, vs)
                 obs.append(np.hstack((center2, (vs + center2).reshape((-1,)))))
             else:
-                es = array(
-                    sorted(random.sample(range(0, self.circle_split_num), 3))) / self.circle_split_num * 2 * np.pi
+                es = (array(
+                    sorted(random.sample(range(0, 5), 3))) + np.random.rand()) / 5 * 2 * np.pi
                 vs = array([[np.cos(e), np.sin(e)]
                             for e in es]) * obs_r
                 text += self.polygon(np.zeros((2,)), vs)
@@ -277,8 +277,8 @@ class EnvCreator():
                 text += self.cylinder(np.zeros((2,)), obs_r * 0.75)
                 obs.append(array([0, 0, obs_r * 0.75]))
             else:
-                es = array(sorted(random.sample(
-                    range(0, self.circle_split_num), 4))) / self.circle_split_num * 2 * np.pi
+                es = (array(
+                    sorted(random.sample(range(0, 6), 4))) + np.random.rand()) / 6 * 2 * np.pi
                 vs = array([[np.cos(e), np.sin(e)]
                             for e in es]) * obs_r
                 text += self.polygon(np.zeros((2,)), vs)
@@ -307,3 +307,101 @@ class EnvCreator():
         text += actuator_text
         text += '</mujoco>'
         return text
+
+    def env_create(self, MODE=0, mode=0):
+        if MODE == 0:
+            if mode == 0:
+                target_mode = "circle"
+                Nrobot = 4
+                robot_text = self.circle_robot(Nrobot)
+                obs_text1, obs1 = self.circle_obstacle(4, 'l')
+                obs_text2, obs2 = self.circle_obstacle(1, 's')
+            if mode == 1:
+                target_mode = "line"
+                Nrobot = 4
+                robot_text = self.line_robot(Nrobot)
+                obs_text1, obs1 = self.line_obstacle(3, 'l')
+                obs_text2, obs2 = self.line_obstacle(2, 's')
+            if mode == 2:
+                target_mode = "line"
+                Nrobot = 4
+                robot_text = self.gate_robot(Nrobot)
+                obs_text1, obs1 = self.gate_obstacle()
+                obs_text2, obs2 = "", []
+            if mode == 3:
+                target_mode = "line"
+                Nrobot = 4
+                robot_text = self.gate_robot(Nrobot)
+                obs_text1, obs1 = self.bigObs_obstacle(False, 0)
+                obs_text2, obs2 = "", []
+            if mode == 4:
+                target_mode = "line"
+                Nrobot = 4
+                robot_text = self.gate_robot(Nrobot)
+                obs_text1, obs1 = self.bigObs_obstacle(False, 1)
+                obs_text2, obs2 = "", []
+        if MODE == 1:
+            if mode == 0:
+                target_mode = "circle"
+                Nrobot = 8
+                robot_text = self.circle_robot(6, 'l')
+                robot_text += self.circle_robot(2, 's', 6)
+                obs_text1, obs1 = self.circle_obstacle(6, 'l')
+                obs_text2, obs2 = self.circle_obstacle(2, 's')
+            if mode == 1:
+                target_mode = "line"
+                Nrobot = 8
+                robot_text = self.line_robot(Nrobot)
+                obs_text1, obs1 = self.line_obstacle(8, 'l')
+                obs_text2, obs2 = self.line_obstacle(4, 's')
+            if mode == 2:
+                Nrobot = 8
+                target_mode = "line"
+                robot_text = self.gate_robot(Nrobot)
+                obs_text1, obs1 = self.gate_obstacle()
+                obs_text2, obs2 = self.line_obstacle(4, 's')
+            if mode == 3:
+                Nrobot = 6
+                target_mode = "line"
+                robot_text = self.gate_robot(Nrobot)
+                obs_text1, obs1 = self.bigObs_obstacle(False, 0)
+                obs_text2, obs2 = "", []
+            if mode == 4:
+                Nrobot = 6
+                target_mode = "line"
+                robot_text = self.gate_robot(Nrobot)
+                obs_text1, obs1 = self.bigObs_obstacle(False, 1)
+                obs_text2, obs2 = "", []
+        if MODE == 2:
+            if mode == 0:
+                target_mode = "circle"
+                Nrobot = 12
+                robot_text = self.circle_robot(8, 'l')
+                robot_text += self.circle_robot(4, 's', 8)
+                obs_text1, obs1 = self.circle_obstacle(8, 'l')
+                obs_text2, obs2 = self.circle_obstacle(2, 's')
+            if mode == 1:
+                target_mode = "line"
+                Nrobot = 12
+                robot_text = self.line_robot(Nrobot)
+                obs_text1, obs1 = self.line_obstacle(10, 'l')
+                obs_text2, obs2 = self.line_obstacle(8, 's')
+            if mode == 2:
+                target_mode = "line"
+                Nrobot = 12
+                robot_text = self.gate_robot(Nrobot)
+                obs_text1, obs1 = self.gate_obstacle()
+                obs_text2, obs2 = self.line_obstacle(6, 's')
+            if mode == 3:
+                target_mode = "line"
+                Nrobot = 9
+                robot_text = self.gate_robot(Nrobot)
+                obs_text1, obs1 = self.bigObs_obstacle(False, 0)
+                obs_text2, obs2 = "", []
+            if mode == 4:
+                target_mode = "line"
+                Nrobot = 14
+                robot_text = self.gate_robot(Nrobot)
+                obs_text1, obs1 = self.bigObs_obstacle(False, 1)
+                obs_text2, obs2 = "", []
+        return [Nrobot, robot_text, obs_text1 + obs_text2, obs1 + obs2,target_mode]

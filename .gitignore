@@ -4,6 +4,7 @@ __pycache__
 assets/*
 !/assets/robot.xml
 envs/
+envs1/
 stub/
 samples/
 CppClass/build/

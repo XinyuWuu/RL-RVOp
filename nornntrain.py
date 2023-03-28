@@ -32,7 +32,8 @@ PARAMs = {
     "isrender": False,
     "codec": 'h264',
     "framerate": 10,
-    "dreach": 0.02,
+    "dreach": 0.075,
+    "tolerance": 0.04,
     "rreach": 30.0,
     "dmax": 3.0,
     "vmax": 1.0,
@@ -74,7 +75,7 @@ CCcpp = CtrlConverter(vmax=PARAMs["vmax"], tau=PARAMs["tau"])
 PARAMs["rmax"] = CCcpp.get_rmax()
 SMLT = simulator_cpp.Simulator(
     dmax=PARAMs["dmax"], framerate=PARAMs["framerate"], dreach=PARAMs["dreach"])
-SMLT.set_reward(vmax=PARAMs["vmax"], rmax=PARAMs["rmax"], tolerance=0.015,
+SMLT.set_reward(vmax=PARAMs["vmax"], rmax=PARAMs["rmax"], tolerance=PARAMs["tolerance"],
                 a=4.0, b=0.5, c=2, d=0.5, e=0.5, f=4, g=0.1, eta=0.125, h=0.15, mu=0.375, rreach=PARAMs["rreach"])
 
 # cofig SAC
@@ -104,18 +105,17 @@ def preNNinput(NNinput: tuple, obs_sur_dim: int, max_obs: int, device):
 ###########################################################
 # init environment get initial observation
 # init model
-Nrobot = 4
-robot_text = SMLT.EC.circle_robot(Nrobot)
-obs_text1, obs1 = SMLT.EC.circle_obstacle(3, 'l')
-obs_text2, obs2 = SMLT.EC.circle_obstacle(1, 's')
-pos_vel, observation, r, NNinput, d, dpre = SMLT.set_model(Nrobot, robot_text, obs_text1 +
-                                                           obs_text2, obs1 + obs2, "circle")
+Nrobot, robot_text, obs_text, obs, target_mode = SMLT.EC.env_create(
+    MODE=2, mode=0)
+pos_vel, observation, r, NNinput, d, dpre = SMLT.set_model(
+    Nrobot, robot_text, obs_text, obs, target_mode)
 o = preNNinput(NNinput, PARAMs["obs_sur_dim"],
                PARAMs["max_obs"], PARAMs["device"])
 ep_ret = 0
 ep_len = 0
 
 # config training process
+
 max_simu_second = 30
 max_ep_len = int(max_simu_second * PARAMs["framerate"])
 steps_per_epoch = 6000
@@ -157,9 +157,9 @@ for t in range(total_steps):
     ctrl = CCcpp.v2ctrlbatch(posvels=pos_vel, vs=aglobal)
 
     pos_vel, observation, r, NNinput, d, dpre = SMLT.step(ctrl)
-    time_for_step += time.time() - timebegin
     o2 = preNNinput(NNinput, PARAMs["obs_sur_dim"],
                     PARAMs["max_obs"], PARAMs["device"])
+    time_for_step += time.time() - timebegin
     ep_ret += r.mean()
     ep_len += 1
 
@@ -182,31 +182,47 @@ for t in range(total_steps):
             time_prefix = f"{int((time.time()-start_time)/3600)}h_{int((int(time.time()-start_time)%3600)/60)}min_{t}steps"
             torch.save(SAC.Pi.state_dict(),
                        f'module_saves/max_{ep_ret:.2f}_{Nrobot}robots_{time_prefix}_policy.ptd')
-
-        if (t - random_steps) < max_ep_len * 80:
-            Nrobot = 4
-            robot_text = SMLT.EC.circle_robot(Nrobot)
-            obs_text1, obs1 = SMLT.EC.circle_obstacle(3, 'l')
-            obs_text2, obs2 = SMLT.EC.circle_obstacle(1, 's')
+        random_num = np.random.rand()
+        if (t - random_steps) < max_ep_len * 500:
+            MODE = 0
+            if random_num < 0.3:
+                mode = 0
+            elif random_num < 0.6:
+                mode = 1
+            elif random_num < 0.8:
+                mode = 2
+            elif random_num < 0.9:
+                mode = 3
+            else:
+                mode = 4
         elif (t - random_steps) < max_ep_len * 240:
-            Nrobot = 8
-            robot_text = SMLT.EC.circle_robot(Nrobot)
-            obs_text1, obs1 = SMLT.EC.circle_obstacle(6, 'l')
-            obs_text2, obs2 = SMLT.EC.circle_obstacle(2, 's')
-        elif (t - random_steps) < max_ep_len * 480:
-            Nrobot = 12
-            robot_text = SMLT.EC.circle_robot(Nrobot)
-            obs_text1, obs1 = SMLT.EC.circle_obstacle(8, 'l')
-            obs_text2, obs2 = SMLT.EC.circle_obstacle(2, 's')
+            MODE = 1
+            if random_num < 0.2:
+                mode = 0
+            elif random_num < 0.4:
+                mode = 1
+            elif random_num < 0.6:
+                mode = 2
+            elif random_num < 0.8:
+                mode = 3
+            else:
+                mode = 4
         else:
-            Nrobot = 12 + 4
-            robot_text = SMLT.EC.circle_robot(12)
-            robot_text += SMLT.EC.circle_robot(4, 's', 12)
-            obs_text1, obs1 = SMLT.EC.circle_obstacle(8, 'l')
-            obs_text2, obs2 = SMLT.EC.circle_obstacle(3, 's')
-
-        pos_vel, observation, r, NNinput, d, dpre = SMLT.set_model(Nrobot, robot_text, obs_text1 +
-                                                                   obs_text2, obs1 + obs2, "circle")
+            MODE = 2
+            if random_num < 0.2:
+                mode = 0
+            elif random_num < 0.4:
+                mode = 1
+            elif random_num < 0.6:
+                mode = 2
+            elif random_num < 0.8:
+                mode = 3
+            else:
+                mode = 4
+        Nrobot, robot_text, obs_text, obs, target_mode = SMLT.EC.env_create(
+            MODE=MODE, mode=mode)
+        pos_vel, observation, r, NNinput, d, dpre = SMLT.set_model(
+            Nrobot, robot_text, obs_text, obs, target_mode)
         o = preNNinput(NNinput, PARAMs["obs_sur_dim"],
                        PARAMs["max_obs"], PARAMs["device"])
         ep_ret = 0
@@ -231,8 +247,10 @@ for t in range(total_steps):
             \tmean losspi: {losspi_log.mean():.4f}; mean lossq: {lossq_log.mean():.4f}; mean alpha: {alpha_log.mean():.4f}\n\
             \ttime for NN update / total time: {time_for_NN_update / (timeend - start_time)*100:.4f} %\n\
             \ttime for step / total time: {time_for_step / (timeend - start_time)*100:.4f} %\n\
-            \ttotal_time: {int((timeend-start_time)/3600)}h, {int((int(timeend-start_time)%3600)/60)}min; update per second {(NN_update_count+update_num)/(timeend - start_time):.4f}\n")
+            \tstep per second {(t+1)/time_for_step:.4f},update per second {(NN_update_count+update_num)/time_for_NN_update:.4f}\n\
+            \ttotal_time: {int((timeend-start_time)/3600)}h, {int((int(timeend-start_time)%3600)/60)}min;")
         NN_update_count += update_num
+
     # End of epoch handling
     if (t + 1) % steps_per_epoch == 0:
         epoch = (t + 1) // steps_per_epoch

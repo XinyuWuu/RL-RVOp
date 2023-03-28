@@ -27,7 +27,7 @@ class Render():
         self.depth = np.zeros(
             (viewport_height, viewport_width, 1), dtype=np.float32)
 
-        os.environ["DISPLAY"] = ":1"  # for remote access
+        os.environ["DISPLAY"] = ":0"  # for remote access
         glfw.init()
         glfw.window_hint(glfw.VISIBLE, glfw.FALSE)
         glfw.window_hint(glfw.DOUBLEBUFFER, glfw.FALSE)
