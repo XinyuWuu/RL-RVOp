@@ -30,12 +30,12 @@ import importlib
 
 PARAMs = {
     "seed": 0,
-    "isdraw": True,
-    "isrender": True,
+    "isdraw": False,
+    "isrender": False,
     "codec": 'h264',
     "framerate": 10,
-    "dreach": 0.05,
-    "tolerance": 0.02,
+    "dreach": 0.75,
+    "tolerance": 0.04,
     "rreach": 30.0,
     "dmax": 3.0,
     "vmax": 1.0,
@@ -77,9 +77,9 @@ CCcpp = CtrlConverter(vmax=PARAMs["vmax"], tau=PARAMs["tau"])
 PARAMs["rmax"] = CCcpp.get_rmax()
 SMLT = simulator_cpp.Simulator(
     dmax=PARAMs["dmax"], framerate=PARAMs["framerate"], dreach=PARAMs["dreach"])
-# SMLT.set_reward(vmax=PARAMs["vmax"], rmax=PARAMs["rmax"], tolerance=0.015,
+# SMLT.set_reward(vmax=PARAMs["vmax"], rmax=PARAMs["rmax"], tolerance=PARAMs["tolerance"],
 #                 a=4.0, b=0.5, c=2, d=0.5, e=0.5, f=4, g=0.1, eta=0.125, h=0.15, mu=0.375, rreach=PARAMs["rreach"])
-SMLT.set_reward(vmax=PARAMs["vmax"], rmax=PARAMs["rmax"], tolerance=0.015,
+SMLT.set_reward(vmax=PARAMs["vmax"], rmax=PARAMs["rmax"], tolerance=PARAMs["tolerance"],
                 a=4.0)
 
 font = ImageFont.truetype(
@@ -111,12 +111,16 @@ def preNNinput(NNinput: tuple, obs_sur_dim: int, max_obs: int, device):
 ###########################################################
 # init environment get initial observation
 # init model
-Nrobot = 4
-robot_text = SMLT.EC.circle_robot(Nrobot)
-obs_text1, obs1 = SMLT.EC.circle_obstacle(3, 'l')
-obs_text2, obs2 = SMLT.EC.circle_obstacle(1, 's')
+Nrobot, robot_text, obs_text, obs, target_mode = SMLT.EC.env_create(
+    MODE=2, mode=0)
+
+# actuator_text = SMLT.EC.actuator(Nrobot)
+# text = SMLT.EC.env_text(robot_text, obs_text, actuator_text)
+# with open("./assets/test.xml", 'w') as fp:
+#     fp.write(text)
+
 pos_vel, observation, r, NNinput, d, dpre = SMLT.set_model(
-    Nrobot, robot_text, obs_text1 + obs_text2, obs1 + obs2, "circle")
+    Nrobot, robot_text, obs_text, obs, target_mode)
 o = preNNinput(NNinput, PARAMs["obs_sur_dim"],
                PARAMs["max_obs"], PARAMs["device"])
 ep_ret = 0
@@ -125,8 +129,8 @@ ep_len = 0
 # config training process
 max_simu_second = 30
 max_ep_len = int(max_simu_second * PARAMs["framerate"])
-num_test_episodes = 10
-total_steps = max_ep_len * num_test_episodes
+num_test_episodes = 15  # no meaning to set it bigger than 15
+max_total_steps = max_ep_len * num_test_episodes
 
 if PARAMs["isrender"]:
     RD = render.Render()
@@ -140,9 +144,9 @@ if PARAMs["isdraw"]:
     canvasfp = videoIO.VideoIO(
         "assets/video_canvas.mp4", SMLT.framerate, codec=PARAMs["codec"], w=CV.w * CV.dpi, h=CV.h * CV.dpi)
 
-
+eps_count = 0
 # Main loop: collect experience in env and update/log each epoch
-for t in range(total_steps):
+for t in range(max_total_steps):
 
     a, logp = Pi(o, True, with_logprob=False)
     a = a.cpu().detach().numpy()
@@ -212,32 +216,49 @@ for t in range(total_steps):
     # End of trajectory handling
     if (d == 1).all() or (ep_len == max_ep_len):
         print(
-            f"t: {t}, {Nrobot} robots, ep_ret: {ep_ret:.2f}, ep_len: {ep_len}, Nreach: {d.sum()}")
+            f"eps: {eps_count+1}, {Nrobot} robots, ep_ret: {ep_ret:.2f}, ep_len: {ep_len}, Nreach: {d.sum()}")
         # TODO change environment according to t
-        if t < max_ep_len * 1:
-            Nrobot = 4
-            robot_text = SMLT.EC.circle_robot(Nrobot)
-            obs_text1, obs1 = SMLT.EC.circle_obstacle(3, 'l')
-            obs_text2, obs2 = SMLT.EC.circle_obstacle(1, 's')
-        elif t < max_ep_len * 3:
-            Nrobot = 4
-            robot_text = SMLT.EC.circle_robot(Nrobot)
-            obs_text1, obs1 = SMLT.EC.circle_obstacle(6, 'l')
-            obs_text2, obs2 = SMLT.EC.circle_obstacle(2, 's')
-        elif t < max_ep_len * 6:
-            Nrobot = 8
-            robot_text = SMLT.EC.circle_robot(Nrobot)
-            obs_text1, obs1 = SMLT.EC.circle_obstacle(8, 'l')
-            obs_text2, obs2 = SMLT.EC.circle_obstacle(3, 's')
-        else:
-            Nrobot = 12
-            robot_text = SMLT.EC.circle_robot(8)
-            robot_text += SMLT.EC.circle_robot(4, 's', 8)
-            obs_text1, obs1 = SMLT.EC.circle_obstacle(8, 'l')
-            obs_text2, obs2 = SMLT.EC.circle_obstacle(3, 's')
-
-        pos_vel, observation, r, NNinput, d, dpre = SMLT.set_model(Nrobot, robot_text, obs_text1 +
-                                                                   obs_text2, obs1 + obs2, "circle")
+        if eps_count > num_test_episodes - 1:
+            break
+        if eps_count > 14:
+            break
+        if eps_count == 0:
+            MODE, mode = 0, 0
+        if eps_count == 1:
+            MODE, mode = 0, 1
+        if eps_count == 2:
+            MODE, mode = 0, 2
+        if eps_count == 3:
+            MODE, mode = 0, 3
+        if eps_count == 4:
+            MODE, mode = 0, 4
+            ###############################
+        if eps_count == 5:
+            MODE, mode = 1, 0
+        if eps_count == 6:
+            MODE, mode = 1, 1
+        if eps_count == 7:
+            MODE, mode = 1, 2
+        if eps_count == 8:
+            MODE, mode = 1, 3
+        if eps_count == 9:
+            MODE, mode = 1, 4
+            ####################################
+        if eps_count == 10:
+            MODE, mode = 2, 0
+        if eps_count == 11:
+            MODE, mode = 2, 1
+        if eps_count == 12:
+            MODE, mode = 2, 2
+        if eps_count == 13:
+            MODE, mode = 2, 3
+        if eps_count == 14:
+            MODE, mode = 2, 4
+        eps_count += 1
+        Nrobot, robot_text, obs_text, obs, target_mode = SMLT.EC.env_create(
+            MODE=MODE, mode=mode)
+        pos_vel, observation, r, NNinput, d, dpre = SMLT.set_model(
+            Nrobot, robot_text, obs_text, obs, target_mode)
         o = preNNinput(NNinput, PARAMs["obs_sur_dim"],
                        PARAMs["max_obs"], PARAMs["device"])
         ep_ret = 0
