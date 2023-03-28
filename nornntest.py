@@ -34,7 +34,7 @@ PARAMs = {
     "isrender": False,
     "codec": 'h264',
     "framerate": 10,
-    "dreach": 0.75,
+    "dreach": 0.075,
     "tolerance": 0.04,
     "rreach": 30.0,
     "dmax": 3.0,
