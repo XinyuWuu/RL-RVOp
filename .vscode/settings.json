@@ -1,10 +1,20 @@
 {
-    "python.analysis.extraPaths": ["./stub"],
+    "python.analysis.extraPaths": [
+        "./stub"
+    ],
     "python.autoComplete.extraPaths": [
         "./stub"
     ],
+    "search.exclude": {
+        "**/envs": true,
+        "**/envs1": true,
+        "**/.mypy_cache": true
+    },
     "files.watcherExclude": {
-        "envs/": true,
-        "envs/1": true
-    }
+        "**/envs/**": true,
+        "**/envs1/**": true,
+        "**/.mypy_cache/**": true,
+        "**/.git/objects/**": true,
+        "**/.git/subtree-cache/**": true,
+    },
 }
