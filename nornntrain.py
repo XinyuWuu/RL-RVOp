@@ -109,14 +109,15 @@ for t in range(PARAMs["total_steps"]):
 
     # Step the env
     timebegin = time.time()
-    aglobal = a.copy()
-    for Nth in range(SMLT.Nrobot):
-        aglobal[Nth] = np.matmul(
-            np.array([[np.cos(pos_vel[Nth][2]), -np.sin(pos_vel[Nth][2])],
-                      [np.sin(pos_vel[Nth][2]), np.cos(pos_vel[Nth][2])]]),
-            aglobal[Nth]
-        )
-    ctrl = CCcpp.v2ctrlbatch(posvels=pos_vel, vs=aglobal)
+    # aglobal = a.copy()
+    # for Nth in range(SMLT.Nrobot):
+    #     aglobal[Nth] = np.matmul(
+    #         np.array([[np.cos(pos_vel[Nth][2]), -np.sin(pos_vel[Nth][2])],
+    #                   [np.sin(pos_vel[Nth][2]), np.cos(pos_vel[Nth][2])]]),
+    #         aglobal[Nth]
+    #     )
+    # ctrl = CCcpp.v2ctrlbatchG(posvels=pos_vel, vs=aglobal)
+    ctrl = CCcpp.v2ctrlbatchL(posvels=pos_vel, vs=a)
     pos_vel, observation, r, NNinput, d, dpre = SMLT.step(ctrl)
     o2 = preNNinput(NNinput, PARAMs["obs_sur_dim"],
                     PARAMs["max_obs"], PARAMs["device"])

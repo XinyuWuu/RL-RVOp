@@ -55,7 +55,9 @@ PYBIND11_MODULE(CtrlConverter, m)
      py::class_<CTRL::CtrlConverter>(m, "CtrlConverter")
          .def(py::init<double, double, double, double, double>(), "init function",
               "vmax"_a = 1, "tau"_a = 0.5, "wheel_r"_a = 0.04, "wheel_d"_a = 0.28, "gain"_a = 7)
-         .def("v2ctrlbatch", &CTRL::CtrlConverter::v2ctrlbatch, "converte a batch of vector v to ctrl in mujoco according to posvels",
+         .def("v2ctrlbatchL", &CTRL::CtrlConverter::v2ctrlbatchL, "converte a batch of vector v in local codinate to ctrl in mujoco according to posvels",
+              py::arg("posvels"), py::arg("vs"))
+         .def("v2ctrlbatchG", &CTRL::CtrlConverter::v2ctrlbatchG, "converte a batch of vector v in global codinate to ctrl in mujoco according to posvels",
               py::arg("posvels"), py::arg("vs"))
          .def("get_rmax", &CTRL::CtrlConverter::get_rmax, "get max omega of robot rotation");
 }

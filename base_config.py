@@ -25,7 +25,7 @@ PARAMs = {
     "gamma": 0.99,
     "polyak": 0.995,
     "lr": 5e-4,
-    "alpha": 0.005,
+    "alpha": 1,
     "act_dim": 2,
     "max_obs": 16,
     "obs_self_dim": 4,
