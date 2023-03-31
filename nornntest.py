@@ -38,8 +38,8 @@ importlib.reload(simulator_cpp)
 
 model_file = "module_saves/nornn6/42h_40min_2199999steps_5825733updates_policy.ptd"
 num_test_episodes = 15  # no meaning to set it bigger than 15
-PARAMs["isrender"] = True
-PARAMs["isdraw"] = True
+# PARAMs["isrender"] = True
+# PARAMs["isdraw"] = True
 torch.manual_seed(PARAMs["seed"])
 np.random.seed(PARAMs["seed"])
 random.seed(PARAMs["seed"])
@@ -74,10 +74,10 @@ def preNNinput(NNinput: tuple, obs_sur_dim: int, max_obs: int, device):
                     obs_sur_dim + 1), dtype=np.float32) * 2 * SMLT.dmax
     for Nth in range(NNinput[0].__len__()):
         total_len = NNinput[1][Nth].__len__()
-        idxs = list(range(total_len))
-        idxs.sort(key=lambda i: norm(NNinput[1][Nth][i][6:8]))
+        # idxs = list(range(total_len))
+        # idxs.sort(key=lambda i: norm(NNinput[1][Nth][i][6:8]))
         for iobs in range(min(total_len, max_obs)):
-            Osur[Nth][iobs] = [0] + NNinput[1][Nth][idxs[iobs]]
+            Osur[Nth][iobs] = [0] + NNinput[1][Nth][iobs]
 
     return torch.as_tensor(np.array([np.hstack([NNinput[0][Nth], Osur[Nth].flatten()]) for Nth in range(NNinput[0].__len__())]), dtype=torch.float32, device=device)
 
