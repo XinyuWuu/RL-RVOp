@@ -122,20 +122,21 @@ for t in range(PARAMs["max_ep_len"] * num_test_episodes):
     a = a.cpu().detach().numpy()
 
     # Step the env
-    aglobal = a.copy()
+    # aglobal = a.copy()
     onumpy = o.cpu().detach().numpy()
-    for Nth in range(SMLT.Nrobot):
-        aglobal[Nth] = np.matmul(
-            np.array([[np.cos(pos_vel[Nth][2]), -np.sin(pos_vel[Nth][2])],
-                      [np.sin(pos_vel[Nth][2]), np.cos(pos_vel[Nth][2])]]),
-            aglobal[Nth]
-        )
-        # aglobal[Nth] = np.matmul(
-        #     np.array([[np.cos(pos_vel[Nth][2]), -np.sin(pos_vel[Nth][2])],
-        #               [np.sin(pos_vel[Nth][2]), np.cos(pos_vel[Nth][2])]]),
-        #     onumpy[Nth][0:2] / norm(onumpy[Nth][0:2])
-        # )
-    ctrl = CCcpp.v2ctrlbatch(posvels=pos_vel, vs=aglobal)
+    # for Nth in range(SMLT.Nrobot):
+    #     aglobal[Nth] = np.matmul(
+    #         np.array([[np.cos(pos_vel[Nth][2]), -np.sin(pos_vel[Nth][2])],
+    #                   [np.sin(pos_vel[Nth][2]), np.cos(pos_vel[Nth][2])]]),
+    #         aglobal[Nth]
+    #     )
+    # # aglobal[Nth] = np.matmul(
+    #     np.array([[np.cos(pos_vel[Nth][2]), -np.sin(pos_vel[Nth][2])],
+    #               [np.sin(pos_vel[Nth][2]), np.cos(pos_vel[Nth][2])]]),
+    #     onumpy[Nth][0:2] / norm(onumpy[Nth][0:2])
+    # )
+    # ctrl = CCcpp.v2ctrlbatchG(posvels=pos_vel, vs=aglobal)
+    ctrl = CCcpp.v2ctrlbatchL(posvels=pos_vel, vs=a)
     pos_vel, observation, r, NNinput, d, dpre = SMLT.step(ctrl)
     o2 = preNNinput(NNinput, PARAMs["obs_sur_dim"],
                     PARAMs["max_obs"], PARAMs["device"])

@@ -18,7 +18,8 @@ namespace CTRL
         void vw2ctrl(const double &vl, const double &w, double *ctrl);
         point_t v2ctrl(const double ori, const point_t v);
         void v2ctrl(const double &ori, const point_t &v, double *ctrl);
-        std::vector<double> v2ctrlbatch(const posvels_t posvels, const points_t vs);
+        std::vector<double> v2ctrlbatchL(const posvels_t posvels, const points_t vs);
+        std::vector<double> v2ctrlbatchG(const posvels_t posvels, const points_t vs);
         double get_rmax();
         ~CtrlConverter();
     };
