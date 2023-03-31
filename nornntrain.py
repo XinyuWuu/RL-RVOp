@@ -26,39 +26,7 @@ from torch.optim import Adam
 import random
 import nornnsac
 import importlib
-PARAMs = {
-    "seed": 0,
-    "isdraw": False,
-    "isrender": False,
-    "codec": 'h264',
-    "framerate": 10,
-    "dreach": 0.075,
-    "tolerance": 0.04,
-    "rreach": 30.0,
-    "dmax": 3.0,
-    "vmax": 1.0,
-    "tau": 0.5,
-    "device": "cuda",
-    "gamma": 0.99,
-    "polyak": 0.995,
-    "lr": 5e-4,
-    "alpha": 0.005,
-    "act_dim": 2,
-    "max_obs": 16,
-    "obs_self_dim": 4,
-    "obs_sur_dim": 10,
-    "hidden_sizes": [1024, 1024, 1024],
-    "replay_size": int(1e6),
-}
-PARAMs["obs_dim"] = PARAMs["obs_self_dim"] + \
-    PARAMs["max_obs"] * (PARAMs["obs_sur_dim"] + 1)
-PARAMs["act_limit"] = np.array(
-    [PARAMs["vmax"], PARAMs["vmax"]], dtype=np.float32)
-
-# seed = 0
-torch.manual_seed(PARAMs["seed"])
-np.random.seed(PARAMs["seed"])
-random.seed(PARAMs["seed"])
+from base_config import PARAMs
 
 importlib.reload(nornnsac)
 importlib.reload(envCreator)
@@ -68,6 +36,11 @@ importlib.reload(render)
 importlib.reload(videoIO)
 importlib.reload(simulator_cpp)
 
+# seed = 0
+torch.manual_seed(PARAMs["seed"])
+np.random.seed(PARAMs["seed"])
+random.seed(PARAMs["seed"])
+
 torch.set_num_threads(torch.get_num_threads())
 
 # config environment
@@ -76,7 +49,9 @@ PARAMs["rmax"] = CCcpp.get_rmax()
 SMLT = simulator_cpp.Simulator(
     dmax=PARAMs["dmax"], framerate=PARAMs["framerate"], dreach=PARAMs["dreach"])
 SMLT.set_reward(vmax=PARAMs["vmax"], rmax=PARAMs["rmax"], tolerance=PARAMs["tolerance"],
-                a=4.0, b=0.5, c=2, d=0.5, e=0.5, f=4, g=0.1, eta=0.125, h=0.15, mu=0.375, rreach=PARAMs["rreach"])
+                a=PARAMs["a"], b=PARAMs["b"], c=PARAMs["c"], d=PARAMs["d"], e=PARAMs["e"],
+                f=PARAMs["f"], g=PARAMs["g"], eta=PARAMs["eta"],
+                h=PARAMs["h"], mu=PARAMs["mu"], rreach=PARAMs["rreach"])
 
 # cofig SAC
 SAC = nornnsac.SAC(obs_dim=PARAMs["obs_dim"], act_dim=PARAMs["act_dim"], act_limit=PARAMs["act_limit"],
@@ -105,8 +80,9 @@ def preNNinput(NNinput: tuple, obs_sur_dim: int, max_obs: int, device):
 ###########################################################
 # init environment get initial observation
 # init model
+MODE, mode = 0, 0
 Nrobot, robot_text, obs_text, obs, target_mode = SMLT.EC.env_create(
-    MODE=2, mode=0)
+    MODE=MODE, mode=mode)
 pos_vel, observation, r, NNinput, d, dpre = SMLT.set_model(
     Nrobot, robot_text, obs_text, obs, target_mode)
 o = preNNinput(NNinput, PARAMs["obs_sur_dim"],
@@ -115,29 +91,15 @@ ep_ret = 0
 ep_len = 0
 
 # config training process
-
-max_simu_second = 30
-max_ep_len = int(max_simu_second * PARAMs["framerate"])
-steps_per_epoch = 6000
-epochs = 1000
-batch_size = 1024
-random_steps = max_ep_len * 10
-update_after = max_ep_len * 2
-update_every = 50
-num_test_episodes = 1
-
-
-total_steps = steps_per_epoch * epochs
 start_time = time.time()
-max_ret, max_ret_time, max_ret_rel_time =  \
-    0, time.time(), (time.time() - start_time) / 3600
 time_for_NN_update = 0
 time_for_step = 0
 NN_update_count = 0
+max_ret=0
 # Main loop: collect experience in env and update/log each epoch
-for t in range(total_steps):
+for t in range(PARAMs["total_steps"]):
 
-    if t > random_steps:
+    if t > PARAMs["random_steps"]:
         with torch.no_grad():
             a, logp = SAC.Pi(o, with_logprob=False)
             a = a.cpu().detach().numpy()
@@ -155,13 +117,12 @@ for t in range(total_steps):
             aglobal[Nth]
         )
     ctrl = CCcpp.v2ctrlbatch(posvels=pos_vel, vs=aglobal)
-
     pos_vel, observation, r, NNinput, d, dpre = SMLT.step(ctrl)
     o2 = preNNinput(NNinput, PARAMs["obs_sur_dim"],
                     PARAMs["max_obs"], PARAMs["device"])
-    time_for_step += time.time() - timebegin
     ep_ret += r.mean()
     ep_len += 1
+    time_for_step += time.time() - timebegin
 
     # Store experience to replay buffer
     for Nth in np.arange(d.shape[0])[dpre == 0]:
@@ -173,17 +134,18 @@ for t in range(total_steps):
     o = o2
 
     # End of trajectory handling
-    if (d == 1).all() or (ep_len == max_ep_len):
+    if (d == 1).all() or (ep_len == PARAMs["max_ep_len"]):
         print(
-            f"t: {t}, {Nrobot} robots, ep_ret: {ep_ret:.2f}, ep_len: {ep_len}, Nreach: {d.sum()}, alpha: {SAC.alpha:.4f}")
+            f"t: {t}, {Nrobot} robots, mode: {MODE}_{mode}, ep_ret: {ep_ret:.2f}, ep_len: {ep_len}, Nreach: {d.sum()}, alpha: {SAC.alpha:.4f}")
         # save model
         if (ep_ret * Nrobot > max_ret):
             max_ret = ep_ret * Nrobot
-            time_prefix = f"{int((time.time()-start_time)/3600)}h_{int((int(time.time()-start_time)%3600)/60)}min_{t}steps"
+            time_prefix = f"{int((time.time()-start_time)/3600)}h_{int((int(time.time()-start_time)%3600)/60)}min_{t}steps_{NN_update_count}updates"
             torch.save(SAC.Pi.state_dict(),
                        f'module_saves/max_{ep_ret:.2f}_{Nrobot}robots_{time_prefix}_policy.ptd')
+
         random_num = np.random.rand()
-        if (t - random_steps) < max_ep_len * 500:
+        if (t - PARAMs["random_steps"]) < PARAMs["max_ep_len"] * 500:
             MODE = 0
             if random_num < 0.3:
                 mode = 0
@@ -195,7 +157,7 @@ for t in range(total_steps):
                 mode = 3
             else:
                 mode = 4
-        elif (t - random_steps) < max_ep_len * 240:
+        elif (t - PARAMs["random_steps"]) < PARAMs["max_ep_len"] * 1500:
             MODE = 1
             if random_num < 0.2:
                 mode = 0
@@ -219,6 +181,7 @@ for t in range(total_steps):
                 mode = 3
             else:
                 mode = 4
+
         Nrobot, robot_text, obs_text, obs, target_mode = SMLT.EC.env_create(
             MODE=MODE, mode=mode)
         pos_vel, observation, r, NNinput, d, dpre = SMLT.set_model(
@@ -229,15 +192,16 @@ for t in range(total_steps):
         ep_len = 0
 
     # Update handling
-    if t >= update_after and t % update_every == 0:
-        update_num = int(update_every * (Nrobot / 4))
+    if t >= PARAMs["update_after"] and t % PARAMs["update_every"] == 0:
+        timebegin = time.time()
+        update_num = int(PARAMs["update_every"] * (Nrobot / 4))
         losspi_log = np.zeros(update_num)
         lossq_log = np.zeros(update_num)
         alpha_log = np.zeros(update_num)
-        timebegin = time.time()
 
         for j in range(update_num):
-            batch = replay_buffer.sample_batch(batch_size, PARAMs["device"])
+            batch = replay_buffer.sample_batch(
+                PARAMs["batch_size"], PARAMs["device"])
             losspi_log[j], lossq_log[j], alpha_log[j] = SAC.update(data=batch)
 
         timeend = time.time()
@@ -252,8 +216,8 @@ for t in range(total_steps):
         NN_update_count += update_num
 
     # End of epoch handling
-    if (t + 1) % steps_per_epoch == 0:
-        epoch = (t + 1) // steps_per_epoch
-        save_prefix = f"{int((time.time()-start_time)/3600)}h_{int((int(time.time()-start_time)%3600)/60)}min_{t}steps"
+    if (t + 1) % PARAMs["steps_per_epoch"] == 0:
+        epoch = (t + 1) // PARAMs["steps_per_epoch"]
+        save_prefix = f"{int((time.time()-start_time)/3600)}h_{int((int(time.time()-start_time)%3600)/60)}min_{t}steps_{NN_update_count}updates"
         torch.save(SAC.Pi.state_dict(),
                    f'module_saves/{save_prefix}_policy.ptd')

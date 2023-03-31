@@ -27,41 +27,7 @@ from torch.optim import Adam
 import random
 import nornnsac
 import importlib
-
-PARAMs = {
-    "seed": 0,
-    "isdraw": False,
-    "isrender": False,
-    "codec": 'h264',
-    "framerate": 10,
-    "dreach": 0.075,
-    "tolerance": 0.04,
-    "rreach": 30.0,
-    "dmax": 3.0,
-    "vmax": 1.0,
-    "tau": 0.5,
-    "device": "cuda",
-    "gamma": 0.99,
-    "polyak": 0.995,
-    "lr": 5e-4,
-    "alpha": 0.005,
-    "act_dim": 2,
-    "max_obs": 16,
-    "obs_self_dim": 4,
-    "obs_sur_dim": 10,
-    "hidden_sizes": [1024, 1024, 1024],
-    "replay_size": int(1e6),
-}
-PARAMs["obs_dim"] = PARAMs["obs_self_dim"] + \
-    PARAMs["max_obs"] * (PARAMs["obs_sur_dim"] + 1)
-PARAMs["act_limit"] = np.array(
-    [PARAMs["vmax"], PARAMs["vmax"]], dtype=np.float32)
-
-
-torch.manual_seed(PARAMs["seed"])
-np.random.seed(PARAMs["seed"])
-random.seed(PARAMs["seed"])
-
+from base_config import PARAMs
 importlib.reload(nornnsac)
 importlib.reload(envCreator)
 importlib.reload(contourGenerator)
@@ -70,6 +36,14 @@ importlib.reload(render)
 importlib.reload(videoIO)
 importlib.reload(simulator_cpp)
 
+model_file = "module_saves/nornn5/36h_26min_2239999steps_policy.ptd"
+num_test_episodes = 15  # no meaning to set it bigger than 15
+PARAMs["isrender"] = True
+PARAMs["isdraw"] = True
+torch.manual_seed(PARAMs["seed"])
+np.random.seed(PARAMs["seed"])
+random.seed(PARAMs["seed"])
+
 torch.set_num_threads(torch.get_num_threads())
 
 # config environment
@@ -77,10 +51,10 @@ CCcpp = CtrlConverter(vmax=PARAMs["vmax"], tau=PARAMs["tau"])
 PARAMs["rmax"] = CCcpp.get_rmax()
 SMLT = simulator_cpp.Simulator(
     dmax=PARAMs["dmax"], framerate=PARAMs["framerate"], dreach=PARAMs["dreach"])
-# SMLT.set_reward(vmax=PARAMs["vmax"], rmax=PARAMs["rmax"], tolerance=PARAMs["tolerance"],
-#                 a=4.0, b=0.5, c=2, d=0.5, e=0.5, f=4, g=0.1, eta=0.125, h=0.15, mu=0.375, rreach=PARAMs["rreach"])
 SMLT.set_reward(vmax=PARAMs["vmax"], rmax=PARAMs["rmax"], tolerance=PARAMs["tolerance"],
-                a=4.0)
+                a=PARAMs["a"], b=PARAMs["b"], c=PARAMs["c"], d=PARAMs["d"], e=PARAMs["e"],
+                f=PARAMs["f"], g=PARAMs["g"], eta=PARAMs["eta"],
+                h=PARAMs["h"], mu=PARAMs["mu"], rreach=PARAMs["rreach"])
 
 font = ImageFont.truetype(
     "/usr/share/fonts/truetype/freefont/FreeMonoBold.ttf", 25)
@@ -88,7 +62,7 @@ font = ImageFont.truetype(
 Pi = nornnsac.nornncore.Policy(obs_dim=PARAMs["obs_dim"], act_dim=PARAMs["act_dim"],
                                act_limit=PARAMs["act_limit"], hidden_sizes=PARAMs["hidden_sizes"])
 Pi.load_state_dict(torch.load(
-    "module_saves/nornn4/70h_48min_2207999steps_policy.ptd", map_location=torch.device(PARAMs["device"])))
+    model_file, map_location=torch.device(PARAMs["device"])))
 Pi.to(device=PARAMs["device"])
 Pi.act_limit = Pi.act_limit.to(device=PARAMs["device"])
 
@@ -111,8 +85,9 @@ def preNNinput(NNinput: tuple, obs_sur_dim: int, max_obs: int, device):
 ###########################################################
 # init environment get initial observation
 # init model
+MODE, mode = 0, 0
 Nrobot, robot_text, obs_text, obs, target_mode = SMLT.EC.env_create(
-    MODE=2, mode=0)
+    MODE=MODE, mode=mode)
 
 # actuator_text = SMLT.EC.actuator(Nrobot)
 # text = SMLT.EC.env_text(robot_text, obs_text, actuator_text)
@@ -127,11 +102,6 @@ ep_ret = 0
 ep_len = 0
 
 # config training process
-max_simu_second = 30
-max_ep_len = int(max_simu_second * PARAMs["framerate"])
-num_test_episodes = 15  # no meaning to set it bigger than 15
-max_total_steps = max_ep_len * num_test_episodes
-
 if PARAMs["isrender"]:
     RD = render.Render()
     RD.set_model(SMLT.mjMODEL, SMLT.mjDATA)
@@ -146,7 +116,7 @@ if PARAMs["isdraw"]:
 
 eps_count = 0
 # Main loop: collect experience in env and update/log each epoch
-for t in range(max_total_steps):
+for t in range(PARAMs["max_ep_len"] * num_test_episodes):
 
     a, logp = Pi(o, True, with_logprob=False)
     a = a.cpu().detach().numpy()
@@ -214,9 +184,9 @@ for t in range(max_total_steps):
     o = o2
 
     # End of trajectory handling
-    if (d == 1).all() or (ep_len == max_ep_len):
+    if (d == 1).all() or (ep_len == PARAMs["max_ep_len"]):
         print(
-            f"eps: {eps_count+1}, {Nrobot} robots, ep_ret: {ep_ret:.2f}, ep_len: {ep_len}, Nreach: {d.sum()}")
+            f"eps: {eps_count+1}, {Nrobot} robots, mode: {MODE}_{mode}, ep_ret: {ep_ret:.2f}, ep_len: {ep_len}, Nreach: {d.sum()}")
         # TODO change environment according to t
         if eps_count > num_test_episodes - 1:
             break
@@ -255,6 +225,7 @@ for t in range(max_total_steps):
         if eps_count == 14:
             MODE, mode = 2, 4
         eps_count += 1
+
         Nrobot, robot_text, obs_text, obs, target_mode = SMLT.EC.env_create(
             MODE=MODE, mode=mode)
         pos_vel, observation, r, NNinput, d, dpre = SMLT.set_model(
