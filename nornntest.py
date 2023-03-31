@@ -36,7 +36,7 @@ importlib.reload(render)
 importlib.reload(videoIO)
 importlib.reload(simulator_cpp)
 
-model_file = "module_saves/nornn5/36h_26min_2239999steps_policy.ptd"
+model_file = "module_saves/nornn6/42h_40min_2199999steps_5825733updates_policy.ptd"
 num_test_episodes = 15  # no meaning to set it bigger than 15
 PARAMs["isrender"] = True
 PARAMs["isdraw"] = True
