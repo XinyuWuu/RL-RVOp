@@ -73,11 +73,16 @@ def preNNinput(NNinput: tuple, obs_sur_dim: int, max_obs: int, device):
     Osur = np.ones((NNinput[0].__len__(), max_obs,
                     obs_sur_dim + 1), dtype=np.float32) * 2 * SMLT.dmax
     for Nth in range(NNinput[0].__len__()):
-        total_len = NNinput[1][Nth].__len__()
+        true_len = min(NNinput[1][Nth].__len__(), max_obs)
+        if true_len==0:
+            continue
+        Osur[Nth][0:true_len] = np.hstack(
+            [np.zeros((true_len, 1)), NNinput[1][Nth][0:true_len]])
+        # total_len = NNinput[1][Nth].__len__()
         # idxs = list(range(total_len))
         # idxs.sort(key=lambda i: norm(NNinput[1][Nth][i][6:8]))
-        for iobs in range(min(total_len, max_obs)):
-            Osur[Nth][iobs] = [0] + NNinput[1][Nth][iobs]
+        # for iobs in range(min(total_len, max_obs)):
+        #     Osur[Nth][iobs] = [0] + NNinput[1][Nth][iobs]
 
     return torch.as_tensor(np.array([np.hstack([NNinput[0][Nth], Osur[Nth].flatten()]) for Nth in range(NNinput[0].__len__())]), dtype=torch.float32, device=device)
 
