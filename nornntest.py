@@ -55,7 +55,7 @@ SMLT.set_reward(vmax=PARAMs["vmax"], rmax=PARAMs["rmax"], tolerance=PARAMs["tole
                 a=PARAMs["a"], b=PARAMs["b"], c=PARAMs["c"], d=PARAMs["d"], e=PARAMs["e"],
                 f=PARAMs["f"], g=PARAMs["g"], eta=PARAMs["eta"],
                 h=PARAMs["h"], mu=PARAMs["mu"], rreach=PARAMs["rreach"],
-                remix=PARAMs["remix"],rm_middle=PARAMs["rm_middle"])
+                remix=PARAMs["remix"], rm_middle=PARAMs["rm_middle"], dmax=PARAMs["dmax"], w=PARAMs["w"])
 
 font = ImageFont.truetype(
     "/usr/share/fonts/truetype/freefont/FreeMonoBold.ttf", 25)
@@ -75,7 +75,7 @@ def preNNinput(NNinput: tuple, obs_sur_dim: int, max_obs: int, device):
                     obs_sur_dim + 1), dtype=np.float32) * 2 * SMLT.dmax
     for Nth in range(NNinput[0].__len__()):
         true_len = min(NNinput[1][Nth].__len__(), max_obs)
-        if true_len==0:
+        if true_len == 0:
             continue
         Osur[Nth][0:true_len] = np.hstack(
             [np.zeros((true_len, 1)), NNinput[1][Nth][0:true_len]])
