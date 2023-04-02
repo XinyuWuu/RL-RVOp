@@ -6,11 +6,13 @@
         "./stub"
     ],
     "search.exclude": {
+        "**/env": true,
         "**/envs": true,
         "**/envs1": true,
         "**/.mypy_cache": true
     },
     "files.watcherExclude": {
+        "**/env/**": true,
         "**/envs/**": true,
         "**/envs1/**": true,
         "**/.mypy_cache/**": true,
