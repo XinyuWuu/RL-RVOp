@@ -45,9 +45,9 @@ class Simulator():
                    a=2.0, b=1.0, c=10.0,
                    d=1.0, e=1.0, f=20.0,
                    g=1.0, eta=0.5,
-                   h=0.5, mu=0.75, rreach=30):
+                   h=0.5, mu=0.75, rreach=30, remix=True, rm_middle=5):
         self.OBS.set_reward(robot_r=self.robot_r, vmax=vmax, rmax=rmax, tolerance=tolerance,
-                            a=a, b=b, c=c, d=d, e=e, f=f, g=g, eta=eta, h=h, mu=mu)
+                            a=a, b=b, c=c, d=d, e=e, f=f, g=g, eta=eta, h=h, mu=mu, remix=remix, rm_middle=rm_middle)
         self.rreach = rreach
 
     def set_model(self, Nrobot=0, robot_text="", obs_text="", obs=[], target_type='circle'):

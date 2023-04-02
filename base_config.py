@@ -21,6 +21,8 @@ PARAMs = {
     "dmax": 3.0,
     "vmax": 1.0,
     "tau": 0.5,
+    "remix": True,
+    "rm_middle" : 5,
     "device": "cuda",
     "gamma": 0.99,
     "polyak": 0.995,

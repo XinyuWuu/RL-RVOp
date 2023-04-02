@@ -54,7 +54,8 @@ SMLT = simulator_cpp.Simulator(
 SMLT.set_reward(vmax=PARAMs["vmax"], rmax=PARAMs["rmax"], tolerance=PARAMs["tolerance"],
                 a=PARAMs["a"], b=PARAMs["b"], c=PARAMs["c"], d=PARAMs["d"], e=PARAMs["e"],
                 f=PARAMs["f"], g=PARAMs["g"], eta=PARAMs["eta"],
-                h=PARAMs["h"], mu=PARAMs["mu"], rreach=PARAMs["rreach"])
+                h=PARAMs["h"], mu=PARAMs["mu"], rreach=PARAMs["rreach"],
+                remix=PARAMs["remix"],rm_middle=PARAMs["rm_middle"])
 
 font = ImageFont.truetype(
     "/usr/share/fonts/truetype/freefont/FreeMonoBold.ttf", 25)
@@ -127,14 +128,14 @@ for t in range(PARAMs["max_ep_len"] * num_test_episodes):
     a = a.cpu().detach().numpy()
 
     # Step the env
-    # aglobal = a.copy()
+    aglobal = a.copy()
     onumpy = o.cpu().detach().numpy()
-    # for Nth in range(SMLT.Nrobot):
-    #     aglobal[Nth] = np.matmul(
-    #         np.array([[np.cos(pos_vel[Nth][2]), -np.sin(pos_vel[Nth][2])],
-    #                   [np.sin(pos_vel[Nth][2]), np.cos(pos_vel[Nth][2])]]),
-    #         aglobal[Nth]
-    #     )
+    for Nth in range(SMLT.Nrobot):
+        aglobal[Nth] = np.matmul(
+            np.array([[np.cos(pos_vel[Nth][2]), -np.sin(pos_vel[Nth][2])],
+                      [np.sin(pos_vel[Nth][2]), np.cos(pos_vel[Nth][2])]]),
+            aglobal[Nth]
+        )
     # # aglobal[Nth] = np.matmul(
     #     np.array([[np.cos(pos_vel[Nth][2]), -np.sin(pos_vel[Nth][2])],
     #               [np.sin(pos_vel[Nth][2]), np.cos(pos_vel[Nth][2])]]),
@@ -169,8 +170,8 @@ for t in range(PARAMs["max_ep_len"] * num_test_episodes):
             CV.draw_line(pos_vel[i][0:2], pos_vel[i]
                          [0:2] + aglobal[i], "green", 2)
             # draw target
-            # CV.draw_line(pos_vel[i][0:2], np.matmul(
-            #     tranM, oi[0:2]) + pos_vel[i][0:2])
+            CV.draw_line(pos_vel[i][0:2], np.matmul(
+                tranM, oi[0:2]) + pos_vel[i][0:2])
             for o in range(min(observation[i].__len__(), PARAMs["max_obs"])):
                 o2draw = oi[5 + o * 11:5 + o * 11 + 8]
                 o2draw[0:2] = np.matmul(tranM, o2draw[0:2])

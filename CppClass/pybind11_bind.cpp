@@ -42,7 +42,7 @@ PYBIND11_MODULE(Observator, m)
          .def("set_model", &OBS::Observator::set_model, "set contours and targets",
               py::arg("contours"), py::arg("target"))
          .def("set_reward", &OBS::Observator::set_reward, "set reward paramters",
-              "robot_r"_a, "vmax"_a, "rmax"_a, "tolerance"_a, "a"_a, "b"_a, "c"_a, "d"_a, "e"_a, "f"_a, "g"_a, "eta"_a, "h"_a, "mu"_a)
+              "robot_r"_a, "vmax"_a, "rmax"_a, "tolerance"_a, "a"_a, "b"_a, "c"_a, "d"_a, "e"_a, "f"_a, "g"_a, "eta"_a, "h"_a, "mu"_a, "remix"_a, "rm_middle"_a)
          .def("change_robot", &OBS::Observator::change_robot, "change robot dmax and radius",
               py::arg("dmax"), py::arg("robot_r"))
          .def("get_obs", &OBS::Observator::get_obs, "get observations",
