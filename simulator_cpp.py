@@ -74,21 +74,24 @@ class Simulator():
             self.target = -array(self.qpos)[:, 0:2]
 
         self.OBS.set_model(self.contours, self.target)
+        self.pos_vel = zeros((self.Nrobot, 6))
         self.d = np.zeros((self.Nrobot))
         self.dpre = self.d.copy()
         return self.step(np.zeros((2 * self.Nrobot,)))
 
     def step(self, ctrl: np.ndarray, observe=True):
+        # TODO save action to self.OBS
+
         for Nth in range(self.Nrobot):
             if self.d[Nth] == 1:
                 ctrl[Nth * 2: Nth * 2 + 2] = [0, 0]
         self.mjDATA.ctrl = ctrl
         mj.mj_step(self.mjMODEL, self.mjDATA, self.step_num)
 
-        pos_vel = zeros((self.Nrobot, 6))
+        # pos_vel = zeros((self.Nrobot, 6))
         observation = []
         for j in range(self.Nrobot):
-            pos_vel[j] = array([self.qpos[j][0], self.qpos[j][1],
+            self.pos_vel[j] = array([self.qpos[j][0], self.qpos[j][1],
                                 arctan2(
                                     2 * self.qpos[j][3] * self.qpos[j][6], 1 - 2 * self.qpos[j][6]**2),
                                 self.qvel[j][0], self.qvel[j][1], self.qvel[j][5]], dtype=np.float32)
@@ -96,17 +99,18 @@ class Simulator():
             return array([]), [], array([]), [], array([]), array([])
 
         self.dpre = self.d.copy()
-        self.d = array([1 if norm(self.target[Nth] - pos_vel[Nth][0:2]) <
+        self.d = array([1 if norm(self.target[Nth] - self.pos_vel[Nth][0:2]) <
                         self.dreach else 0
                         for Nth in range(self.Nrobot)])
         self.d = array([1 if self.dpre[i] == 1 or self.d[i] ==
                         1 else 0 for i in range(self.Nrobot)])
 
-        observation, r, NNinput = self.OBS.get_obs(pos_vel)
+        # TODO get action history
+        observation, r, NNinput = self.OBS.get_obs(self.pos_vel)
 
         r = array([r[rNth] + self.rreach if self.d[rNth] == 1 and self.dpre[rNth] ==
                    0 else r[rNth] for rNth in range(self.Nrobot)], dtype=np.float32)
         r = array([0 if self.dpre[rNth] == 1 else r[rNth]
                   for rNth in range(self.Nrobot)], dtype=np.float32)
 
-        return pos_vel, observation, r, NNinput, self.d, self.dpre
+        return self.pos_vel, observation, r, NNinput, self.d, self.dpre

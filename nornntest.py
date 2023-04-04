@@ -35,11 +35,11 @@ importlib.reload(canvas)
 importlib.reload(render)
 importlib.reload(videoIO)
 importlib.reload(simulator_cpp)
-
-model_file = "module_saves/nornn6/42h_40min_2199999steps_5825733updates_policy.ptd"
+PARAMs["hidden_sizes"]=[1024]*4
+model_file = "module_saves/nornn8/44h_35min_1839999steps_4786176updates_policy.ptd"
 num_test_episodes = 15  # no meaning to set it bigger than 15
-# PARAMs["isrender"] = True
-# PARAMs["isdraw"] = True
+PARAMs["isrender"] = True
+PARAMs["isdraw"] = True
 torch.manual_seed(PARAMs["seed"])
 np.random.seed(PARAMs["seed"])
 random.seed(PARAMs["seed"])
@@ -122,7 +122,7 @@ if PARAMs["isdraw"]:
 
 eps_count = 0
 # Main loop: collect experience in env and update/log each epoch
-for t in range(PARAMs["max_ep_len"] * num_test_episodes):
+for t in range(PARAMs["max_ep_len"] * (num_test_episodes + 1)):
 
     a, logp = Pi(o, True, with_logprob=False)
     a = a.cpu().detach().numpy()
