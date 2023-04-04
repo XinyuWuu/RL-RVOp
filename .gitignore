@@ -3,6 +3,7 @@ __pycache__
 .vscode/
 assets/*
 !/assets/robot.xml
+env/
 envs/
 envs1/
 stub/

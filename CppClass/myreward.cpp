@@ -32,7 +32,7 @@ namespace RWD
                                 posvels[Nth][4] / this->vmax,
                                 o[6] / lenvnear,
                                 o[7] / lenvnear);
-                if (o[15] > 1000)
+                if (o[16] < 0)
                 {
                     // static obstacle
                     // obs
@@ -66,10 +66,42 @@ namespace RWD
                 }
             }
         }
-        return r;
+        if (!this->remix)
+        {
+            return r;
+        }
+        else
+        {
+            std::vector<double> r_m(Nrobot);
+            int remix_count = 0;
+            double remix_sum = 0.0;
+            double weight_sum = 0.0;
+            double weight = 0.0;
+            for (size_t Nth = 0; Nth < Nrobot; Nth++)
+            {
+                remix_count = 0;
+                remix_sum = 0.0;
+                weight_sum = 0.0;
+                for (const obs_t &o : observations[Nth])
+                {
+                    if (o[16] > -0.5)
+                    {
+                        remix_count += 1;
+                        weight = w * (this->dmax - NORM(o[6], o[7])) / this->dmax + 1;
+                        remix_sum += r[int(o[16])] * weight;
+                        weight_sum += weight;
+                    }
+                }
+                remix_sum /= weight_sum ? remix_count != 0 : 1;
+                remix_count = this->rm_middle ? this->rm_middle < remix_count : remix_count;
+                r_m[Nth] = r[Nth] * this->rm_middle / (this->rm_middle + remix_count) +
+                           remix_sum * remix_count / (this->rm_middle + remix_count);
+            }
+            return r_m;
+        }
     }
     Reward::Reward() {}
-    Reward::Reward(double robot_r, double vmax, double rmax, double tolerance, double a, double b, double c, double d, double e, double f, double g, double eta, double h, double mu)
+    Reward::Reward(double robot_r, double vmax, double rmax, double tolerance, double a, double b, double c, double d, double e, double f, double g, double eta, double h, double mu, bool remix, int rm_middle, double dmax, double w)
     {
         this->robot_r = robot_r;
         this->vmax = vmax;
@@ -85,6 +117,10 @@ namespace RWD
         this->h = h;
         this->eta = eta;
         this->mu = mu;
+        this->remix = remix;
+        this->rm_middle = rm_middle;
+        this->dmax = dmax;
+        this->w = w;
     }
 
     Reward::~Reward()

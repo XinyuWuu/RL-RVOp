@@ -38,8 +38,9 @@ typedef std::vector<posvel_t> posvels_t;
 //     vector3d pos;
 //     vector3d vel;
 //     point_t target;
+//     int id;
 // };
-typedef std::array<double, 16> obs_t;
+typedef std::array<double, 17> obs_t;
 typedef std::vector<obs_t> observation_t;
 typedef std::vector<observation_t> observations_t;
 // struct contour_t

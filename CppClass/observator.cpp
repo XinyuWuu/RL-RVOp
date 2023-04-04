@@ -16,10 +16,10 @@ namespace OBS
         this->contours = contours;
         this->target = target;
     }
-    void Observator::set_reward(double robot_r, double vmax, double rmax, double tolerance, double a, double b, double c, double d, double e, double f, double g, double eta, double h, double mu)
+    void Observator::set_reward(double robot_r, double vmax, double rmax, double tolerance, double a, double b, double c, double d, double e, double f, double g, double eta, double h, double mu, bool remix, int rm_middle, double dmax, double w)
     {
         this->Rwd = RWD::Reward(robot_r = robot_r, vmax = vmax, rmax = rmax, tolerance = tolerance,
-                                a = a, b = b, c = c, d = d, e = e, f = f, g = g, eta = eta, h = h, mu = mu);
+                                a = a, b = b, c = c, d = d, e = e, f = f, g = g, eta = eta, h = h, mu = mu, remix = remix, rm_middle = rm_middle, dmax = dmax, w = w);
     }
 
     void Observator::change_robot(double dmax, double robot_r)
@@ -52,7 +52,7 @@ namespace OBS
                 {
                     continue;
                 }
-                obs[15] = 10000000;
+                obs[16] = -1;
                 observations[j].push_back(obs);
                 // observations[j]
                 //     .push_back(
@@ -102,6 +102,7 @@ namespace OBS
                 obs[13] = posvels[i][5];
                 obs[14] = target[i][0];
                 obs[15] = target[i][1];
+                obs[16] = i;
                 // observations[j].push_back(obs_t{this->RVOplus(lines_t{}, arcs_t{arc_t{posvel[i][0], posvel[i][0], 2 * robot_r, posvel[i][0] - 2 * robot_r, posvel[i][0], posvel[i][0] + 2 * robot_r, posvel[i][0], posvel[i][0], posvel[i][0] + 2 * robot_r}, arc_t{posvel[i][0], posvel[i][0], 2 * robot_r, posvel[i][0] - 2 * robot_r, posvel[i][0], posvel[i][0] + 2 * robot_r, posvel[i][0], posvel[i][0], posvel[i][0] - 2 * robot_r}}, point_t{posvel[j][0], posvel[j][1]}, point_t{posvel[j][3], posvel[j][4]}, point_t{posvel[i][3], posvel[i][4]}), vector3d{posvel[i][0], posvel[i][1], posvel[i][2]}, vector3d{posvel[i][3], posvel[i][4], posvel[i][5]}, this->target[i]});
                 observations[j].push_back(obs);
             }
@@ -148,7 +149,7 @@ namespace OBS
                 obs_sur[6] = tranM[0][0] * o[6] + tranM[0][1] * o[7];
                 obs_sur[7] = tranM[1][0] * o[6] + tranM[1][1] * o[7];
 
-                if (o[15] > 1000)
+                if (o[16] < 0)
                 {
                     // static obstacle
                     obs_sur[8] = 0;

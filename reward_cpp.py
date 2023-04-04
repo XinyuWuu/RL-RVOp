@@ -33,7 +33,7 @@ class Reward():
                             vel=pos_vel[Nth][3:5],
                             target=target[Nth])
             for o in observation[Nth]:
-                if o[15] > 1000:
+                if o[16] < -1:
                     # static obstacle
                     # collision
                     r[Nth] = r[Nth] + \

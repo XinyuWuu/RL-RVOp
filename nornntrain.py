@@ -51,7 +51,8 @@ SMLT = simulator_cpp.Simulator(
 SMLT.set_reward(vmax=PARAMs["vmax"], rmax=PARAMs["rmax"], tolerance=PARAMs["tolerance"],
                 a=PARAMs["a"], b=PARAMs["b"], c=PARAMs["c"], d=PARAMs["d"], e=PARAMs["e"],
                 f=PARAMs["f"], g=PARAMs["g"], eta=PARAMs["eta"],
-                h=PARAMs["h"], mu=PARAMs["mu"], rreach=PARAMs["rreach"])
+                h=PARAMs["h"], mu=PARAMs["mu"], rreach=PARAMs["rreach"],
+                remix=PARAMs["remix"], rm_middle=PARAMs["rm_middle"], dmax=PARAMs["dmax"], w=PARAMs["w"])
 
 # cofig SAC
 SAC = nornnsac.SAC(obs_dim=PARAMs["obs_dim"], act_dim=PARAMs["act_dim"], act_limit=PARAMs["act_limit"],
@@ -68,11 +69,16 @@ def preNNinput(NNinput: tuple, obs_sur_dim: int, max_obs: int, device):
     Osur = np.ones((NNinput[0].__len__(), max_obs,
                     obs_sur_dim + 1), dtype=np.float32) * 2 * SMLT.dmax
     for Nth in range(NNinput[0].__len__()):
-        total_len = NNinput[1][Nth].__len__()
+        true_len = min(NNinput[1][Nth].__len__(), max_obs)
+        if true_len == 0:
+            continue
+        Osur[Nth][0:true_len] = np.hstack(
+            [np.zeros((true_len, 1)), NNinput[1][Nth][0:true_len]])
+        # total_len = NNinput[1][Nth].__len__()
         # idxs = list(range(total_len))
         # idxs.sort(key=lambda i: norm(NNinput[1][Nth][i][6:8]))
-        for iobs in range(min(total_len, max_obs)):
-            Osur[Nth][iobs] = [0] + NNinput[1][Nth][iobs]
+        # for iobs in range(min(total_len, max_obs)):
+        #     Osur[Nth][iobs] = [0] + NNinput[1][Nth][iobs]
 
     return torch.as_tensor(np.array([np.hstack([NNinput[0][Nth], Osur[Nth].flatten()]) for Nth in range(NNinput[0].__len__())]), dtype=torch.float32, device=device)
 
@@ -95,7 +101,7 @@ start_time = time.time()
 time_for_NN_update = 0
 time_for_step = 0
 NN_update_count = 0
-max_ret=0
+max_ret = 0
 # Main loop: collect experience in env and update/log each epoch
 for t in range(PARAMs["total_steps"]):
 

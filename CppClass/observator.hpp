@@ -19,7 +19,7 @@ namespace OBS
         OBSreturn get_obs(posvels_t posvels);
         void get_NNinput(const posvels_t &posvels, const observations_t &observations, const points_t &target, NNinput_t &NNinput);
         void set_model(contours_t contours, points_t target);
-        void set_reward(double robot_r, double vmax, double rmax, double tolerance, double a, double b, double c, double d, double e, double f, double g, double eta, double h, double mu);
+        void set_reward(double robot_r, double vmax, double rmax, double tolerance, double a, double b, double c, double d, double e, double f, double g, double eta, double h, double mu, bool remix, int rm_middle, double dmax, double w);
         void change_robot(double dmax, double robot_r);
         Observator(/* args */);
         Observator(double dmax, double robot_r);
