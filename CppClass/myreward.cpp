@@ -119,7 +119,7 @@ namespace RWD
         this->mu = mu;
         this->remix = remix;
         this->rm_middle = rm_middle;
-        this->selfw = this->rm_middle * 2;
+        this->selfw = this->rm_middle * 3;
         this->dmax = dmax;
         this->w = w;
     }
