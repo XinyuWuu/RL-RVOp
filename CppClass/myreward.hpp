@@ -11,6 +11,7 @@ namespace RWD
         double robot_r, vmax, rmax, tolerance, a, b, c, d, e, f, g, h, eta, mu;
         bool remix;
         int rm_middle;
+        double selfw;
         double dmax, w;
 
     public:

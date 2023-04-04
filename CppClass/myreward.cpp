@@ -94,8 +94,8 @@ namespace RWD
                 }
                 remix_sum /= weight_sum ? remix_count != 0 : 1;
                 remix_count = this->rm_middle ? this->rm_middle < remix_count : remix_count;
-                r_m[Nth] = r[Nth] * this->rm_middle / (this->rm_middle + remix_count) +
-                           remix_sum * remix_count / (this->rm_middle + remix_count);
+                r_m[Nth] = r[Nth] * this->selfw / (this->selfw + remix_count) +
+                           remix_sum * remix_count / (this->selfw + remix_count);
             }
             return r_m;
         }
@@ -119,6 +119,7 @@ namespace RWD
         this->mu = mu;
         this->remix = remix;
         this->rm_middle = rm_middle;
+        this->selfw = this->rm_middle * 3;
         this->dmax = dmax;
         this->w = w;
     }
