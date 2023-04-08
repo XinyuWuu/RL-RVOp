@@ -123,8 +123,10 @@ for t in range(PARAMs["total_steps"]):
     #         aglobal[Nth]
     #     )
     # ctrl = CCcpp.v2ctrlbatchG(posvels=pos_vel, vs=aglobal)
-    ctrl = CCcpp.v2ctrlbatchL(posvels=pos_vel, vs=a)
-    pos_vel, observation, r, NNinput, d, dpre = SMLT.step(ctrl)
+    # ctrl = CCcpp.v2ctrlbatchL(posvels=pos_vel, vs=a)
+    # pos_vel, observation, r, NNinput, d, dpre = SMLT.step(ctrl)
+    pos_vel, observation, r, NNinput, d, dpre = SMLT.step(
+        a, isvs=True, CCcpp=CCcpp)
     o2 = preNNinput(NNinput, PARAMs["obs_sur_dim"],
                     PARAMs["max_obs"], PARAMs["device"])
     ep_ret += r.mean()

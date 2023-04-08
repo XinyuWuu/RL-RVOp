@@ -15,6 +15,7 @@ from numpy import array, arctan2, flipud, zeros
 from numpy.linalg import norm
 import mujoco as mj
 import reward
+from CppClass.CtrlConverter import CtrlConverter
 
 importlib.reload(envCreator)
 importlib.reload(contourGenerator)
@@ -79,22 +80,35 @@ class Simulator():
         self.dpre = self.d.copy()
         return self.step(np.zeros((2 * self.Nrobot,)))
 
-    def step(self, ctrl: np.ndarray, observe=True):
+    def step(self, ctrl: np.ndarray, observe=True, isvs=False, CCcpp=CtrlConverter(1, 0.5)):
         # TODO save action to self.OBS
+        if not isvs:
+            for Nth in range(self.Nrobot):
+                if self.d[Nth] == 1:
+                    ctrl[Nth * 2: Nth * 2 + 2] = [0, 0]
+            self.mjDATA.ctrl = ctrl
+            mj.mj_step(self.mjMODEL, self.mjDATA, self.step_num)
+            for j in range(self.Nrobot):
+                    self.pos_vel[j] = array([self.qpos[j][0], self.qpos[j][1],
+                                            arctan2(
+                                            2 * self.qpos[j][3] * self.qpos[j][6], 1 - 2 * self.qpos[j][6]**2),
+                        self.qvel[j][0], self.qvel[j][1], self.qvel[j][5]], dtype=np.float32)
+        else:
+            _ctrl = ctrl.copy()
+            for Nth in range(self.Nrobot):
+                if self.d[Nth] == 1:
+                    _ctrl[Nth] = [0, 0]
+            for t_step in range(int(self.step_num / 5)):
+                self.mjDATA.ctrl = CCcpp.v2ctrlbatchL(
+                    posvels=self.pos_vel, vs=_ctrl)
+                mj.mj_step(self.mjMODEL, self.mjDATA, 5)
+                for j in range(self.Nrobot):
+                    self.pos_vel[j] = array([self.qpos[j][0], self.qpos[j][1],
+                                            arctan2(
+                                            2 * self.qpos[j][3] * self.qpos[j][6], 1 - 2 * self.qpos[j][6]**2),
+                        self.qvel[j][0], self.qvel[j][1], self.qvel[j][5]], dtype=np.float32)
 
-        for Nth in range(self.Nrobot):
-            if self.d[Nth] == 1:
-                ctrl[Nth * 2: Nth * 2 + 2] = [0, 0]
-        self.mjDATA.ctrl = ctrl
-        mj.mj_step(self.mjMODEL, self.mjDATA, self.step_num)
-
-        # pos_vel = zeros((self.Nrobot, 6))
         observation = []
-        for j in range(self.Nrobot):
-            self.pos_vel[j] = array([self.qpos[j][0], self.qpos[j][1],
-                                arctan2(
-                                    2 * self.qpos[j][3] * self.qpos[j][6], 1 - 2 * self.qpos[j][6]**2),
-                                self.qvel[j][0], self.qvel[j][1], self.qvel[j][5]], dtype=np.float32)
         if not observe:
             return array([]), [], array([]), [], array([]), array([])
 
