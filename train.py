@@ -29,8 +29,6 @@ import sac
 import importlib
 from base_config import PARAMs
 
-PARAMs["random_steps"] = 10
-
 importlib.reload(sac)
 importlib.reload(envCreator)
 importlib.reload(contourGenerator)
@@ -50,7 +48,7 @@ torch.set_num_threads(torch.get_num_threads())
 CCcpp = CtrlConverter(vmax=PARAMs["vmax"], tau=PARAMs["tau"])
 PARAMs["rmax"] = CCcpp.get_rmax()
 SMLT = simulator_cpp.Simulator(
-    dmax=PARAMs["dmax"], framerate=PARAMs["framerate"], dreach=PARAMs["dreach"])
+    dmax=PARAMs["dmax"], framerate=PARAMs["framerate"], dreach=PARAMs["dreach"], obs_reverse=True)
 SMLT.set_reward(vmax=PARAMs["vmax"], rmax=PARAMs["rmax"], tolerance=PARAMs["tolerance"],
                 a=PARAMs["a"], b=PARAMs["b"], c=PARAMs["c"], d=PARAMs["d"], e=PARAMs["e"],
                 f=PARAMs["f"], g=PARAMs["g"], eta=PARAMs["eta"],
@@ -77,7 +75,7 @@ def preNNinput(NNinput: tuple, max_obs: int, device):
             0:min(total_len, max_obs)]
 
     return [torch.hstack([torch.broadcast_to(tensor(NNinput[0][Nth], dtype=torch.float32), (NNinput[1][Nth].shape[0], NNinput[0][Nth].__len__())),
-                       NNinput[1][Nth]])
+                          NNinput[1][Nth]])
             for Nth in np.arange(NNinput[0].__len__())]
 
 

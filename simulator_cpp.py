@@ -29,10 +29,11 @@ importlib.reload(ctrlConverter)
 
 class Simulator():
 
-    def __init__(self, robot_r=0.17, dmax=4.0, framerate=50, dreach=0.02):
+    def __init__(self, robot_r=0.17, dmax=4.0, framerate=50, dreach=0.02, obs_reverse=False):
         self.robot_r = robot_r
         self.dmax = dmax
         self.dreach = dreach
+        self.obs_reverse = obs_reverse
         self.EC = envCreator.EnvCreator()
         self.CG = contourGenerator.ContourGenrator(self.robot_r)
         self.OBS = Observator(self.dmax, self.robot_r)
@@ -89,10 +90,10 @@ class Simulator():
             self.mjDATA.ctrl = ctrl
             mj.mj_step(self.mjMODEL, self.mjDATA, self.step_num)
             for j in range(self.Nrobot):
-                    self.pos_vel[j] = array([self.qpos[j][0], self.qpos[j][1],
-                                            arctan2(
-                                            2 * self.qpos[j][3] * self.qpos[j][6], 1 - 2 * self.qpos[j][6]**2),
-                        self.qvel[j][0], self.qvel[j][1], self.qvel[j][5]], dtype=np.float32)
+                self.pos_vel[j] = array([self.qpos[j][0], self.qpos[j][1],
+                                        arctan2(
+                                        2 * self.qpos[j][3] * self.qpos[j][6], 1 - 2 * self.qpos[j][6]**2),
+                    self.qvel[j][0], self.qvel[j][1], self.qvel[j][5]], dtype=np.float32)
         else:
             _ctrl = ctrl.copy()
             for Nth in range(self.Nrobot):
@@ -120,7 +121,8 @@ class Simulator():
                         1 else 0 for i in range(self.Nrobot)])
 
         # TODO get action history
-        observation, r, NNinput = self.OBS.get_obs(self.pos_vel)
+        observation, r, NNinput = self.OBS.get_obs(
+            self.pos_vel, self.obs_reverse)
 
         r = array([r[rNth] + self.rreach if self.d[rNth] == 1 and self.dpre[rNth] ==
                    0 else r[rNth] for rNth in range(self.Nrobot)], dtype=np.float32)
