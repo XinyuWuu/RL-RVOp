@@ -35,11 +35,12 @@ importlib.reload(canvas)
 importlib.reload(render)
 importlib.reload(videoIO)
 importlib.reload(simulator_cpp)
-
-model_file = "module_saves/nornn6/42h_40min_2199999steps_5825733updates_policy.ptd"
+# PARAMs["hidden_sizes"] = [1024] * 4
+model_file = "module_saves/nornn12/41h_42min_2159999steps_5719571updates_policy.ptd"
+vf_start = "module_saves/nornn12/"
 num_test_episodes = 15  # no meaning to set it bigger than 15
-# PARAMs["isrender"] = True
-# PARAMs["isdraw"] = True
+PARAMs["isrender"] = True
+PARAMs["isdraw"] = True
 torch.manual_seed(PARAMs["seed"])
 np.random.seed(PARAMs["seed"])
 random.seed(PARAMs["seed"])
@@ -113,16 +114,16 @@ if PARAMs["isrender"]:
     RD.set_model(SMLT.mjMODEL, SMLT.mjDATA)
     RD.switchCam()
     videofp = videoIO.VideoIO(
-        "assets/video.mp4", SMLT.framerate, codec=PARAMs["codec"])
+        "assets/video.mp4", SMLT.framerate, codec=PARAMs["codec"], vf_start=vf_start)
 
 if PARAMs["isdraw"]:
     CV = canvas.Canvas(w=16, h=16)
     canvasfp = videoIO.VideoIO(
-        "assets/video_canvas.mp4", SMLT.framerate, codec=PARAMs["codec"], w=CV.w * CV.dpi, h=CV.h * CV.dpi)
+        "assets/video_canvas.mp4", SMLT.framerate, codec=PARAMs["codec"], w=CV.w * CV.dpi, h=CV.h * CV.dpi, vf_start=vf_start)
 
 eps_count = 0
 # Main loop: collect experience in env and update/log each epoch
-for t in range(PARAMs["max_ep_len"] * num_test_episodes):
+for t in range(PARAMs["max_ep_len"] * (num_test_episodes + 1)):
 
     a, logp = Pi(o, True, with_logprob=False)
     a = a.cpu().detach().numpy()
@@ -142,8 +143,10 @@ for t in range(PARAMs["max_ep_len"] * num_test_episodes):
     #     onumpy[Nth][0:2] / norm(onumpy[Nth][0:2])
     # )
     # ctrl = CCcpp.v2ctrlbatchG(posvels=pos_vel, vs=aglobal)
-    ctrl = CCcpp.v2ctrlbatchL(posvels=pos_vel, vs=a)
-    pos_vel, observation, r, NNinput, d, dpre = SMLT.step(ctrl)
+    # ctrl = CCcpp.v2ctrlbatchL(posvels=pos_vel, vs=a)
+    # pos_vel, observation, r, NNinput, d, dpre = SMLT.step(ctrl)
+    pos_vel, observation, r, NNinput, d, dpre = SMLT.step(
+        a, isvs=True, CCcpp=CCcpp)
     o2 = preNNinput(NNinput, PARAMs["obs_sur_dim"],
                     PARAMs["max_obs"], PARAMs["device"])
     ep_ret += r.mean()
@@ -251,8 +254,8 @@ for t in range(PARAMs["max_ep_len"] * num_test_episodes):
             RD.set_model(SMLT.mjMODEL, SMLT.mjDATA)
             RD.switchCam()
             videofp = videoIO.VideoIO(
-                "", SMLT.framerate, codec=PARAMs["codec"])
+                "", SMLT.framerate, codec=PARAMs["codec"], vf_start=vf_start)
 
         if PARAMs["isdraw"]:
             canvasfp = videoIO.VideoIO(
-                "", SMLT.framerate, codec=PARAMs["codec"], w=CV.w * CV.dpi, h=CV.h * CV.dpi, vf_end="draw")
+                "", SMLT.framerate, codec=PARAMs["codec"], w=CV.w * CV.dpi, h=CV.h * CV.dpi, vf_end="draw", vf_start=vf_start)
