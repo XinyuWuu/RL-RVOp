@@ -20,8 +20,9 @@ class SAC():
         self.polyak = polyak
         self.lr = lr
         self.Pi = core.Policy(obs_dim, act_dim, act_limit,
-                              rnn_state_size, rnn_layer,bidir)
-        self.Qf1 = core.Qfunc(obs_dim, act_dim, rnn_state_size, rnn_layer,bidir)
+                              rnn_state_size, rnn_layer, bidir)
+        self.Qf1 = core.Qfunc(
+            obs_dim, act_dim, rnn_state_size, rnn_layer, bidir)
         self.Qf2 = core.Qfunc(
             obs_dim, act_dim, rnn_state_size, rnn_layer, bidir)
         self.Qf1_targ = deepcopy(self.Qf1)
@@ -31,7 +32,7 @@ class SAC():
         for p in self.Qf2_targ.parameters():
             p.requires_grad = False
         self.log_alpha = torch.tensor(
-            np.log(alpha), dtype=torch.float32, requires_grad=True,device=device)
+            np.log(alpha), dtype=torch.float32, requires_grad=True, device=device)
         self.alpha = np.exp(self.log_alpha.cpu().detach().numpy())
 
         self.to(device)

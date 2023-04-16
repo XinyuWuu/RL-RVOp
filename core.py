@@ -15,42 +15,32 @@ class Policy(nn.Module):
 
     def __init__(self, obs_dim, act_dim, act_limit, rnn_state_size, rnn_layer, bidir):
         super().__init__()
-        # self.net0 = nn.Sequential(
-        #     nn.Linear(obs_dim, rnn_state_size),
-        #     nn.ReLU(),
-        #     nn.Linear(rnn_state_size, rnn_state_size),
-        #     nn.ReLU(),
-        # )
+        self.bidir = bidir
         self.rnn = nn.GRU(input_size=obs_dim, hidden_size=rnn_state_size,
                           num_layers=rnn_layer, bidirectional=bidir, batch_first=True)
 
-        self.net = nn.Sequential(
-            nn.Linear(2 * rnn_state_size, rnn_state_size),
+        self.net1 = nn.Sequential(
+            nn.Linear((2 if self.bidir else 1) *
+                      rnn_state_size, 2 * rnn_state_size),
             nn.ReLU(),
-            nn.Linear(rnn_state_size, rnn_state_size),
+            nn.Linear(2 * rnn_state_size, 2 * rnn_state_size),
             nn.ReLU(),
-            nn.Linear(rnn_state_size, rnn_state_size),
+            nn.Linear(2 * rnn_state_size, 2 * rnn_state_size),
             nn.ReLU(),
         )
-        self.mu_layer = nn.Linear(rnn_state_size, act_dim)
-        self.log_std_layer = nn.Linear(rnn_state_size, act_dim)
+
+        self.mu_layer = nn.Linear(2 * rnn_state_size, act_dim)
+        self.log_std_layer = nn.Linear(2 * rnn_state_size, act_dim)
         self.act_limit = torch.tensor(act_limit)
         self.act_limit_prod_log = np.log(self.act_limit.prod())
-        self.bidir = bidir
 
     def forward(self, obs, deterministic=False, with_logprob=True):
-        x0 = rnn_utils.pack_sequence(obs, False)
-        # x1 = rnn_utils.PackedSequence(
-        #     data=self.net0(x0.data),
-        #     batch_sizes=x0.batch_sizes,
-        #     sorted_indices=x0.sorted_indices,
-        #     unsorted_indices=x0.unsorted_indices)
-        h, ht = self.rnn(x0)
-
+        h, ht = self.rnn(obs)
         if self.bidir:
-            y = self.net(torch.concat([ht[-1], ht[-2]], dim=1))
+            x1 = torch.concat([ht[-1], ht[-2]], dim=1)
         else:
-            y = self.net(ht[-1])
+            x1 = ht[-1]
+        y = self.net1(x1)
 
         mu = self.mu_layer(y)
         log_std = self.log_std_layer(y)
@@ -86,40 +76,40 @@ class Qfunc(nn.Module):
 
     def __init__(self, obs_dim, act_dim, rnn_state_size, rnn_layer, bidir):
         super().__init__()
-        # self.net0 = nn.Sequential(
-        #     nn.Linear(obs_dim + act_dim, rnn_state_size),
-        #     nn.ReLU(),
-        #     nn.Linear(rnn_state_size, rnn_state_size),
-        #     nn.ReLU(),
-        # )
-        self.rnn = nn.GRU(input_size=obs_dim + act_dim, hidden_size=rnn_state_size,
+        self.bidir = bidir
+        self.net0 = nn.Sequential(
+            nn.Linear(act_dim, 2 * rnn_state_size),
+            nn.ReLU(),
+            nn.Linear(2 * rnn_state_size, 2 * rnn_state_size),
+            nn.ReLU(),
+            nn.Linear(2 * rnn_state_size,
+                      (2 if self.bidir else 1) * rnn_state_size),
+            nn.ReLU(),
+        )
+
+        self.rnn = nn.GRU(input_size=obs_dim, hidden_size=rnn_state_size,
                           num_layers=rnn_layer, bidirectional=bidir, batch_first=True)
 
-        self.net = nn.Sequential(
-            nn.Linear(2 * rnn_state_size, rnn_state_size),
+        self.net1 = nn.Sequential(
+            nn.Linear((4 if self.bidir else 2) *
+                      rnn_state_size, 2 * rnn_state_size),
             nn.ReLU(),
-            nn.Linear(rnn_state_size, rnn_state_size),
+            nn.Linear(2 * rnn_state_size, 2 * rnn_state_size),
             nn.ReLU(),
-            nn.Linear(rnn_state_size, rnn_state_size),
+            nn.Linear(2 * rnn_state_size, 2 * rnn_state_size),
             nn.ReLU(),
-            nn.Linear(rnn_state_size, 1),
+            nn.Linear(2 * rnn_state_size, 1),
         )
-        self.bidir = bidir
 
     def forward(self, obs, act):
-        obsact = list(map(lambda i: torch.hstack([obs[i], torch.broadcast_to(
-            act[i], (obs[i].shape[0], act[i].shape[0]))]), range(obs.__len__())))
-        obsact = rnn_utils.pack_sequence(obsact, False)
-        # x0 = rnn_utils.PackedSequence(
-        #     data=self.net0(obsact.data),
-        #     batch_sizes=obsact.batch_sizes,
-        #     sorted_indices=obsact.sorted_indices,
-        #     unsorted_indices=obsact.unsorted_indices)
-        h, ht = self.rnn(obsact)
+        h, ht = self.rnn(obs)
+        x1 = self.net0(act)
         if self.bidir:
-            q = self.net(torch.concat([ht[-1], ht[-2]], dim=1))
+            x1 = torch.concat([ht[-1], ht[-2], x1], dim=1)
         else:
-            q = self.net(ht[-1])
+            x1 = torch.concat([ht[-1], x1], dim=1)
+        q = self.net1(x1)
+
         return torch.squeeze(q, -1)  # Critical to ensure q has right shape.
 
 
@@ -161,13 +151,12 @@ class ReplayBufferLite:
     def sample_batch(self, batch_size, device):
         idxs = list(np.random.randint(0, self.size, size=batch_size))
         return dict(
-            obs=[torch.as_tensor(
+            obs=pack_sequence([torch.as_tensor(
                 self.policy_buf1[self.obsbegin_buf[idx]:self.obsend_buf[idx]], dtype=torch.float32
-            ).to(device) for idx in idxs],
-            obs2=[torch.as_tensor(
-                self.policy_buf2[self.obsbegin_buf[idx]
-                    :self.obsend_buf[idx]], dtype=torch.float32
-            ).to(device) for idx in idxs],
+            ) for idx in idxs], False).to(device),
+            obs2=pack_sequence([torch.as_tensor(
+                self.policy_buf2[self.obsbegin_buf[idx]:self.obsend_buf[idx]], dtype=torch.float32
+            ) for idx in idxs], False).to(device),
             act=torch.as_tensor(
                 self.act_buf[idxs], dtype=torch.float32).to(device),
             rew=torch.as_tensor(
