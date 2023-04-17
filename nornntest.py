@@ -1,6 +1,7 @@
 import sys
 if sys.path[0] != '':
     sys.path = [''] + sys.path
+import os
 import mujoco as mj
 from numpy.linalg import norm
 from numpy import array, arctan2, flipud, zeros
@@ -35,9 +36,11 @@ importlib.reload(canvas)
 importlib.reload(render)
 importlib.reload(videoIO)
 importlib.reload(simulator_cpp)
+# PARAMs["framerate"] = 50
+# PARAMs["max_ep_len"] = int(PARAMs["max_simu_second"] * PARAMs["framerate"])
 # PARAMs["hidden_sizes"] = [1024] * 4
-model_file = "module_saves/nornn12/41h_42min_2159999steps_5719571updates_policy.ptd"
-vf_start = "module_saves/nornn12/"
+model_file = "module_saves/nornn18/56h_2min_2839999steps_7737070updates_policy.ptd"
+vf_start = "module_saves/nornn18/"
 num_test_episodes = 15  # no meaning to set it bigger than 15
 PARAMs["isrender"] = True
 PARAMs["isdraw"] = True
@@ -93,6 +96,7 @@ def preNNinput(NNinput: tuple, obs_sur_dim: int, max_obs: int, device):
 # init environment get initial observation
 # init model
 MODE, mode = 0, 0
+SMLT.EC.gate_ratio=1/3
 Nrobot, robot_text, obs_text, obs, target_mode = SMLT.EC.env_create(
     MODE=MODE, mode=mode)
 
@@ -114,14 +118,14 @@ if PARAMs["isrender"]:
     RD.set_model(SMLT.mjMODEL, SMLT.mjDATA)
     RD.switchCam()
     videofp = videoIO.VideoIO(
-        "assets/video.mp4", SMLT.framerate, codec=PARAMs["codec"], vf_start=vf_start)
+        vf_start + "assets/video.mp4", SMLT.framerate, codec=PARAMs["codec"], vf_start=vf_start)
 
 if PARAMs["isdraw"]:
     CV = canvas.Canvas(w=16, h=16)
     canvasfp = videoIO.VideoIO(
-        "assets/video_canvas.mp4", SMLT.framerate, codec=PARAMs["codec"], w=CV.w * CV.dpi, h=CV.h * CV.dpi, vf_start=vf_start)
+        vf_start + "assets/video_canvas.mp4", SMLT.framerate, codec=PARAMs["codec"], w=CV.w * CV.dpi, h=CV.h * CV.dpi, vf_start=vf_start)
 
-eps_count = 0
+eps_count = 14
 # Main loop: collect experience in env and update/log each epoch
 for t in range(PARAMs["max_ep_len"] * (num_test_episodes + 1)):
 
@@ -198,7 +202,7 @@ for t in range(PARAMs["max_ep_len"] * (num_test_episodes + 1)):
         print(
             f"eps: {eps_count+1}, {Nrobot} robots, mode: {MODE}_{mode}, ep_ret: {ep_ret:.2f}, ep_len: {ep_len}, Nreach: {d.sum()}")
         # TODO change environment according to t
-        if eps_count > num_test_episodes - 1:
+        if eps_count > num_test_episodes - 1 or eps_count < -1:
             break
         if eps_count > 14:
             break
@@ -234,7 +238,7 @@ for t in range(PARAMs["max_ep_len"] * (num_test_episodes + 1)):
             MODE, mode = 2, 3
         if eps_count == 14:
             MODE, mode = 2, 4
-        eps_count += 1
+        eps_count -= 1
 
         Nrobot, robot_text, obs_text, obs, target_mode = SMLT.EC.env_create(
             MODE=MODE, mode=mode)

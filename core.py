@@ -1,10 +1,11 @@
 import numpy as np
+from operator import index
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torch.distributions.normal import Normal
 import torch.nn.utils.rnn as rnn_utils
-from torch.nn.utils.rnn import pack_sequence, unpack_sequence
+from torch.nn.utils.rnn import pack_sequence, unpack_sequence, pack_padded_sequence
 
 
 LOG_STD_MAX = 2
@@ -115,32 +116,23 @@ class Qfunc(nn.Module):
 
 class ReplayBufferLite:
     def __init__(self, obs_dim, act_dim, max_obs, max_size):
-        self.obsbegin_buf = np.zeros(max_size, dtype=np.int64)
-        self.obs2begin_buf = np.zeros(max_size, dtype=np.int64)
-        self.obsend_buf = np.zeros(max_size, dtype=np.int64)
-        self.obs2end_buf = np.zeros(max_size, dtype=np.int64)
-
+        self.obs1lens = np.zeros(max_size, dtype=np.int64)
+        self.obs2lens = np.zeros(max_size, dtype=np.int64)
         self.act_buf = np.zeros((max_size, act_dim), dtype=np.float32)
         self.rew_buf = np.zeros(max_size, dtype=np.float32)
         self.done_buf = np.zeros(max_size, dtype=np.float32)
 
         self.policy_buf1 = np.zeros(
-            (max_obs * max_size, obs_dim), dtype=np.float32)
+            (max_size, max_obs, obs_dim), dtype=np.float32)
         self.policy_buf2 = np.zeros(
-            (max_obs * max_size, obs_dim), dtype=np.float32)
-        self.ptr, self.size, self.max_obs, self.max_size = 0, 0, max_obs, max_size - 1
+            (max_size, max_obs, obs_dim), dtype=np.float32)
+        self.ptr, self.size, self.max_obs, self.max_size = 0, 0, max_obs, max_size
 
     def store(self, obs, act, rew, next_obs, done):
-        self.obsend_buf[self.ptr] = obs.shape[0] + \
-            self.obsbegin_buf[self.ptr]
-        self.obs2end_buf[self.ptr] = next_obs.shape[0] + \
-            self.obs2begin_buf[self.ptr]
-
-        self.obsbegin_buf[self.ptr + 1] = self.obsend_buf[self.ptr]
-        self.obs2begin_buf[self.ptr + 1] = self.obs2end_buf[self.ptr]
-
-        self.policy_buf1[self.obsbegin_buf[self.ptr]:self.obsend_buf[self.ptr]] = obs
-        self.policy_buf2[self.obs2begin_buf[self.ptr]:self.obs2end_buf[self.ptr]] = next_obs
+        self.obs1lens[self.ptr] = obs.shape[0]
+        self.obs2lens[self.ptr] = next_obs.shape[0]
+        self.policy_buf1[self.ptr, 0:obs.shape[0]] = obs
+        self.policy_buf2[self.ptr, 0:next_obs.shape[0]] = next_obs
         self.act_buf[self.ptr] = act
         self.rew_buf[self.ptr] = rew
         self.done_buf[self.ptr] = done
@@ -151,12 +143,10 @@ class ReplayBufferLite:
     def sample_batch(self, batch_size, device):
         idxs = list(np.random.randint(0, self.size, size=batch_size))
         return dict(
-            obs=pack_sequence([torch.as_tensor(
-                self.policy_buf1[self.obsbegin_buf[idx]:self.obsend_buf[idx]], dtype=torch.float32
-            ) for idx in idxs], False).to(device),
-            obs2=pack_sequence([torch.as_tensor(
-                self.policy_buf2[self.obsbegin_buf[idx]:self.obsend_buf[idx]], dtype=torch.float32
-            ) for idx in idxs], False).to(device),
+            obs=pack_padded_sequence(
+                torch.as_tensor(self.policy_buf1[idxs]), torch.as_tensor(self.obs1lens[idxs]), True, False).to(device),
+            obs2=pack_padded_sequence(
+                torch.as_tensor(self.policy_buf2[idxs]), torch.as_tensor(self.obs2lens[idxs]), True, False).to(device),
             act=torch.as_tensor(
                 self.act_buf[idxs], dtype=torch.float32).to(device),
             rew=torch.as_tensor(
