@@ -125,6 +125,10 @@ for t in range(PARAMs["total_steps"]):
     # ctrl = CCcpp.v2ctrlbatchG(posvels=pos_vel, vs=aglobal)
     # ctrl = CCcpp.v2ctrlbatchL(posvels=pos_vel, vs=a)
     # pos_vel, observation, r, NNinput, d, dpre = SMLT.step(ctrl)
+    if PARAMs["target_bias"]:
+        for Nth in range(SMLT.Nrobot):
+            a[Nth] = a[Nth] + o[Nth][0:2].cpu().detach().numpy() / \
+                norm(o[Nth][0:2].cpu().detach().numpy())
     pos_vel, observation, r, NNinput, d, dpre = SMLT.step(
         a, isvs=True, CCcpp=CCcpp)
     o2 = preNNinput(NNinput, PARAMs["obs_sur_dim"],
