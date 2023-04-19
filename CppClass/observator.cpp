@@ -27,7 +27,7 @@ namespace OBS
         this->RVOp = RVO::RVOcalculator(dmax, robot_r);
     }
 
-    OBSreturn Observator::get_obs(posvels_t posvels, bool reverse)
+    OBSreturn Observator::get_obs(posvels_t posvels)
     {
 
         observations_t observations;
@@ -107,21 +107,11 @@ namespace OBS
                 observations[j].push_back(obs);
             }
         }
-        if (!reverse)
+
+        for (size_t j = 0; j < posvels.size(); j++)
         {
-            for (size_t j = 0; j < posvels.size(); j++)
-            {
-                std::sort(observations[j].begin(), observations[j].end(), [](obs_t const &a, obs_t const &b)
-                          { return a[6] * a[6] + a[7] * a[7] < b[6] * b[6] + b[7] * b[7]; });
-            }
-        }
-        else
-        {
-            for (size_t j = 0; j < posvels.size(); j++)
-            {
-                std::sort(observations[j].begin(), observations[j].end(), [](obs_t const &a, obs_t const &b)
-                          { return a[6] * a[6] + a[7] * a[7] > b[6] * b[6] + b[7] * b[7]; });
-            }
+            std::sort(observations[j].begin(), observations[j].end(), [](obs_t const &a, obs_t const &b)
+                      { return a[6] * a[6] + a[7] * a[7] < b[6] * b[6] + b[7] * b[7]; });
         }
 
         NNinput_t NNinput{observations_self_t(posvels.size()), observations_sur_t(posvels.size())};
