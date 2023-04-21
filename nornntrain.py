@@ -23,6 +23,7 @@ import numpy as np
 import torch
 from torch import tensor
 from torch.optim import Adam
+from torch.optim.lr_scheduler import ReduceLROnPlateau
 import random
 import nornnsac
 import importlib
@@ -57,6 +58,8 @@ SMLT.set_reward(vmax=PARAMs["vmax"], rmax=PARAMs["rmax"], tolerance=PARAMs["tole
 # cofig SAC
 SAC = nornnsac.SAC(obs_dim=PARAMs["obs_dim"], act_dim=PARAMs["act_dim"], act_limit=PARAMs["act_limit"],
                    hidden_sizes=PARAMs["hidden_sizes"], lr=PARAMs["lr"], gamma=PARAMs["gamma"], polyak=PARAMs["polyak"], alpha=PARAMs["alpha"], device=PARAMs["device"])
+scheduler_pi = ReduceLROnPlateau(SAC.pi_optimizer, 'max', factor=0.2)
+scheduler_q = ReduceLROnPlateau(SAC.q_optimizer, 'max', factor=0.2)
 
 # config replay buffer
 replay_buffer = nornnsac.nornncore.ReplayBufferLite(
@@ -205,6 +208,9 @@ for t in range(PARAMs["total_steps"]):
                        PARAMs["max_obs"], PARAMs["device"])
         eps_ret_ave = eps_ret_ave * \
             PARAMs["ave_factor"] + ep_ret * (1 - PARAMs["ave_factor"])
+        if (t - PARAMs["random_steps"]) > PARAMs["max_ep_len"] * PARAMs["start_schedule"]:
+            scheduler_pi.step(eps_ret_ave)
+            scheduler_q.step(eps_ret_ave)
         ep_ret = 0
         ep_len = 0
 
@@ -224,7 +230,7 @@ for t in range(PARAMs["total_steps"]):
         timeend = time.time()
         time_for_NN_update += timeend - timebegin
         print(
-            f"update {NN_update_count}~{NN_update_count+update_num}; step {t}; {Nrobot} robots:\n\
+            f"update {NN_update_count}~{NN_update_count+update_num}; step {t}; {Nrobot} robots; lr:{SAC.pi_optimizer.param_groups[0]['lr']:.4E},{SAC.q_optimizer.param_groups[0]['lr']:.4E}:\n\
             \tmean losspi: {losspi_log.mean():.4f}; mean lossq: {lossq_log.mean():.4f}; mean alpha: {alpha_log.mean():.4f}\n\
             \ttime for NN update / total time: {time_for_NN_update / (timeend - start_time)*100:.4f} %\n\
             \ttime for step / total time: {time_for_step / (timeend - start_time)*100:.4f} %\n\

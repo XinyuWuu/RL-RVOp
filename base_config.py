@@ -11,6 +11,7 @@ PARAMs = {
     "target_bias": False,
     "gate_ratio": 1 / 3,
     "ave_factor": 0.9,
+    "start_schedule": 100,
     "a": 2,
     "b": 1,
     "c": 10,
