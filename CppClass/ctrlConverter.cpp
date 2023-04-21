@@ -11,8 +11,12 @@ namespace CTRL
     }
     void CtrlConverter::vw2ctrl(const double &vl, const double &w, double *ctrl)
     {
-        ctrl[0] = fmax(-this->rmax, fmin((vl - w / 2 / this->wd) / this->wr, this->rmax)) * this->gain;
-        ctrl[1] = fmax(-this->rmax, fmin((vl + w / 2 / this->wd) / this->wr, this->rmax)) * this->gain;
+        double omega_ctrl = fmax(-this->rmax, fmin(w / 2 / this->wd / this->wr, this->rmax));
+        double speed_ctrl = fmax(-this->rmax + abs(omega_ctrl), fmin(vl / this->wr, this->rmax - abs(omega_ctrl)));
+        // ctrl[0] = fmax(-this->rmax, fmin((vl - w / 2 / this->wd) / this->wr, this->rmax)) * this->gain;
+        // ctrl[1] = fmax(-this->rmax, fmin((vl + w / 2 / this->wd) / this->wr, this->rmax)) * this->gain;
+        ctrl[0] = (speed_ctrl - omega_ctrl) * this->gain;
+        ctrl[1] = (speed_ctrl + omega_ctrl) * this->gain;
     }
     point_t CtrlConverter::v2ctrl(const double ori, const point_t v)
     {
