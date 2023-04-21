@@ -9,6 +9,7 @@ PARAMs = {
     "tolerance": 0.04,
     "rreach": 30.0,
     "target_bias": False,
+    "gate_ratio": 1 / 3,
     "a": 2,
     "b": 1,
     "c": 10,

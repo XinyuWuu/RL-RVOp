@@ -97,7 +97,7 @@ def preNNinput(NNinput: tuple, obs_sur_dim: int, max_obs: int, device):
 # init environment get initial observation
 # init model
 MODE, mode = 0, 0
-SMLT.EC.gate_ratio=1/3
+SMLT.EC.gate_ratio = PARAMs["gate_ratio"]
 Nrobot, robot_text, obs_text, obs, target_mode = SMLT.EC.env_create(
     MODE=MODE, mode=mode)
 
