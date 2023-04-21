@@ -171,7 +171,7 @@ for t in range(PARAMs["total_steps"]):
                 mode = 0
             elif random_num < 0.4:
                 mode = 1
-            elif random_nuSMLT.EC.gate_ratio = PARAMs["gate_ratio"]m < 0.6:
+            elif random_num < 0.6:
                 mode = 2
             elif random_num < 0.8:
                 mode = 3
@@ -216,7 +216,7 @@ for t in range(PARAMs["total_steps"]):
         print(
             f"update {NN_update_count}~{NN_update_count+update_num}; step {t}; {Nrobot} robots:\n\
             \tmean losspi: {losspi_log.mean():.4f}; mean lossq: {lossq_log.mean():.4f}; mean alpha: {alpha_log.mean():.4f}\n\
-            \ttime for NN SMLT.EC.gate_ratio = PARAMs["gate_ratio"]update / total time: {time_for_NN_update / (timeend - start_time)*100:.4f} %\n\
+            \ttime for NN update / total time: {time_for_NN_update / (timeend - start_time)*100:.4f} %\n\
             \ttime for step / total time: {time_for_step / (timeend - start_time)*100:.4f} %\n\
             \tstep per second {(t+1)/time_for_step:.4f},update per second {(NN_update_count+update_num)/time_for_NN_update:.4f}\n\
             \ttotal_time: {int((timeend-start_time)/3600)}h, {int((int(timeend-start_time)%3600)/60)}min;")
