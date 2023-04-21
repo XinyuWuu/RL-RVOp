@@ -39,8 +39,8 @@ importlib.reload(simulator_cpp)
 # PARAMs["framerate"] = 50
 # PARAMs["max_ep_len"] = int(PARAMs["max_simu_second"] * PARAMs["framerate"])
 # PARAMs["hidden_sizes"] = [1024] * 4
-model_file = "module_saves/nornn18/56h_2min_2839999steps_7737070updates_policy.ptd"
-vf_start = "module_saves/nornn18/"
+model_file = "module_saves/nornn21/max_580.29_14robots_38h_15min_2034309steps_5354882updates_policy.ptd"
+vf_start = "module_saves/nornn21/"
 num_test_episodes = 15  # no meaning to set it bigger than 15
 PARAMs["isrender"] = True
 PARAMs["isdraw"] = True
@@ -149,6 +149,9 @@ for t in range(PARAMs["max_ep_len"] * (num_test_episodes + 1)):
     # ctrl = CCcpp.v2ctrlbatchG(posvels=pos_vel, vs=aglobal)
     # ctrl = CCcpp.v2ctrlbatchL(posvels=pos_vel, vs=a)
     # pos_vel, observation, r, NNinput, d, dpre = SMLT.step(ctrl)
+    if PARAMs["target_bias"]:
+        for Nth in range(SMLT.Nrobot):
+            a[Nth] = a[Nth] + onumpy[Nth][0:2] / norm(onumpy[Nth][0:2])
     pos_vel, observation, r, NNinput, d, dpre = SMLT.step(
         a, isvs=True, CCcpp=CCcpp)
     o2 = preNNinput(NNinput, PARAMs["obs_sur_dim"],
