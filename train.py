@@ -98,6 +98,7 @@ time_for_NN_update = 0
 time_for_step = 0
 NN_update_count = 0
 max_ret = 0
+eps_ret_ave = 0
 # Main loop: collect experience in env and update/log each epoch
 for t in range(PARAMs["total_steps"]):
 
@@ -144,7 +145,7 @@ for t in range(PARAMs["total_steps"]):
     # End of trajectory handling
     if (d == 1).all() or (ep_len == PARAMs["max_ep_len"]):
         print(
-            f"t: {t}, {Nrobot} robots, mode: {MODE}_{mode}, ep_ret: {ep_ret:.2f}, ep_len: {ep_len}, Nreach: {d.sum()}, alpha: {SAC.alpha:.4f}")
+            f"t: {t}, {Nrobot} robots, mode: {MODE}_{mode}, ep_ret: {ep_ret:.2f}:{eps_ret_ave:.2f}, ep_len: {ep_len}, Nreach: {d.sum()}, alpha: {SAC.alpha:.4f}")
         # save model
         if (ep_ret * Nrobot > max_ret):
             max_ret = ep_ret * Nrobot
@@ -195,6 +196,8 @@ for t in range(PARAMs["total_steps"]):
         pos_vel, observation, r, NNinput, d, dpre = SMLT.set_model(
             Nrobot, robot_text, obs_text, obs, target_mode)
         o = preNNinput(NNinput, PARAMs["max_obs"], PARAMs["device"])
+        eps_ret_ave = eps_ret_ave * \
+            PARAMs["ave_factor"] + ep_ret * (1 - PARAMs["ave_factor"])
         ep_ret = 0
         ep_len = 0
 
