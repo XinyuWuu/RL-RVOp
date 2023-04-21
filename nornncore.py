@@ -52,7 +52,7 @@ class Policy(nn.Module):
             # Try deriving it yourself as a (very difficult) exercise. :)
             logp_pi = pi_distribution.log_prob(pi_action).sum(axis=-1)
             logp_pi -= (2 * (np.log(2) - pi_action -
-                        F.softplus(-2 * pi_action))).sum(axis=1) + self.act_limit_prod_log
+                        F.softplus(-2 * pi_action))).sum(axis=1)
 
         else:
             logp_pi = None
