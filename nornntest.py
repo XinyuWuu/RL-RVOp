@@ -36,10 +36,11 @@ importlib.reload(canvas)
 importlib.reload(render)
 importlib.reload(videoIO)
 importlib.reload(simulator_cpp)
-# PARAMs["framerate"] = 50
+# PARAMs["framerate"] = 30
 # PARAMs["max_ep_len"] = int(PARAMs["max_simu_second"] * PARAMs["framerate"])
 # PARAMs["hidden_sizes"] = [1024] * 4
-model_file = "module_saves/nornn21/max_580.29_14robots_38h_15min_2034309steps_5354882updates_policy.ptd"
+# PARAMs["target_bias"] = True
+model_file = "module_saves/nornn21/47h_14min_2459999steps_6611142updates_policy.ptd"
 vf_start = "module_saves/nornn21/"
 num_test_episodes = 15  # no meaning to set it bigger than 15
 PARAMs["isrender"] = True
@@ -96,7 +97,7 @@ def preNNinput(NNinput: tuple, obs_sur_dim: int, max_obs: int, device):
 # init environment get initial observation
 # init model
 MODE, mode = 0, 0
-SMLT.EC.gate_ratio=1/3
+SMLT.EC.gate_ratio = PARAMs["gate_ratio"]
 Nrobot, robot_text, obs_text, obs, target_mode = SMLT.EC.env_create(
     MODE=MODE, mode=mode)
 

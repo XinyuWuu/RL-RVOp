@@ -23,6 +23,7 @@ import numpy as np
 import torch
 from torch import tensor
 from torch.optim import Adam
+from torch.optim.lr_scheduler import ReduceLROnPlateau
 from torch.nn.utils.rnn import pack_sequence, unpack_sequence
 import random
 import sac
@@ -58,6 +59,10 @@ SMLT.set_reward(vmax=PARAMs["vmax"], rmax=PARAMs["rmax"], tolerance=PARAMs["tole
 # cofig SAC
 SAC = sac.SAC(obs_dim=PARAMs["obs_self_dim"] + PARAMs["obs_sur_dim"], act_dim=PARAMs["act_dim"], act_limit=PARAMs["act_limit"], rnn_layer=PARAMs["rnn_layer"], bidir=PARAMs["bidir"],
               rnn_state_size=PARAMs["rnn_state_size"], lr=PARAMs["lr"], gamma=PARAMs["gamma"], polyak=PARAMs["polyak"], alpha=PARAMs["alpha"], device=PARAMs["device"])
+scheduler_pi = ReduceLROnPlateau(
+    SAC.pi_optimizer, 'max', factor=0.2, min_lr=PARAMs["min_lr"])
+scheduler_q = ReduceLROnPlateau(
+    SAC.q_optimizer, 'max', factor=0.2, min_lr=PARAMs["min_lr"])
 
 # config replay buffer
 replay_buffer = sac.core.ReplayBufferLite(
@@ -83,6 +88,7 @@ def preNNinput(NNinput: tuple, max_obs: int, device):
 # init environment get initial observation
 # init model
 MODE, mode = 0, 0
+SMLT.EC.gate_ratio = PARAMs["gate_ratio"]
 Nrobot, robot_text, obs_text, obs, target_mode = SMLT.EC.env_create(
     MODE=MODE, mode=mode)
 pos_vel, observation, r, NNinput, d, dpre = SMLT.set_model(
@@ -97,6 +103,7 @@ time_for_NN_update = 0
 time_for_step = 0
 NN_update_count = 0
 max_ret = 0
+eps_ret_ave = 0
 # Main loop: collect experience in env and update/log each epoch
 for t in range(PARAMs["total_steps"]):
 
@@ -143,7 +150,7 @@ for t in range(PARAMs["total_steps"]):
     # End of trajectory handling
     if (d == 1).all() or (ep_len == PARAMs["max_ep_len"]):
         print(
-            f"t: {t}, {Nrobot} robots, mode: {MODE}_{mode}, ep_ret: {ep_ret:.2f}, ep_len: {ep_len}, Nreach: {d.sum()}, alpha: {SAC.alpha:.4f}")
+            f"t: {t}, {Nrobot} robots, mode: {MODE}_{mode}, ep_ret: {ep_ret:.2f}:{eps_ret_ave:.2f}, ep_len: {ep_len}, Nreach: {d.sum()}, alpha: {SAC.alpha:.4f}")
         # save model
         if (ep_ret * Nrobot > max_ret):
             max_ret = ep_ret * Nrobot
@@ -194,6 +201,11 @@ for t in range(PARAMs["total_steps"]):
         pos_vel, observation, r, NNinput, d, dpre = SMLT.set_model(
             Nrobot, robot_text, obs_text, obs, target_mode)
         o = preNNinput(NNinput, PARAMs["max_obs"], PARAMs["device"])
+        eps_ret_ave = eps_ret_ave * \
+            PARAMs["ave_factor"] + ep_ret * (1 - PARAMs["ave_factor"])
+        if (t - PARAMs["random_steps"]) > PARAMs["max_ep_len"] * PARAMs["start_schedule"]:
+            scheduler_pi.step(eps_ret_ave)
+            scheduler_q.step(eps_ret_ave)
         ep_ret = 0
         ep_len = 0
 
@@ -213,7 +225,7 @@ for t in range(PARAMs["total_steps"]):
         timeend = time.time()
         time_for_NN_update += timeend - timebegin
         print(
-            f"update {NN_update_count}~{NN_update_count+update_num}; step {t}; {Nrobot} robots:\n\
+            f"update {NN_update_count}~{NN_update_count+update_num}; step {t}; {Nrobot} robots; lr:{SAC.pi_optimizer.param_groups[0]['lr']:.4E},{SAC.q_optimizer.param_groups[0]['lr']:.4E}:\n\
             \tmean losspi: {losspi_log.mean():.4f}; mean lossq: {lossq_log.mean():.4f}; mean alpha: {alpha_log.mean():.4f}\n\
             \ttime for NN update / total time: {time_for_NN_update / (timeend - start_time)*100:.4f} %\n\
             \ttime for step / total time: {time_for_step / (timeend - start_time)*100:.4f} %\n\
