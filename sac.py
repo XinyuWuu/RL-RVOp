@@ -101,7 +101,7 @@ class SAC():
         #     a, logp = Pi(data['obs'])
         # print(logp.shape)
         loss_alpha = -(self.log_alpha.exp() *
-                       (logp.detach() - self.act_dim / 2)).mean()
+                       (logp.detach() - self.act_dim)).mean()
         self.alpha_optim.zero_grad()
         loss_alpha.backward()
         self.alpha_optim.step()
