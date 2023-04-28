@@ -58,8 +58,10 @@ SMLT.set_reward(vmax=PARAMs["vmax"], rmax=PARAMs["rmax"], tolerance=PARAMs["tole
 # cofig SAC
 SAC = nornnsac.SAC(obs_dim=PARAMs["obs_dim"], act_dim=PARAMs["act_dim"], act_limit=PARAMs["act_limit"],
                    hidden_sizes=PARAMs["hidden_sizes"], lr=PARAMs["lr"], gamma=PARAMs["gamma"], polyak=PARAMs["polyak"], alpha=PARAMs["alpha"], device=PARAMs["device"])
-scheduler_pi = ReduceLROnPlateau(SAC.pi_optimizer, 'max', factor=0.2)
-scheduler_q = ReduceLROnPlateau(SAC.q_optimizer, 'max', factor=0.2)
+scheduler_pi = ReduceLROnPlateau(
+    SAC.pi_optimizer, 'max', factor=0.2, min_lr=PARAMs["min_lr"])
+scheduler_q = ReduceLROnPlateau(
+    SAC.q_optimizer, 'max', factor=0.2, min_lr=PARAMs["min_lr"])
 
 # config replay buffer
 replay_buffer = nornnsac.nornncore.ReplayBufferLite(
