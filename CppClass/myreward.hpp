@@ -13,10 +13,11 @@ namespace RWD
         int rm_middle;
         double selfw;
         double dmax, w;
+        double tb;
 
     public:
         Reward();
-        Reward(double robot_r, double vmax, double rmax, double tolerance, double a, double b, double c, double d, double e, double f, double g, double eta, double h, double mu, bool remix, int rm_middle, double dmax, double w);
+        Reward(double robot_r, double vmax, double rmax, double tolerance, double a, double b, double c, double d, double e, double f, double g, double eta, double h, double mu, bool remix, int rm_middle, double dmax, double w, double tb);
         ~Reward();
         // def reward(self, pos_vel
         //            : np.ndarray, observation

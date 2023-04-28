@@ -18,12 +18,13 @@ namespace RWD
         double rvdotp2p = 0;
         for (size_t Nth = 0; Nth < Nrobot; Nth++)
         {
-            // target
+            // target + time bias
             lenp2t = NORM(posvels[Nth][0] - target[Nth][0], posvels[Nth][1] - target[Nth][1]);
             r[Nth] += this->a * DOT(posvels[Nth][3] / this->vmax,
                                     posvels[Nth][4] / this->vmax,
                                     (target[Nth][0] - posvels[Nth][0]) / lenp2t,
-                                    (target[Nth][1] - posvels[Nth][1]) / lenp2t);
+                                    (target[Nth][1] - posvels[Nth][1]) / lenp2t) +
+                      this->tb;
             // return self.a * dot(vel / self.vmax, (target - pos) / norm(target - pos))
             for (const obs_t &o : observations[Nth])
             {
@@ -101,7 +102,7 @@ namespace RWD
         }
     }
     Reward::Reward() {}
-    Reward::Reward(double robot_r, double vmax, double rmax, double tolerance, double a, double b, double c, double d, double e, double f, double g, double eta, double h, double mu, bool remix, int rm_middle, double dmax, double w)
+    Reward::Reward(double robot_r, double vmax, double rmax, double tolerance, double a, double b, double c, double d, double e, double f, double g, double eta, double h, double mu, bool remix, int rm_middle, double dmax, double w, double tb)
     {
         this->robot_r = robot_r;
         this->vmax = vmax;
@@ -122,6 +123,7 @@ namespace RWD
         this->selfw = this->rm_middle * 3;
         this->dmax = dmax;
         this->w = w;
+        this->tb = tb;
     }
 
     Reward::~Reward()

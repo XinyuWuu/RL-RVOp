@@ -54,7 +54,7 @@ SMLT.set_reward(vmax=PARAMs["vmax"], rmax=PARAMs["rmax"], tolerance=PARAMs["tole
                 a=PARAMs["a"], b=PARAMs["b"], c=PARAMs["c"], d=PARAMs["d"], e=PARAMs["e"],
                 f=PARAMs["f"], g=PARAMs["g"], eta=PARAMs["eta"],
                 h=PARAMs["h"], mu=PARAMs["mu"], rreach=PARAMs["rreach"],
-                remix=PARAMs["remix"], rm_middle=PARAMs["rm_middle"], dmax=PARAMs["dmax"], w=PARAMs["w"])
+                remix=PARAMs["remix"], rm_middle=PARAMs["rm_middle"], dmax=PARAMs["dmax"], w=PARAMs["w"], tb=PARAMs["tb"])
 
 # cofig SAC
 SAC = sac.SAC(obs_dim=PARAMs["obs_self_dim"] + PARAMs["obs_sur_dim"], act_dim=PARAMs["act_dim"], act_limit=PARAMs["act_limit"], rnn_layer=PARAMs["rnn_layer"], bidir=PARAMs["bidir"],

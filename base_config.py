@@ -29,6 +29,7 @@ PARAMs = {
     "remix": True,
     "rm_middle": 5,
     "w": 5,
+    "tb": -1,
     "device": "cuda",
     "gamma": 0.99,
     "polyak": 0.995,
