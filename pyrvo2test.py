@@ -1,6 +1,7 @@
 import sys
 if sys.path[0] != '':
     sys.path = [''] + sys.path
+import pyrvo2.rvo2 as rvo2
 import os
 import mujoco as mj
 from numpy.linalg import norm
@@ -36,14 +37,11 @@ importlib.reload(canvas)
 importlib.reload(render)
 importlib.reload(videoIO)
 importlib.reload(simulator_cpp)
-# PARAMs["framerate"] = 30
-# PARAMs["max_ep_len"] = int(PARAMs["max_simu_second"] * PARAMs["framerate"])
-PARAMs["hidden_sizes"] = [1024] * 4
-# PARAMs["hidden_sizes"] = [2048] * 3
-# PARAMs["target_bias"] = True
-# PARAMs["act_limit"] = PARAMs["act_limit"] * 3
-model_file = "module_saves/nornn29/112h_23min_5639999steps_16625150updates_policy.ptd"
-vf_start = "module_saves/nornn29/"
+PARAMs["framerate"] = 25
+PARAMs["max_ep_len"] = int(PARAMs["max_simu_second"] * PARAMs["framerate"])
+vf_start = "module_saves/pyrvo2/"
+horizon_r = 80 / PARAMs['framerate']
+horizon_o = 80 / PARAMs['framerate']
 num_test_episodes = 15  # no meaning to set it bigger than 15
 PARAMs["isrender"] = True
 PARAMs["isdraw"] = True
@@ -76,13 +74,6 @@ SMLT.set_reward(vmax=PARAMs["vmax"], rmax=PARAMs["rmax"], tolerance=PARAMs["tole
 
 font = ImageFont.truetype(
     "/usr/share/fonts/truetype/freefont/FreeMonoBold.ttf", 25)
-# cofig SAC
-Pi = nornnsac.nornncore.Policy(obs_dim=PARAMs["obs_dim"], act_dim=PARAMs["act_dim"],
-                               act_limit=PARAMs["act_limit"], hidden_sizes=PARAMs["hidden_sizes"])
-Pi.load_state_dict(torch.load(
-    model_file, map_location=torch.device(PARAMs["device"])))
-Pi.to(device=PARAMs["device"])
-Pi.act_limit = Pi.act_limit.to(device=PARAMs["device"])
 
 
 def preNNinput(NNinput: tuple, obs_sur_dim: int, max_obs: int, device):
@@ -102,7 +93,7 @@ def preNNinput(NNinput: tuple, obs_sur_dim: int, max_obs: int, device):
         # for iobs in range(min(total_len, max_obs)):
         #     Osur[Nth][iobs] = [0] + NNinput[1][Nth][iobs]
 
-    return torch.as_tensor(np.array([np.hstack([NNinput[0][Nth], Osur[Nth].flatten()]) for Nth in range(NNinput[0].__len__())]), dtype=torch.float32, device=device)
+    return np.array([np.hstack([NNinput[0][Nth], Osur[Nth].flatten()]) for Nth in range(NNinput[0].__len__())])
 
 
 ###########################################################
@@ -122,6 +113,34 @@ pos_vel, observation, r, NNinput, d, dpre = SMLT.set_model(
     Nrobot, robot_text, obs_text, obs, target_mode)
 o = preNNinput(NNinput, PARAMs["obs_sur_dim"],
                PARAMs["max_obs"], PARAMs["device"])
+sim = rvo2.PyRVOSimulator(
+    1 / PARAMs['framerate'], PARAMs['dmax'], PARAMs['max_obs'],
+    horizon_r, horizon_o, 0.2, PARAMs['vmax'])
+for Nth in range(SMLT.Nrobot):
+    sim.addAgent(tuple(pos_vel[Nth][0:2]))
+# TODO add obs
+for obsi in obs:
+    if obsi.shape[0] == 3:  # cylinder
+        obsi_t = []
+        for i in range(30):
+            obsi_t.append((obsi[0] + obsi[2] * np.cos(np.deg2rad(i * 12)),
+                           obsi[1] + obsi[2] * np.sin(np.deg2rad(i * 12))))
+        obsi_t.sort(key=lambda x: np.arctan2(x[1] - obsi[1], x[0] - obsi[0]))
+        sim.addObstacle(obsi_t)
+    elif obsi.shape[0] == 4:  # line
+        obsi_t = []
+        obsi_t.append(obsi[0:2])
+        obsi_t.append(obsi[2:4])
+        sim.addObstacle(obsi_t)
+    else:  # polygon
+        obsi_t = []
+        for i in range(int(obsi.shape[0] / 2 - 1)):
+            obsi_t.append(obsi[i * 2 + 2:i * 2 + 4])
+        obsi_t.sort(key=lambda x: np.arctan2(x[1] - obsi[1], x[0] - obsi[0]))
+        # for i in range(obsi_t.__len__()):
+        #     obsi_t[i] = obsi_t[i] + obsi[0:2]
+        sim.addObstacle(obsi_t)
+sim.processObstacles()
 ep_ret = 0
 ep_len = 0
 
@@ -142,12 +161,29 @@ eps_count = 14
 # Main loop: collect experience in env and update/log each epoch
 for t in range(PARAMs["max_ep_len"] * (num_test_episodes + 1)):
 
-    a, logp = Pi(o, True, with_logprob=False)
-    a = a.cpu().detach().numpy()
+    for Nth in range(SMLT.Nrobot):
+        sim.setAgentPosition(Nth, tuple(pos_vel[Nth][0:2]))
+        sim.setAgentVelocity(Nth, tuple(pos_vel[Nth][3:5]))
+        sim.setAgentPrefVelocity(Nth, tuple(np.matmul(
+            np.array([[np.cos(pos_vel[Nth][2]), -np.sin(pos_vel[Nth][2])],
+                      [np.sin(pos_vel[Nth][2]), np.cos(pos_vel[Nth][2])]]),
+            o[Nth][0:2]
+        ).reshape(-1)))
+        # sim.setAgentPrefVelocity(Nth, tuple(-pos_vel[Nth][0:2]))
+    sim.doStep()
+    a = np.zeros((SMLT.Nrobot, 2))
+    for Nth in range(SMLT.Nrobot):
+        a[Nth] = sim.getAgentVelocity(Nth)
+    for Nth in range(SMLT.Nrobot):
+        a[Nth] = np.matmul(
+            np.array([[np.cos(pos_vel[Nth][2]), np.sin(pos_vel[Nth][2])],
+                      [-np.sin(pos_vel[Nth][2]), np.cos(pos_vel[Nth][2])]]),
+            a[Nth]
+        )
 
     # Step the env
     aglobal = a.copy()
-    onumpy = o.cpu().detach().numpy()
+    onumpy = o.copy()
     for Nth in range(SMLT.Nrobot):
         aglobal[Nth] = np.matmul(
             np.array([[np.cos(pos_vel[Nth][2]), -np.sin(pos_vel[Nth][2])],
@@ -179,7 +215,7 @@ for t in range(PARAMs["max_ep_len"] * (num_test_episodes + 1)):
         CV.newCanvas()
         CV.draw_contour(SMLT.contours)
         # print(o2)
-        onumpy = o2.cpu().detach().numpy()
+        onumpy = o2.copy()
         for i in range(SMLT.Nrobot):
             oi = onumpy[i]
             tranM = np.array([[np.cos(pos_vel[i][2]), -np.sin(pos_vel[i][2])],
@@ -193,15 +229,15 @@ for t in range(PARAMs["max_ep_len"] * (num_test_episodes + 1)):
             CV.draw_line(pos_vel[i][0:2], pos_vel[i]
                          [0:2] + aglobal[i], "green", 2)
             # draw target
-            CV.draw_line(pos_vel[i][0:2], np.matmul(
-                tranM, oi[0:2]) + pos_vel[i][0:2])
-            for o in range(min(observation[i].__len__(), PARAMs["max_obs"])):
-                o2draw = oi[5 + o * 11:5 + o * 11 + 8]
-                o2draw[0:2] = np.matmul(tranM, o2draw[0:2])
-                o2draw[2:4] = np.matmul(tranM, o2draw[2:4])
-                o2draw[4:6] = np.matmul(tranM, o2draw[4:6])
-                o2draw[6:8] = np.matmul(tranM, o2draw[6:8])
-                CV.draw_rvop(o2draw, pos_vel[i][0:2])
+            # CV.draw_line(pos_vel[i][0:2], np.matmul(
+            #     tranM, oi[0:2]) + pos_vel[i][0:2])
+            # for o in range(min(observation[i].__len__(), PARAMs["max_obs"])):
+            #     o2draw = oi[5 + o * 11:5 + o * 11 + 8]
+            #     o2draw[0:2] = np.matmul(tranM, o2draw[0:2])
+            #     o2draw[2:4] = np.matmul(tranM, o2draw[2:4])
+            #     o2draw[4:6] = np.matmul(tranM, o2draw[4:6])
+            #     o2draw[6:8] = np.matmul(tranM, o2draw[6:8])
+            #     CV.draw_rvop(o2draw, pos_vel[i][0:2])
         for pos in pos_vel:
             CV.draw_dmax(pos[0:2], SMLT.dmax)
             CV.draw_dmax(pos[0:2], 2 * SMLT.robot_r, 'black', 4)
@@ -262,6 +298,34 @@ for t in range(PARAMs["max_ep_len"] * (num_test_episodes + 1)):
             Nrobot, robot_text, obs_text, obs, target_mode)
         o = preNNinput(NNinput, PARAMs["obs_sur_dim"],
                        PARAMs["max_obs"], PARAMs["device"])
+        sim = rvo2.PyRVOSimulator(
+            1 / PARAMs['framerate'], PARAMs['dmax'], PARAMs['max_obs'],
+            horizon_r, horizon_o, 0.2, PARAMs['vmax'])
+        for Nth in range(SMLT.Nrobot):
+            sim.addAgent(tuple(pos_vel[Nth][0:2]))
+        for obsi in obs:
+            if obsi.shape[0] == 3:  # cylinder
+                obsi_t = []
+                for i in range(30):
+                    obsi_t.append((obsi[0] + obsi[2] * np.cos(np.deg2rad(i * 12)),
+                                obsi[1] + obsi[2] * np.sin(np.deg2rad(i * 12))))
+                obsi_t.sort(key=lambda x: np.arctan2(x[1] - obsi[1], x[0] - obsi[0]))
+                sim.addObstacle(obsi_t)
+            elif obsi.shape[0] == 4:  # line
+                obsi_t = []
+                obsi_t.append(obsi[0:2])
+                obsi_t.append(obsi[2:4])
+                sim.addObstacle(obsi_t)
+            else:  # polygon
+                obsi_t = []
+                for i in range(int(obsi.shape[0] / 2 - 1)):
+                    obsi_t.append(obsi[i * 2 + 2:i * 2 + 4])
+                obsi_t.sort(key=lambda x: np.arctan2(x[1] - obsi[1], x[0] - obsi[0]))
+                # for i in range(obsi_t.__len__()):
+                #     obsi_t[i] = obsi_t[i] + obsi[0:2]
+                sim.addObstacle(obsi_t)
+        sim.processObstacles()
+        # TODO add obs
         ep_ret = 0
         ep_len = 0
 
