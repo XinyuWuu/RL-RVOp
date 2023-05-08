@@ -39,12 +39,24 @@ importlib.reload(simulator_cpp)
 # PARAMs["framerate"] = 30
 # PARAMs["max_ep_len"] = int(PARAMs["max_simu_second"] * PARAMs["framerate"])
 # PARAMs["hidden_sizes"] = [1024] * 4
+PARAMs["hidden_sizes"] = [2048] * 3
 # PARAMs["target_bias"] = True
-model_file = "module_saves/nornn21/47h_14min_2459999steps_6611142updates_policy.ptd"
-vf_start = "module_saves/nornn21/"
+# PARAMs["act_limit"] = PARAMs["act_limit"] * 3
+model_file = "module_saves/nornn26/71h_39min_2399999steps_6582525updates_policy.ptd"
+vf_start = "module_saves/nornn26/"
 num_test_episodes = 15  # no meaning to set it bigger than 15
 PARAMs["isrender"] = True
 PARAMs["isdraw"] = True
+PARAMs["a"] = 4
+# PARAMs["tolerance"] = 0.08
+PARAMs["b"] = 4
+PARAMs["d"] = 4
+PARAMs["g"] = 4
+PARAMs["h"] = 4
+PARAMs["eta"] = 1
+PARAMs["mu"] = 1.5
+PARAMs["remix"] = False
+PARAMs["gate_ratio"] = 1 / 4
 torch.manual_seed(PARAMs["seed"])
 np.random.seed(PARAMs["seed"])
 random.seed(PARAMs["seed"])
@@ -244,7 +256,7 @@ for t in range(PARAMs["max_ep_len"] * (num_test_episodes + 1)):
             MODE, mode = 2, 4
         eps_count -= 1
 
-        Nrobot, robot_text, obs_text, obs, target_mode = SMLT.EC.env_create(
+        Nrobot, robot_text, obs_text, obs, target_mode = SMLT.EC.env_create2(
             MODE=MODE, mode=mode)
         pos_vel, observation, r, NNinput, d, dpre = SMLT.set_model(
             Nrobot, robot_text, obs_text, obs, target_mode)

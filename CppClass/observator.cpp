@@ -16,10 +16,10 @@ namespace OBS
         this->contours = contours;
         this->target = target;
     }
-    void Observator::set_reward(double robot_r, double vmax, double rmax, double tolerance, double a, double b, double c, double d, double e, double f, double g, double eta, double h, double mu, bool remix, int rm_middle, double dmax, double w)
+    void Observator::set_reward(double robot_r, double vmax, double rmax, double tolerance, double a, double b, double c, double d, double e, double f, double g, double eta, double h, double mu, bool remix, int rm_middle, double dmax, double w, double tb)
     {
         this->Rwd = RWD::Reward(robot_r = robot_r, vmax = vmax, rmax = rmax, tolerance = tolerance,
-                                a = a, b = b, c = c, d = d, e = e, f = f, g = g, eta = eta, h = h, mu = mu, remix = remix, rm_middle = rm_middle, dmax = dmax, w = w);
+                                a = a, b = b, c = c, d = d, e = e, f = f, g = g, eta = eta, h = h, mu = mu, remix = remix, rm_middle = rm_middle, dmax = dmax, w = w, tb = tb);
     }
 
     void Observator::change_robot(double dmax, double robot_r)
