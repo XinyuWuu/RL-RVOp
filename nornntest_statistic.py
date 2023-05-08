@@ -43,6 +43,13 @@ model_file = "module_saves/nornn29/112h_23min_5639999steps_16625150updates_polic
 vf_start = "module_saves/nornn29/"
 num_test_episodes = 5
 
+Nrobot_log = np.zeros(num_test_episodes)
+death_log = np.zeros(num_test_episodes)
+reach_log = np.zeros(num_test_episodes)
+lave_log = np.zeros(num_test_episodes)
+vave_log = np.zeros(num_test_episodes)
+extra_log = np.zeros(num_test_episodes)
+
 MODE, mode = 2, 0
 
 PARAMs["tolerance"] = 0.031
@@ -152,16 +159,18 @@ for t in range(PARAMs["max_ep_len"] * (num_test_episodes + 1)):
 
     # End of trajectory handling
     if (d == 1).all() or (ep_len == PARAMs["max_ep_len"]):
-        print(
-            f"\neps: {eps_count+1}, {Nrobot} robots, mode: {MODE}_{mode}, ep_ret: {ep_ret:.2f}, ep_len: {ep_len}, Nreach: {d.sum()}, Ndeath: {die_mask.sum()}")
-        # print(die_mask)
-        # print(len_count)
         for Nth in range(SMLT.Nrobot):
             if len_count[Nth] == 0:
                 len_count[Nth] = ep_len
                 die_mask[Nth] = 1
+        print(
+            f"\neps: {eps_count+1}, {Nrobot} robots, mode: {MODE}_{mode}, ep_ret: {ep_ret:.2f}, ep_len: {ep_len}, Nreach: {d.sum()}, Ndeath: {die_mask.sum()}")
+        # print(die_mask)
+        # print(len_count)
         if (1 - die_mask).sum() == 0:
             print("all died")
+            Nrobot_log[eps_count] = SMLT.Nrobot
+            death_log[eps_count] = die_mask.sum()
         else:
             l_ave = (len_count * (1 - die_mask)).sum() / (1 - die_mask).sum()
             # print(l_ave)
@@ -181,6 +190,13 @@ for t in range(PARAMs["max_ep_len"] * (num_test_episodes + 1)):
             print(f"die_mask:{die_mask};len_count:{len_count}")
             print(
                 f"l_ave {l_ave}; v_ave {v_ave}; p_ave {p_ave}; m_ave {m_ave}; m/p {m_ave / p_ave * 100}%")
+            Nrobot_log[eps_count] = SMLT.Nrobot
+            death_log[eps_count] = die_mask.sum()
+            reach_log[eps_count] = d.sum()
+            lave_log[eps_count] = l_ave
+            vave_log[eps_count] = v_ave
+            extra_log[eps_count] = m_ave / p_ave
+
         eps_count += 1
         if eps_count == num_test_episodes:
             break
@@ -201,3 +217,13 @@ for t in range(PARAMs["max_ep_len"] * (num_test_episodes + 1)):
                        PARAMs["max_obs"], PARAMs["device"])
         ep_ret = 0
         ep_len = 0
+
+print("##########################Over All Performance#####################################")
+print(f"sucess rate: {(Nrobot_log - death_log).sum() / Nrobot_log.sum()}")
+print(f"reach rate: {reach_log.sum() / Nrobot_log.sum()}")
+print(
+    f"average velocity: {(vave_log * (Nrobot_log - death_log)).sum() / (Nrobot_log - death_log).sum()}")
+print(
+    f"average time: {(lave_log * (Nrobot_log - death_log)).sum() / (Nrobot_log - death_log).sum()*(1/PARAMs['framerate'])}")
+print(
+    f"extra length: {(extra_log * (Nrobot_log - death_log)).sum() / (Nrobot_log - death_log).sum()}")
