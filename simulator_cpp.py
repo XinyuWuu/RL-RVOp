@@ -98,10 +98,17 @@ class Simulator():
             for Nth in range(self.Nrobot):
                 if self.d[Nth] == 1:
                     _ctrl[Nth] = [0, 0]
-            for t_step in range(int(self.step_num / 5)):
+            if self.step_num % 5 == 0:
+                step_num_sub = 5
+            elif self.step_num % 6 == 0:
+                step_num_sub = 6
+            else:
+                print("step error!!!!!!!!!!!!!!!!!!")
+                exit(0)
+            for t_step in range(int(self.step_num / step_num_sub)):
                 self.mjDATA.ctrl = CCcpp.v2ctrlbatchL(
                     posvels=self.pos_vel, vs=_ctrl)
-                mj.mj_step(self.mjMODEL, self.mjDATA, 5)
+                mj.mj_step(self.mjMODEL, self.mjDATA, step_num_sub)
                 for j in range(self.Nrobot):
                     self.pos_vel[j] = array([self.qpos[j][0], self.qpos[j][1],
                                             arctan2(
