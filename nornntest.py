@@ -38,12 +38,12 @@ importlib.reload(videoIO)
 importlib.reload(simulator_cpp)
 # PARAMs["framerate"] = 30
 # PARAMs["max_ep_len"] = int(PARAMs["max_simu_second"] * PARAMs["framerate"])
-# PARAMs["hidden_sizes"] = [1024] * 4
-PARAMs["hidden_sizes"] = [2048] * 3
+PARAMs["hidden_sizes"] = [1024] * 4
+# PARAMs["hidden_sizes"] = [2048] * 3
 # PARAMs["target_bias"] = True
 # PARAMs["act_limit"] = PARAMs["act_limit"] * 3
-model_file = "module_saves/nornn26/71h_39min_2399999steps_6582525updates_policy.ptd"
-vf_start = "module_saves/nornn26/"
+model_file = "module_saves/nornn29/112h_23min_5639999steps_16625150updates_policy.ptd"
+vf_start = "module_saves/nornn29/"
 num_test_episodes = 15  # no meaning to set it bigger than 15
 PARAMs["isrender"] = True
 PARAMs["isdraw"] = True
