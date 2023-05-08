@@ -10,6 +10,7 @@ CppClass/cython_idle/build/
 CppClass/cython_idle/*.so
 assets/*.mp4
 assets/*.png
+assets/*.npy
 module_saves
 log*.txt
 pyrvo2

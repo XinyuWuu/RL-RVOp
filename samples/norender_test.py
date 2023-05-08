@@ -1,3 +1,4 @@
+from cProfile import label
 import os
 import mujoco as mj
 from mujoco import MjModel
@@ -6,18 +7,17 @@ import numpy as np
 import matplotlib.pyplot as plt
 from math import pi, remainder
 
-model = MjModel.from_xml_path("assets/test.xml")
+model = MjModel.from_xml_path("assets/onerobot.xml")
 data = MjData(model)
 
 total_sim_time = 12
 step_size = 0.01
 step_num = int(step_size / 0.002)
-step_num = 5
 flag = False
 # TODO set controller callback
 nth = 0
-omegal = 7.0
-omegar = -7.0
+omegal = -25
+omegar = 25
 data.ctrl[nth * 2:nth * 2 + 2] = np.array([omegal, omegar]) * 7
 
 # data.ctrl[0:2]=np.array([5,5])
@@ -28,9 +28,9 @@ data.ctrl[nth * 2:nth * 2 + 2] = np.array([omegal, omegar]) * 7
 # data.joint("robot_1").qvel
 
 # qvel=[data.joint("robot_0").qvel,data.joint("robot_1").qvel]
-angle_org = pi * 0.56
-data.joint("robot_0").qpos = [0, 0, 0, np.cos(
-    angle_org / 2), 0, 0, np.sin(angle_org / 2)]
+angle_org = pi * 0
+# data.joint("robot_0").qpos = [0, 0, 0, np.cos(
+#     angle_org / 2), 0, 0, np.sin(angle_org / 2)]
 
 angle = np.arctan2(2 * data.joint("robot_0").qpos[3] * data.joint(
     "robot_0").qpos[6], 1 - 2 * data.joint("robot_0").qpos[6]**2)
@@ -45,22 +45,26 @@ time_prev = data.time
 while True:
     time_prev = data.time
     p0 = np.copy(data.joint(f"robot_{nth}").qpos[0:2])
+    rotv[step] = data.joint(f"robot_{nth}").qvel[5]
     mj.mj_step(model, data, step_num)
     # angle += data.joint("robot_0").qvel[5] * step_num * 0.002
     angle += data.joint("robot_0").qvel[5] * (data.time - time_prev)
     p1 = np.copy(data.joint(f"robot_{nth}").qpos[0:2])
     linv[step] = np.linalg.norm(p1 - p0) / (data.time - time_prev)
-    rotv[step] = data.joint(f"robot_{nth}").qvel[5]
 
     step += 1
     if (data.time > total_sim_time):
         break
 
 plt.plot(np.array(range(0, len(linv))) * step_size, linv, color='g')
-plt.plot(np.array(range(0, len(rotv))) * step_size, rotv, color='b')
-plt.savefig("assets/test.png")
-
+plt.savefig("assets/speed.png")
+np.save("assets/speed.npy", linv)
 plt.clf()
+plt.plot(np.array(range(0, len(rotv))) * step_size, rotv, color='b')
+plt.savefig("assets/rotation.png")
+plt.clf()
+np.save("assets/rotation.npy", rotv)
+
 
 a = data.joint(f"left-wheel_{nth}").qvel[0]
 b = omegal
@@ -81,3 +85,25 @@ angle
 np.arctan2(
     2 * data.joint("robot_0").qpos[3] * data.joint("robot_0").qpos[6], 1 - 2 * data.joint("robot_0").qpos[6]**2)
 remainder(angle, 2 * pi)
+
+plt.plot(np.array(range(0, len(linv))) *
+         step_size, np.load("assets/speed_0.npy"), label="mass0")
+plt.plot(np.array(range(0, len(linv))) *
+         step_size, np.load("assets/speed_50.npy"), label="mass50")
+plt.plot(np.array(range(0, len(linv))) *
+         step_size, np.load("assets/speed_100.npy"), label="mass100")
+plt.plot(np.array(range(0, len(linv))) *
+         step_size, np.load("assets/speed_300.npy"), label="mass300")
+plt.legend(loc="upper right")
+plt.savefig("assets/speed_all.png")
+plt.clf()
+plt.plot(np.array(range(0, len(linv))) *
+         step_size, np.load("assets/rotation_0.npy"), label="mass0")
+plt.plot(np.array(range(0, len(linv))) *
+         step_size, np.load("assets/rotation_50.npy"), label="mass50")
+plt.plot(np.array(range(0, len(linv))) *
+         step_size, np.load("assets/rotation_100.npy"), label="mass100")
+plt.plot(np.array(range(0, len(linv))) *
+         step_size, np.load("assets/rotation_300.npy"), label="mass300")
+plt.legend(loc="upper right")
+plt.savefig("assets/rotation_all.png")

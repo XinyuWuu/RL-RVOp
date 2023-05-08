@@ -4,7 +4,7 @@
     <site name="front-flag" rgba="0.3 0.3 0.9 1" pos="0.12 0 0.22" type="sphere" size="0.05"></site>
 
     <!-- <body name="balancer" pos="0 0 0.05">
-        <geom mass="3000" type="sphere" size="0.01"></geom>
+        <geom mass="100" type="sphere" size="0.01"></geom>
     </body> -->
 
     <body name="front-wheel" pos="0.14 0  0.01">
