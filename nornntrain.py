@@ -93,7 +93,7 @@ def preNNinput(NNinput: tuple, obs_sur_dim: int, max_obs: int, device):
 # init model
 MODE, mode = 0, 0
 SMLT.EC.gate_ratio = PARAMs["gate_ratio"]
-Nrobot, robot_text, obs_text, obs, target_mode = SMLT.EC.env_create(
+Nrobot, robot_text, obs_text, obs, target_mode = SMLT.EC.env_create2(
     MODE=MODE, mode=mode)
 pos_vel, observation, r, NNinput, d, dpre = SMLT.set_model(
     Nrobot, robot_text, obs_text, obs, target_mode)
@@ -189,7 +189,7 @@ for t in range(PARAMs["total_steps"]):
                 mode = 3
             else:
                 mode = 4
-        else:
+        elif (t - PARAMs["random_steps"]) < PARAMs["max_ep_len"] * 4500:
             MODE = 2
             if random_num < 0.2:
                 mode = 0
@@ -201,8 +201,23 @@ for t in range(PARAMs["total_steps"]):
                 mode = 3
             else:
                 mode = 4
-
-        Nrobot, robot_text, obs_text, obs, target_mode = SMLT.EC.env_create(
+        else:
+            MODE = 3
+            if random_num < 0.15:
+                mode = 0
+            elif random_num < 0.3:
+                mode = 1
+            elif random_num < 0.4:
+                mode = 2
+            elif random_num < 0.55:
+                mode = 3
+            elif random_num < 0.7:
+                mode = 4
+            elif random_num < 0.85:
+                mode = 5
+            else:
+                mode = 6
+        Nrobot, robot_text, obs_text, obs, target_mode = SMLT.EC.env_create2(
             MODE=MODE, mode=mode)
         pos_vel, observation, r, NNinput, d, dpre = SMLT.set_model(
             Nrobot, robot_text, obs_text, obs, target_mode)
@@ -217,6 +232,7 @@ for t in range(PARAMs["total_steps"]):
         ep_len = 0
 
     # Update handling
+    PARAMs["update_every"] = int(50 / (Nrobot / 4))
     if t >= PARAMs["update_after"] and t % PARAMs["update_every"] == 0:
         timebegin = time.time()
         update_num = int(PARAMs["update_every"] * (Nrobot / 4))

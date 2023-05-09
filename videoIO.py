@@ -4,10 +4,10 @@ from time import strftime, localtime
 
 
 class VideoIO():
-    def __init__(self, vf_name="", framerate=50, codec="hevc", w=1920, h=1080, pix_fmt="yuv420p", vf_end="glfw", vf_start="./") -> None:
+    def __init__(self, vf_name="", framerate=50, codec="hevc", w=1920, h=1080, pix_fmt="yuv420p", vf_end="glfw", vf_start="./", prefix="") -> None:
         if vf_name == "":
             self.vf_name = strftime(
-                f"{vf_start}assets/%H:%M:%S_%d_%m_{vf_end}.mp4", localtime())
+                f"{vf_start}assets/{prefix}%H:%M:%S_%d_%m_{vf_end}.mp4", localtime())
             pass
         else:
             self.vf_name = vf_name

@@ -51,10 +51,11 @@ class Simulator():
                             a=a, b=b, c=c, d=d, e=e, f=f, g=g, eta=eta, h=h, mu=mu, remix=remix, rm_middle=rm_middle, dmax=dmax, w=w, tb=tb)
         self.rreach = rreach
 
-    def set_model(self, Nrobot=0, robot_text="", obs_text="", obs=[], target_type='circle'):
+    def set_model(self, Nrobot=0, robot_text="", obs_text="", obs=[], target_type='circle', offwidth: int = 1920, offheight: int = 1080, camheight: int = 15, fovy: int = 45):
         self.Nrobot = Nrobot
         actuator_text = self.EC.actuator(self.Nrobot)
-        text = self.EC.env_text(robot_text, obs_text, actuator_text)
+        text = self.EC.env_text(robot_text, obs_text,
+                                actuator_text, offwidth, offheight, camheight)
         self.obs = obs
         self.contours = self.CG.generate_contour(obs)
 
@@ -69,6 +70,9 @@ class Simulator():
 
         if target_type == "random":
             pass
+        elif target_type == "spin":
+            self.target = np.matmul(
+                array(self.qpos)[:, 0:2], array([[0, 1.0], [-1.0, 0]]))
         elif target_type == "line":
             self.target = array(self.qpos)[:, 0:2] * array([-1.0, 1.0])
         else:  # "circle"

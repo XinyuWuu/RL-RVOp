@@ -36,8 +36,9 @@ importlib.reload(canvas)
 importlib.reload(render)
 importlib.reload(videoIO)
 importlib.reload(simulator_cpp)
-# PARAMs["framerate"] = 30
-# PARAMs["max_ep_len"] = int(PARAMs["max_simu_second"] * PARAMs["framerate"])
+# PARAMs["codec"] = 'hevc'
+PARAMs["framerate"] = 25
+PARAMs["max_ep_len"] = int(PARAMs["max_simu_second"] * PARAMs["framerate"])
 PARAMs["hidden_sizes"] = [1024] * 4
 # PARAMs["hidden_sizes"] = [2048] * 3
 # PARAMs["target_bias"] = True
@@ -57,6 +58,7 @@ PARAMs["eta"] = 1
 PARAMs["mu"] = 1.5
 PARAMs["remix"] = False
 PARAMs["gate_ratio"] = 1 / 4
+# PARAMs["seed"] = 666
 torch.manual_seed(PARAMs["seed"])
 np.random.seed(PARAMs["seed"])
 random.seed(PARAMs["seed"])
@@ -108,18 +110,19 @@ def preNNinput(NNinput: tuple, obs_sur_dim: int, max_obs: int, device):
 ###########################################################
 # init environment get initial observation
 # init model
-MODE, mode = 0, 0
+MODE, mode = 3, 6
+prefix = f"{MODE}_{mode}_"
 SMLT.EC.gate_ratio = PARAMs["gate_ratio"]
-Nrobot, robot_text, obs_text, obs, target_mode = SMLT.EC.env_create(
+Nrobot, robot_text, obs_text, obs, target_mode, ow, oh, ch, fovy, w, h = SMLT.EC.env_create3(
     MODE=MODE, mode=mode)
 
-# actuator_text = SMLT.EC.actuator(Nrobot)
-# text = SMLT.EC.env_text(robot_text, obs_text, actuator_text)
-# with open("./assets/test.xml", 'w') as fp:
-#     fp.write(text)
+actuator_text = SMLT.EC.actuator(Nrobot)
+text = SMLT.EC.env_text(robot_text, obs_text, actuator_text, ow, oh, ch, fovy)
+with open("./assets/test.xml", 'w') as fp:
+    fp.write(text)
 
 pos_vel, observation, r, NNinput, d, dpre = SMLT.set_model(
-    Nrobot, robot_text, obs_text, obs, target_mode)
+    Nrobot, robot_text, obs_text, obs, target_mode, ow, oh, ch, fovy)
 o = preNNinput(NNinput, PARAMs["obs_sur_dim"],
                PARAMs["max_obs"], PARAMs["device"])
 ep_ret = 0
@@ -127,14 +130,14 @@ ep_len = 0
 
 # config training process
 if PARAMs["isrender"]:
-    RD = render.Render()
+    RD = render.Render(ow, oh)
     RD.set_model(SMLT.mjMODEL, SMLT.mjDATA)
     RD.switchCam()
     videofp = videoIO.VideoIO(
-        vf_start + "assets/video.mp4", SMLT.framerate, codec=PARAMs["codec"], vf_start=vf_start)
+        vf_start + "assets/video.mp4", SMLT.framerate, w=ow, h=oh, codec=PARAMs["codec"], vf_start=vf_start)
 
 if PARAMs["isdraw"]:
-    CV = canvas.Canvas(w=16, h=16)
+    CV = canvas.Canvas(w=w, h=h, dpi=100)
     canvasfp = videoIO.VideoIO(
         vf_start + "assets/video_canvas.mp4", SMLT.framerate, codec=PARAMs["codec"], w=CV.w * CV.dpi, h=CV.h * CV.dpi, vf_start=vf_start)
 
@@ -193,8 +196,8 @@ for t in range(PARAMs["max_ep_len"] * (num_test_episodes + 1)):
             CV.draw_line(pos_vel[i][0:2], pos_vel[i]
                          [0:2] + aglobal[i], "green", 2)
             # draw target
-            CV.draw_line(pos_vel[i][0:2], np.matmul(
-                tranM, oi[0:2]) + pos_vel[i][0:2])
+            # CV.draw_line(pos_vel[i][0:2], np.matmul(
+            #     tranM, oi[0:2]) + pos_vel[i][0:2])
             for o in range(min(observation[i].__len__(), PARAMs["max_obs"])):
                 o2draw = oi[5 + o * 11:5 + o * 11 + 8]
                 o2draw[0:2] = np.matmul(tranM, o2draw[0:2])
@@ -218,7 +221,7 @@ for t in range(PARAMs["max_ep_len"] * (num_test_episodes + 1)):
         print(
             f"eps: {eps_count+1}, {Nrobot} robots, mode: {MODE}_{mode}, ep_ret: {ep_ret:.2f}, ep_len: {ep_len}, Nreach: {d.sum()}")
         # TODO change environment according to t
-        if eps_count > num_test_episodes - 1 or eps_count < -1:
+        if eps_count > num_test_episodes - 1 or eps_count < 0:
             break
         if eps_count > 14:
             break
@@ -255,11 +258,11 @@ for t in range(PARAMs["max_ep_len"] * (num_test_episodes + 1)):
         if eps_count == 14:
             MODE, mode = 2, 4
         eps_count -= 1
-
-        Nrobot, robot_text, obs_text, obs, target_mode = SMLT.EC.env_create2(
+        prefix = f"{MODE}_{mode}_"
+        Nrobot, robot_text, obs_text, obs, target_mode, ow, oh, ch, fovy, w, h = SMLT.EC.env_create3(
             MODE=MODE, mode=mode)
         pos_vel, observation, r, NNinput, d, dpre = SMLT.set_model(
-            Nrobot, robot_text, obs_text, obs, target_mode)
+            Nrobot, robot_text, obs_text, obs, target_mode, ow, oh, ch, fovy)
         o = preNNinput(NNinput, PARAMs["obs_sur_dim"],
                        PARAMs["max_obs"], PARAMs["device"])
         ep_ret = 0
@@ -271,11 +274,13 @@ for t in range(PARAMs["max_ep_len"] * (num_test_episodes + 1)):
             videofp.close()
 
         if PARAMs["isrender"]:
+            RD = render.Render(ow, oh)
             RD.set_model(SMLT.mjMODEL, SMLT.mjDATA)
             RD.switchCam()
             videofp = videoIO.VideoIO(
-                "", SMLT.framerate, codec=PARAMs["codec"], vf_start=vf_start)
+                "", SMLT.framerate, w=ow, h=oh, codec=PARAMs["codec"], vf_start=vf_start, prefix=prefix)
 
         if PARAMs["isdraw"]:
+            CV = canvas.Canvas(w=w, h=h, dpi=100)
             canvasfp = videoIO.VideoIO(
-                "", SMLT.framerate, codec=PARAMs["codec"], w=CV.w * CV.dpi, h=CV.h * CV.dpi, vf_end="draw", vf_start=vf_start)
+                "", SMLT.framerate, codec=PARAMs["codec"], w=CV.w * CV.dpi, h=CV.h * CV.dpi, vf_end="draw", vf_start=vf_start, prefix=prefix)

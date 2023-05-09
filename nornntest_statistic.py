@@ -41,7 +41,7 @@ PARAMs["max_ep_len"] = int(PARAMs["max_simu_second"] * PARAMs["framerate"])
 PARAMs["hidden_sizes"] = [1024] * 4
 model_file = "module_saves/nornn29/112h_23min_5639999steps_16625150updates_policy.ptd"
 vf_start = "module_saves/nornn29/"
-num_test_episodes = 5
+num_test_episodes = 10
 
 Nrobot_log = np.zeros(num_test_episodes)
 death_log = np.zeros(num_test_episodes)
