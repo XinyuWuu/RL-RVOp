@@ -39,9 +39,10 @@ importlib.reload(simulator_cpp)
 PARAMs["framerate"] = 25
 PARAMs["max_ep_len"] = int(PARAMs["max_simu_second"] * PARAMs["framerate"])
 PARAMs["hidden_sizes"] = [1024] * 4
-model_file = "module_saves/nornn29/112h_23min_5639999steps_16625150updates_policy.ptd"
+model_file = "module_saves/nornn29/78h_3min_3999999steps_11547900updates_policy.ptd"
+# model_file = "module_saves/nornn29/112h_23min_5639999steps_16625150updates_policy.ptd"
 vf_start = "module_saves/nornn29/"
-num_test_episodes = 10
+num_test_episodes = 5
 
 Nrobot_log = np.zeros(num_test_episodes)
 death_log = np.zeros(num_test_episodes)
@@ -50,7 +51,7 @@ lave_log = np.zeros(num_test_episodes)
 vave_log = np.zeros(num_test_episodes)
 extra_log = np.zeros(num_test_episodes)
 
-MODE, mode = 2, 0
+MODE, mode = 6, 0
 
 PARAMs["tolerance"] = 0.031
 PARAMs["dreach"] = 0.075
@@ -108,10 +109,10 @@ def preNNinput(NNinput: tuple, obs_sur_dim: int, max_obs: int, device):
 # init environment get initial observation
 # init model
 SMLT.EC.gate_ratio = PARAMs["gate_ratio"]
-Nrobot, robot_text, obs_text, obs, target_mode = SMLT.EC.env_create2(
+Nrobot, robot_text, obs_text, obs, target_mode, ow, oh, ch, fovy, w, h = SMLT.EC.env_create3(
     MODE=MODE, mode=mode)
 pos_vel, observation, r, NNinput, d, dpre = SMLT.set_model(
-    Nrobot, robot_text, obs_text, obs, target_mode)
+    Nrobot, robot_text, obs_text, obs, target_mode, ow, oh, ch, fovy)
 pos0 = np.zeros((Nrobot, 2), dtype=np.float64)
 for i in range(Nrobot):
     pos0[i] = pos_vel[i][0:2]
@@ -200,10 +201,10 @@ for t in range(PARAMs["max_ep_len"] * (num_test_episodes + 1)):
         eps_count += 1
         if eps_count == num_test_episodes:
             break
-        Nrobot, robot_text, obs_text, obs, target_mode = SMLT.EC.env_create2(
+        Nrobot, robot_text, obs_text, obs, target_mode, ow, oh, ch, fovy, w, h = SMLT.EC.env_create3(
             MODE=MODE, mode=mode)
         pos_vel, observation, r, NNinput, d, dpre = SMLT.set_model(
-            Nrobot, robot_text, obs_text, obs, target_mode)
+            Nrobot, robot_text, obs_text, obs, target_mode, ow, oh, ch, fovy)
         pos0 = np.zeros((Nrobot, 2), dtype=np.float64)
         for i in range(Nrobot):
             pos0[i] = pos_vel[i][0:2]
