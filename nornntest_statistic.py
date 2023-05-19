@@ -96,7 +96,7 @@ def preNNinput(NNinput: tuple, obs_sur_dim: int, max_obs: int, device):
     # NNinput[0] Oself1.5
     # NNinput[1] Osur
     Osur = np.ones((NNinput[0].__len__(), max_obs,
-                    obs_sur_dim + 1), dtype=np.float32) * 2 * SMLT.dmax
+                    obs_sur_dim + 1), dtype=np.float32) * PARAMs["nullfill"]
     for Nth in range(NNinput[0].__len__()):
         true_len = min(NNinput[1][Nth].__len__(), max_obs)
         if true_len == 0:

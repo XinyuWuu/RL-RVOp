@@ -59,3 +59,4 @@ PARAMs["max_ep_len"] = int(PARAMs["max_simu_second"] * PARAMs["framerate"])
 PARAMs["random_steps"] = PARAMs["max_ep_len"] * 10
 PARAMs["update_after"] = PARAMs["max_ep_len"] * 2
 PARAMs["total_steps"] = PARAMs["steps_per_epoch"] * PARAMs["epochs"]
+PARAMs["nullfill"] = 2 * PARAMs["dmax"]
