@@ -37,7 +37,7 @@ importlib.reload(render)
 importlib.reload(videoIO)
 importlib.reload(simulator_cpp)
 # PARAMs["codec"] = 'hevc'
-PARAMs["framerate"] = 25
+PARAMs["framerate"] = 10
 PARAMs["max_ep_len"] = int(PARAMs["max_simu_second"] * PARAMs["framerate"])
 PARAMs["hidden_sizes"] = [1024] * 4
 # PARAMs["hidden_sizes"] = [2048] * 3
@@ -46,6 +46,7 @@ PARAMs["hidden_sizes"] = [1024] * 4
 # model_file = "module_saves/nornn29/112h_23min_5639999steps_16625150updates_policy.ptd"
 model_file = "module_saves/nornn31/232h_54min_5719999steps_24636760updates_policy.ptd"
 vf_start = "module_saves/nornn31/"
+PARAMs["avevel"] = False
 num_test_episodes = 100
 MODEs = [6] * 5 + [3] * 7
 modes = list(range(5)) + list(range(7))
@@ -76,7 +77,7 @@ torch.set_num_threads(torch.get_num_threads())
 CCcpp = CtrlConverter(vmax=PARAMs["vmax"], tau=PARAMs["tau"])
 PARAMs["rmax"] = CCcpp.get_rmax()
 SMLT = simulator_cpp.Simulator(
-    dmax=PARAMs["dmax"], framerate=PARAMs["framerate"], dreach=PARAMs["dreach"])
+    dmax=PARAMs["dmax"], framerate=PARAMs["framerate"], dreach=PARAMs["dreach"], avevel=PARAMs["avevel"])
 SMLT.set_reward(vmax=PARAMs["vmax"], rmax=PARAMs["rmax"], tolerance=PARAMs["tolerance"],
                 a=PARAMs["a"], b=PARAMs["b"], c=PARAMs["c"], d=PARAMs["d"], e=PARAMs["e"],
                 f=PARAMs["f"], g=PARAMs["g"], eta=PARAMs["eta"],

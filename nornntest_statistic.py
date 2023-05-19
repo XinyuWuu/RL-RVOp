@@ -71,7 +71,7 @@ torch.set_num_threads(torch.get_num_threads())
 CCcpp = CtrlConverter(vmax=PARAMs["vmax"], tau=PARAMs["tau"])
 PARAMs["rmax"] = CCcpp.get_rmax()
 SMLT = simulator_cpp.Simulator(
-    dmax=PARAMs["dmax"], framerate=PARAMs["framerate"], dreach=PARAMs["dreach"])
+    dmax=PARAMs["dmax"], framerate=PARAMs["framerate"], dreach=PARAMs["dreach"], avevel=PARAMs["avevel"])
 SMLT.set_reward(vmax=PARAMs["vmax"], rmax=PARAMs["rmax"], tolerance=PARAMs["tolerance"],
                 a=PARAMs["a"], b=PARAMs["b"], c=PARAMs["c"], d=PARAMs["d"], e=PARAMs["e"],
                 f=PARAMs["f"], g=PARAMs["g"], eta=PARAMs["eta"],
@@ -90,6 +90,7 @@ for p in Pi.parameters():
     p.requires_grad = False
 
 Pi.eval()
+
 
 def preNNinput(NNinput: tuple, obs_sur_dim: int, max_obs: int, device):
     # NNinput[0] Oself1.5

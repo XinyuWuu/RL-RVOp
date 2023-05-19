@@ -8,6 +8,7 @@ PARAMs = {
     "dreach": 0.075,
     "tolerance": 0.04,
     "rreach": 30.0,
+    "avevel": True,
     "target_bias": False,
     "gate_ratio": 1 / 3,
     "ave_factor": 0.9,

@@ -30,7 +30,7 @@ PYBIND11_MODULE(RVOcalculator, m)
               py::arg("vo"))
          .def("get_obs", &RVO::RVOcalculator::get_obs,
               "get observation of all robot",
-              py::arg("posvel"));
+              py::arg("posvel"), py::arg("avevel"));
 }
 
 PYBIND11_MODULE(Observator, m)
@@ -46,7 +46,7 @@ PYBIND11_MODULE(Observator, m)
          .def("change_robot", &OBS::Observator::change_robot, "change robot dmax and radius",
               py::arg("dmax"), py::arg("robot_r"))
          .def("get_obs", &OBS::Observator::get_obs, "get observations",
-              py::arg("posvel"));
+              py::arg("posvel"), py::arg("avevel"));
 }
 
 PYBIND11_MODULE(CtrlConverter, m)

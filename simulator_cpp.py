@@ -29,10 +29,11 @@ importlib.reload(ctrlConverter)
 
 class Simulator():
 
-    def __init__(self, robot_r=0.17, dmax=4.0, framerate=50, dreach=0.02):
+    def __init__(self, robot_r=0.17, dmax=4.0, framerate=50, dreach=0.02, avevel=True):
         self.robot_r = robot_r
         self.dmax = dmax
         self.dreach = dreach
+        self.avevel = avevel
         self.EC = envCreator.EnvCreator()
         self.CG = contourGenerator.ContourGenrator(self.robot_r)
         self.OBS = Observator(self.dmax, self.robot_r)
@@ -132,7 +133,7 @@ class Simulator():
 
         # TODO get action history
         observation, r, NNinput = self.OBS.get_obs(
-            self.pos_vel)
+            self.pos_vel, self.avevel)
 
         r = array([r[rNth] + self.rreach if self.d[rNth] == 1 and self.dpre[rNth] ==
                    0 else r[rNth] for rNth in range(self.Nrobot)], dtype=np.float32)

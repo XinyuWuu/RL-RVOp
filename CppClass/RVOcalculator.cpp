@@ -354,7 +354,7 @@ namespace RVO
                       v2[0], v2[1],
                       vnear[0], vnear[1]};
     }
-    void RVOcalculator::RVOplus(const lines_t &lines, const arcs_t &arcs, const point_t &xr, const point_t &vr, const point_t &vo, double *obs)
+    void RVOcalculator::RVOplus(const lines_t &lines, const arcs_t &arcs, const point_t &xr, const point_t &vr, const point_t &vo, double *obs, bool avevel)
     {
 
         // std::cout << "C++ view:" << std::endl
@@ -478,8 +478,17 @@ namespace RVO
         //               v1[0], v1[1],
         //               v2[0], v2[1],
         //               vnear[0], vnear[1]};
-        *obs = (vr[0] + vo[0]) / 2;
-        *(obs + 1) = (vr[1] + vo[1]) / 2;
+        if (avevel)
+        {
+            *obs = (vr[0] + vo[0]) / 2;
+            *(obs + 1) = (vr[1] + vo[1]) / 2;
+        }
+        else
+        {
+            *obs = vo[0];
+            *(obs + 1) = vo[1];
+        }
+
         *(obs + 2) = v1[0];
         *(obs + 3) = v1[1];
         *(obs + 4) = v2[0];
@@ -489,7 +498,7 @@ namespace RVO
         return;
     }
 
-    observations_t RVOcalculator::get_obs(posvels_t posvels)
+    observations_t RVOcalculator::get_obs(posvels_t posvels, bool avevel)
     {
         observations_t observations;
         // for j in range(self.Nrobot):  # for jth robot
@@ -508,7 +517,7 @@ namespace RVO
             {
                 this->RVOplus(this->contours[i].first, this->contours[i].second,
                               point_t{posvels[j][0], posvels[j][1]}, point_t{posvels[j][3], posvels[j][4]},
-                              point_t{0, 0}, obs.data());
+                              point_t{0, 0}, obs.data(), avevel);
                 obs[15] = 1000000;
                 observations[j].push_back(obs);
                 // observations[j]
@@ -541,7 +550,7 @@ namespace RVO
             {
                 this->RVOplus(lines_t{}, arcs_t{arc_t{posvels[i][0], posvels[i][0], 2 * this->robot_r, posvels[i][0] - 2 * this->robot_r, posvels[i][0], posvels[i][0] + 2 * this->robot_r, posvels[i][0], posvels[i][0], posvels[i][0] + 2 * this->robot_r}, arc_t{posvels[i][0], posvels[i][0], 2 * this->robot_r, posvels[i][0] - 2 * this->robot_r, posvels[i][0], posvels[i][0] + 2 * this->robot_r, posvels[i][0], posvels[i][0], posvels[i][0] - 2 * this->robot_r}},
                               point_t{posvels[j][0], posvels[j][1]}, point_t{posvels[j][3], posvels[j][4]},
-                              point_t{posvels[i][3], posvels[i][4]}, obs.data());
+                              point_t{posvels[i][3], posvels[i][4]}, obs.data(), avevel);
                 obs[8] = posvels[i][0];
                 obs[9] = posvels[i][1];
                 obs[10] = posvels[i][2];
