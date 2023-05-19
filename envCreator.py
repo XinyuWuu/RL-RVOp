@@ -642,8 +642,8 @@ class EnvCreator():
                 ow, oh, ch, fovy = 1080, 1420, 17.5, 75
                 w, h = 12, 16
             elif mode == 2 and MODE != 2:
-                ow, oh, ch, fovy = 1920, 1080, 12, 30
-                w, h = 16, 10
+                ow, oh, ch, fovy = 1080, 1080, 15, 30
+                w, h = 16, 16
             elif mode == 2 and MODE == 2:
                 ow, oh, ch, fovy = 1080, 1080, 15, 45
                 w, h = 12, 12
@@ -661,7 +661,7 @@ class EnvCreator():
                 w, h = 16, 10
             if MODE == 3:
                 if mode == 0:
-                    ow, oh, ch, fovy = 1920, 1920, 15, 75
+                    ow, oh, ch, fovy = 1920, 1920, 17.5, 75
                     w, h = 15, 15
             return self.env_create2(MODE, mode) + [ow, oh, ch, fovy, w, h]
         elif MODE == 4:
@@ -794,7 +794,7 @@ class EnvCreator():
             elif mode == 2:
                 ow, oh, ch, fovy = 1580, 1580, 25, 75
                 w, h = 20, 20
-                target_mode = "line"
+                target_mode = "circle"
                 Nrobot = 30
                 theta = np.linspace(0, 2 * np.pi, Nrobot + 1)[0:Nrobot]
                 center = array([[np.cos(e), np.sin(e)] for e in theta]) * 10

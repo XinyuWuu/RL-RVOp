@@ -37,12 +37,17 @@ importlib.reload(canvas)
 importlib.reload(render)
 importlib.reload(videoIO)
 importlib.reload(simulator_cpp)
-PARAMs["framerate"] = 25
+PARAMs["framerate"] = 50
 PARAMs["max_ep_len"] = int(PARAMs["max_simu_second"] * PARAMs["framerate"])
 vf_start = "module_saves/pyrvo2/"
-horizon_r = 80 / PARAMs['framerate']
-horizon_o = 80 / PARAMs['framerate']
-num_test_episodes = 15  # no meaning to set it bigger than 15
+horizon_r = 2
+horizon_o = 2
+MODEs = [3]*5
+num_test_episodes=50
+modes = range(5)
+MODE, mode = MODEs[0], modes[0]
+eps_count = 18
+
 PARAMs["isrender"] = True
 PARAMs["isdraw"] = True
 PARAMs["a"] = 4
@@ -55,9 +60,10 @@ PARAMs["eta"] = 1
 PARAMs["mu"] = 1.5
 PARAMs["remix"] = False
 PARAMs["gate_ratio"] = 1 / 4
-torch.manual_seed(PARAMs["seed"])
-np.random.seed(PARAMs["seed"])
-random.seed(PARAMs["seed"])
+PARAMs["seed"] = 666
+# torch.manual_seed(PARAMs["seed"])
+# np.random.seed(PARAMs["seed"])
+# random.seed(PARAMs["seed"])
 
 torch.set_num_threads(torch.get_num_threads())
 
@@ -99,23 +105,23 @@ def preNNinput(NNinput: tuple, obs_sur_dim: int, max_obs: int, device):
 ###########################################################
 # init environment get initial observation
 # init model
-MODE, mode = 0, 0
+prefix = f"{MODE}_{mode}_"
 SMLT.EC.gate_ratio = PARAMs["gate_ratio"]
-Nrobot, robot_text, obs_text, obs, target_mode = SMLT.EC.env_create(
+Nrobot, robot_text, obs_text, obs, target_mode, ow, oh, ch, fovy, w, h = SMLT.EC.env_create3(
     MODE=MODE, mode=mode)
 
-# actuator_text = SMLT.EC.actuator(Nrobot)
-# text = SMLT.EC.env_text(robot_text, obs_text, actuator_text)
-# with open("./assets/test.xml", 'w') as fp:
-#     fp.write(text)
+actuator_text = SMLT.EC.actuator(Nrobot)
+text = SMLT.EC.env_text(robot_text, obs_text, actuator_text, ow, oh, ch, fovy)
+with open("./assets/test.xml", 'w') as fp:
+    fp.write(text)
 
 pos_vel, observation, r, NNinput, d, dpre = SMLT.set_model(
-    Nrobot, robot_text, obs_text, obs, target_mode)
+    Nrobot, robot_text, obs_text, obs, target_mode, ow, oh, ch, fovy)
 o = preNNinput(NNinput, PARAMs["obs_sur_dim"],
                PARAMs["max_obs"], PARAMs["device"])
 sim = rvo2.PyRVOSimulator(
     1 / PARAMs['framerate'], PARAMs['dmax'], PARAMs['max_obs'],
-    horizon_r, horizon_o, 0.2, PARAMs['vmax'])
+    horizon_r, horizon_o, 0.23, PARAMs['vmax'])
 for Nth in range(SMLT.Nrobot):
     sim.addAgent(tuple(pos_vel[Nth][0:2]))
 # TODO add obs
@@ -140,24 +146,26 @@ for obsi in obs:
         # for i in range(obsi_t.__len__()):
         #     obsi_t[i] = obsi_t[i] + obsi[0:2]
         sim.addObstacle(obsi_t)
+        # print(obsi)
+        # print(obsi_t)
 sim.processObstacles()
 ep_ret = 0
 ep_len = 0
 
 # config training process
 if PARAMs["isrender"]:
-    RD = render.Render()
+    RD = render.Render(ow, oh)
     RD.set_model(SMLT.mjMODEL, SMLT.mjDATA)
     RD.switchCam()
     videofp = videoIO.VideoIO(
-        vf_start + "assets/video.mp4", SMLT.framerate, codec=PARAMs["codec"], vf_start=vf_start)
+        "", SMLT.framerate, w=ow, h=oh, codec=PARAMs["codec"], vf_start=vf_start, prefix=prefix)
 
 if PARAMs["isdraw"]:
-    CV = canvas.Canvas(w=16, h=16)
+    CV = canvas.Canvas(w=w, h=h, dpi=100)
     canvasfp = videoIO.VideoIO(
-        vf_start + "assets/video_canvas.mp4", SMLT.framerate, codec=PARAMs["codec"], w=CV.w * CV.dpi, h=CV.h * CV.dpi, vf_start=vf_start)
+        "", SMLT.framerate, codec=PARAMs["codec"], w=CV.w * CV.dpi, h=CV.h * CV.dpi, vf_end="draw", vf_start=vf_start, prefix=prefix)
 
-eps_count = 14
+eps_count_r = 0
 # Main loop: collect experience in env and update/log each epoch
 for t in range(PARAMs["max_ep_len"] * (num_test_episodes + 1)):
 
@@ -254,55 +262,25 @@ for t in range(PARAMs["max_ep_len"] * (num_test_episodes + 1)):
         print(
             f"eps: {eps_count+1}, {Nrobot} robots, mode: {MODE}_{mode}, ep_ret: {ep_ret:.2f}, ep_len: {ep_len}, Nreach: {d.sum()}")
         # TODO change environment according to t
-        if eps_count > num_test_episodes - 1 or eps_count < -1:
-            break
-        if eps_count > 14:
-            break
-        if eps_count == 0:
-            MODE, mode = 0, 0
-        if eps_count == 1:
-            MODE, mode = 0, 1
-        if eps_count == 2:
-            MODE, mode = 0, 2
-        if eps_count == 3:
-            MODE, mode = 0, 3
-        if eps_count == 4:
-            MODE, mode = 0, 4
-            ###############################
-        if eps_count == 5:
-            MODE, mode = 1, 0
-        if eps_count == 6:
-            MODE, mode = 1, 1
-        if eps_count == 7:
-            MODE, mode = 1, 2
-        if eps_count == 8:
-            MODE, mode = 1, 3
-        if eps_count == 9:
-            MODE, mode = 1, 4
-            ####################################
-        if eps_count == 10:
-            MODE, mode = 2, 0
-        if eps_count == 11:
-            MODE, mode = 2, 1
-        if eps_count == 12:
-            MODE, mode = 2, 2
-        if eps_count == 13:
-            MODE, mode = 2, 3
-        if eps_count == 14:
-            MODE, mode = 2, 4
         eps_count -= 1
-
-        Nrobot, robot_text, obs_text, obs, target_mode = SMLT.EC.env_create2(
+        eps_count_r += 1
+        if eps_count_r < MODEs.__len__():
+            MODD, mode = MODEs[eps_count_r], modes[eps_count_r]
+        else:
+            break
+        prefix = f"{MODE}_{mode}_"
+        Nrobot, robot_text, obs_text, obs, target_mode, ow, oh, ch, fovy, w, h = SMLT.EC.env_create3(
             MODE=MODE, mode=mode)
         pos_vel, observation, r, NNinput, d, dpre = SMLT.set_model(
-            Nrobot, robot_text, obs_text, obs, target_mode)
+            Nrobot, robot_text, obs_text, obs, target_mode, ow, oh, ch, fovy)
         o = preNNinput(NNinput, PARAMs["obs_sur_dim"],
-                       PARAMs["max_obs"], PARAMs["device"])
+                    PARAMs["max_obs"], PARAMs["device"])
         sim = rvo2.PyRVOSimulator(
             1 / PARAMs['framerate'], PARAMs['dmax'], PARAMs['max_obs'],
-            horizon_r, horizon_o, 0.2, PARAMs['vmax'])
+            horizon_r, horizon_o, 0.23, PARAMs['vmax'])
         for Nth in range(SMLT.Nrobot):
             sim.addAgent(tuple(pos_vel[Nth][0:2]))
+        # TODO add obs
         for obsi in obs:
             if obsi.shape[0] == 3:  # cylinder
                 obsi_t = []
@@ -324,6 +302,8 @@ for t in range(PARAMs["max_ep_len"] * (num_test_episodes + 1)):
                 # for i in range(obsi_t.__len__()):
                 #     obsi_t[i] = obsi_t[i] + obsi[0:2]
                 sim.addObstacle(obsi_t)
+                # print(obsi)
+                # print(obsi_t)
         sim.processObstacles()
         # TODO add obs
         ep_ret = 0
@@ -335,11 +315,13 @@ for t in range(PARAMs["max_ep_len"] * (num_test_episodes + 1)):
             videofp.close()
 
         if PARAMs["isrender"]:
+            RD = render.Render(ow, oh)
             RD.set_model(SMLT.mjMODEL, SMLT.mjDATA)
             RD.switchCam()
             videofp = videoIO.VideoIO(
-                "", SMLT.framerate, codec=PARAMs["codec"], vf_start=vf_start)
+                "", SMLT.framerate, w=ow, h=oh, codec=PARAMs["codec"], vf_start=vf_start, prefix=prefix)
 
         if PARAMs["isdraw"]:
+            CV = canvas.Canvas(w=w, h=h, dpi=100)
             canvasfp = videoIO.VideoIO(
-                "", SMLT.framerate, codec=PARAMs["codec"], w=CV.w * CV.dpi, h=CV.h * CV.dpi, vf_end="draw", vf_start=vf_start)
+                "", SMLT.framerate, codec=PARAMs["codec"], w=CV.w * CV.dpi, h=CV.h * CV.dpi, vf_end="draw", vf_start=vf_start, prefix=prefix)

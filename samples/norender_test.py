@@ -85,7 +85,7 @@ angle
 np.arctan2(
     2 * data.joint("robot_0").qpos[3] * data.joint("robot_0").qpos[6], 1 - 2 * data.joint("robot_0").qpos[6]**2)
 remainder(angle, 2 * pi)
-
+plt.xlim((-0.5, 4))
 plt.plot(np.array(range(0, len(linv))) *
          step_size, np.load("assets/speed_0.npy"), label="mass0")
 plt.plot(np.array(range(0, len(linv))) *
@@ -97,6 +97,7 @@ plt.plot(np.array(range(0, len(linv))) *
 plt.legend(loc="upper right")
 plt.savefig("assets/speed_all.png")
 plt.clf()
+plt.xlim((-0.5, 4))
 plt.plot(np.array(range(0, len(linv))) *
          step_size, np.load("assets/rotation_0.npy"), label="mass0")
 plt.plot(np.array(range(0, len(linv))) *
@@ -107,3 +108,29 @@ plt.plot(np.array(range(0, len(linv))) *
          step_size, np.load("assets/rotation_300.npy"), label="mass300")
 plt.legend(loc="upper right")
 plt.savefig("assets/rotation_all.png")
+plt.clf()
+
+fig = plt.figure(2, figsize=(16, 8))
+ax1=fig.add_subplot(1,2,1)
+ax1.set_xlim((-0.5, 4))
+ax1.plot(np.array(range(0, len(linv))) *
+         step_size, np.load("assets/speed_0.npy"), label="mass0")
+ax1.plot(np.array(range(0, len(linv))) *
+         step_size, np.load("assets/speed_50.npy"), label="mass50")
+ax1.plot(np.array(range(0, len(linv))) *
+         step_size, np.load("assets/speed_100.npy"), label="mass100")
+ax1.plot(np.array(range(0, len(linv))) *
+         step_size, np.load("assets/speed_300.npy"), label="mass300")
+ax1.legend(loc="upper right")
+ax2=fig.add_subplot(1, 2, 2)
+ax2.set_xlim((-0.5, 4))
+ax2.plot(np.array(range(0, len(linv))) *
+         step_size, np.load("assets/rotation_0.npy"), label="mass0")
+ax2.plot(np.array(range(0, len(linv))) *
+         step_size, np.load("assets/rotation_50.npy"), label="mass50")
+ax2.plot(np.array(range(0, len(linv))) *
+         step_size, np.load("assets/rotation_100.npy"), label="mass100")
+ax2.plot(np.array(range(0, len(linv))) *
+         step_size, np.load("assets/rotation_300.npy"), label="mass300")
+ax2.legend(loc="upper right")
+fig.savefig("assets/speed_rotation_all.png")

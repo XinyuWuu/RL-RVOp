@@ -37,12 +37,12 @@ importlib.reload(canvas)
 importlib.reload(render)
 importlib.reload(videoIO)
 importlib.reload(simulator_cpp)
-PARAMs["framerate"] = 25
+PARAMs["framerate"] = 50
 PARAMs["max_ep_len"] = int(PARAMs["max_simu_second"] * PARAMs["framerate"])
 vf_start = "module_saves/pyrvo2/"
-horizon_r = 100 / PARAMs['framerate']
-horizon_o = 100 / PARAMs['framerate']
-num_test_episodes = 5
+horizon_r = 2
+horizon_o = 2
+num_test_episodes = 100
 
 Nrobot_log = np.zeros(num_test_episodes)
 death_log = np.zeros(num_test_episodes)
@@ -51,7 +51,7 @@ lave_log = np.zeros(num_test_episodes)
 vave_log = np.zeros(num_test_episodes)
 extra_log = np.zeros(num_test_episodes)
 
-MODE, mode = 2, 0
+MODE, mode = 3, 5
 
 PARAMs["tolerance"] = 0.031
 PARAMs["dreach"] = 0.075
@@ -101,10 +101,10 @@ def preNNinput(NNinput: tuple, obs_sur_dim: int, max_obs: int, device):
 # init environment get initial observation
 # init model
 SMLT.EC.gate_ratio = PARAMs["gate_ratio"]
-Nrobot, robot_text, obs_text, obs, target_mode = SMLT.EC.env_create2(
+Nrobot, robot_text, obs_text, obs, target_mode, ow, oh, ch, fovy, w, h = SMLT.EC.env_create3(
     MODE=MODE, mode=mode)
 pos_vel, observation, r, NNinput, d, dpre = SMLT.set_model(
-    Nrobot, robot_text, obs_text, obs, target_mode)
+    Nrobot, robot_text, obs_text, obs, target_mode, ow, oh, ch, fovy)
 pos0 = np.zeros((Nrobot, 2), dtype=np.float64)
 for i in range(Nrobot):
     pos0[i] = pos_vel[i][0:2]
@@ -143,6 +143,8 @@ for obsi in obs:
         # for i in range(obsi_t.__len__()):
         #     obsi_t[i] = obsi_t[i] + obsi[0:2]
         sim.addObstacle(obsi_t)
+        # print(obsi)
+        # print(obsi_t)
 sim.processObstacles()
 ep_ret = 0
 ep_len = 0
@@ -202,7 +204,7 @@ for t in range(PARAMs["max_ep_len"] * (num_test_episodes + 1)):
                 len_count[Nth] = ep_len
                 die_mask[Nth] = 1
         print(
-            f"\neps: {eps_count+1}, {Nrobot} robots, mode: {MODE}_{mode}, ep_ret: {ep_ret:.2f}, ep_len: {ep_len}, Nreach: {d.sum()}, Ndeath: {die_mask.sum()}")
+            f"\neps: {eps_count+1}, {Nrobot} robots, obs: {obs.__len__()}, mode: {MODE}_{mode}, ep_ret: {ep_ret:.2f}, ep_len: {ep_len}, Nreach: {d.sum()}, Ndeath: {die_mask.sum()}")
         # print(die_mask)
         # print(len_count)
         if (1 - die_mask).sum() == 0:
@@ -222,7 +224,9 @@ for t in range(PARAMs["max_ep_len"] * (num_test_episodes + 1)):
             posc = np.sqrt(posc[:, 0]**2 + posc[:, 1]**2).reshape((Nrobot))
             p_ave = (posc * (1 - die_mask)).sum() / (1 - die_mask).sum()
             # print(p_ave)
-            m_ave = l_ave / PARAMs["framerate"] * v_ave
+            # m_ave = l_ave / PARAMs["framerate"] * v_ave
+            m_ave = (len_count * (1 - die_mask) * ((speed_sum / len_count))
+                     ).sum() / (1 - die_mask).sum() / PARAMs["framerate"]
             # print(m_ave)
             # print(m_ave / p_ave * 100)
             print(f"die_mask:{die_mask};len_count:{len_count}")
@@ -238,10 +242,10 @@ for t in range(PARAMs["max_ep_len"] * (num_test_episodes + 1)):
         eps_count += 1
         if eps_count == num_test_episodes:
             break
-        Nrobot, robot_text, obs_text, obs, target_mode = SMLT.EC.env_create2(
+        Nrobot, robot_text, obs_text, obs, target_mode, ow, oh, ch, fovy, w, h = SMLT.EC.env_create3(
             MODE=MODE, mode=mode)
         pos_vel, observation, r, NNinput, d, dpre = SMLT.set_model(
-            Nrobot, robot_text, obs_text, obs, target_mode)
+            Nrobot, robot_text, obs_text, obs, target_mode, ow, oh, ch, fovy)
         pos0 = np.zeros((Nrobot, 2), dtype=np.float64)
         for i in range(Nrobot):
             pos0[i] = pos_vel[i][0:2]
@@ -255,9 +259,10 @@ for t in range(PARAMs["max_ep_len"] * (num_test_episodes + 1)):
                        PARAMs["max_obs"], PARAMs["device"])
         sim = rvo2.PyRVOSimulator(
             1 / PARAMs['framerate'], PARAMs['dmax'], PARAMs['max_obs'],
-            horizon_r, horizon_o, 0.2, PARAMs['vmax'])
+            horizon_r, horizon_o, 0.23, PARAMs['vmax'])
         for Nth in range(SMLT.Nrobot):
             sim.addAgent(tuple(pos_vel[Nth][0:2]))
+        # TODO add obs
         for obsi in obs:
             if obsi.shape[0] == 3:  # cylinder
                 obsi_t = []
@@ -281,6 +286,8 @@ for t in range(PARAMs["max_ep_len"] * (num_test_episodes + 1)):
                 # for i in range(obsi_t.__len__()):
                 #     obsi_t[i] = obsi_t[i] + obsi[0:2]
                 sim.addObstacle(obsi_t)
+                # print(obsi)
+                # print(obsi_t)
         sim.processObstacles()
         ep_ret = 0
         ep_len = 0

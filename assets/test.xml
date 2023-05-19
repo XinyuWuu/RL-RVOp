@@ -3,7 +3,7 @@
 	<geom friction="0.1 0.005 0.0001"/>
 </default>
 <visual>
-	 <global offwidth="1920" offheight="1080" />
+	 <global offwidth="1580" offheight="1580" />
 </visual>
 <worldbody>
 <light name="uplight_0" diffuse="0.4 0.4 0.4" pos="0 0 20" dir="0 0 -1" />
@@ -12,15 +12,15 @@
 <light name="uplight_3" diffuse="0.4 0.4 0.4" pos="10 -10 20" dir="0 0 -1" />
 <light name="uplight_4" diffuse="0.4 0.4 0.4" pos="-10 10 20" dir="0 0 -1" />
 <geom contype="2" friction="1 0.005 0.0001" pos="0 0 0" euler="0 0 0" type="plane" size="20 20 0.01" rgba="0.5 0.5 0.5 1"/>
-<camera mode="fixed" pos="0 0 12" fovy="30"></camera>
+<camera mode="fixed" pos="0 0 20" fovy="75"></camera>
 
-<body name="robot_0" pos="0.04260334208204492 -4.5 0" euler="0 0 352.30260320379506">
+<body name="robot_0" pos="8.0 0.0 0" euler="0 0 175.17976686611246">
     <!-- shell radius 17cm, wheel radius 4cm, distance between wheels 28cm -->
     <freejoint name="robot_0"></freejoint>
     <site name="front-flag_0" rgba="0.3 0.3 0.9 1" pos="0.12 0 0.22" type="sphere" size="0.05"></site>
 
     <!-- <body name="balancer_0" pos="0 0 0.05">
-        <geom mass="100" type="sphere" size="0.01"></geom>
+        <geom mass="50" type="sphere" size="0.01"></geom>
     </body> -->
 
     <body name="front-wheel_0" pos="0.14 0  0.01">
@@ -48,13 +48,13 @@
 </body>
 
 
-<body name="robot_1" pos="0.6694197478719495 -4.5 0" euler="0 0 287.6970831180205">
+<body name="robot_1" pos="7.8251808058704455 1.6632935265420745 0" euler="0 0 71.27226613489458">
     <!-- shell radius 17cm, wheel radius 4cm, distance between wheels 28cm -->
     <freejoint name="robot_1"></freejoint>
     <site name="front-flag_1" rgba="0.3 0.3 0.9 1" pos="0.12 0 0.22" type="sphere" size="0.05"></site>
 
     <!-- <body name="balancer_1" pos="0 0 0.05">
-        <geom mass="100" type="sphere" size="0.01"></geom>
+        <geom mass="50" type="sphere" size="0.01"></geom>
     </body> -->
 
     <body name="front-wheel_1" pos="0.14 0  0.01">
@@ -82,13 +82,13 @@
 </body>
 
 
-<body name="robot_2" pos="-4.5 -0.5463607975220686 0" euler="0 0 166.13257041105544">
+<body name="robot_2" pos="7.308363661140807 3.2538931446064012 0" euler="0 0 190.2047109060873">
     <!-- shell radius 17cm, wheel radius 4cm, distance between wheels 28cm -->
     <freejoint name="robot_2"></freejoint>
     <site name="front-flag_2" rgba="0.3 0.3 0.9 1" pos="0.12 0 0.22" type="sphere" size="0.05"></site>
 
     <!-- <body name="balancer_2" pos="0 0 0.05">
-        <geom mass="100" type="sphere" size="0.01"></geom>
+        <geom mass="50" type="sphere" size="0.01"></geom>
     </body> -->
 
     <body name="front-wheel_2" pos="0.14 0  0.01">
@@ -116,13 +116,13 @@
 </body>
 
 
-<body name="robot_3" pos="4.5 0.6722747070375771 0" euler="0 0 280.99050346312396">
+<body name="robot_3" pos="6.47213595499958 4.702282018339785 0" euler="0 0 132.7303648254095">
     <!-- shell radius 17cm, wheel radius 4cm, distance between wheels 28cm -->
     <freejoint name="robot_3"></freejoint>
     <site name="front-flag_3" rgba="0.3 0.3 0.9 1" pos="0.12 0 0.22" type="sphere" size="0.05"></site>
 
     <!-- <body name="balancer_3" pos="0 0 0.05">
-        <geom mass="100" type="sphere" size="0.01"></geom>
+        <geom mass="50" type="sphere" size="0.01"></geom>
     </body> -->
 
     <body name="front-wheel_3" pos="0.14 0  0.01">
@@ -150,13 +150,13 @@
 </body>
 
 
-<body name="robot_4" pos="-1.1934653025223845 4.5 0" euler="0 0 42.57879331281596">
+<body name="robot_4" pos="5.353044850870866 5.945158603819153 0" euler="0 0 281.8349707010589">
     <!-- shell radius 17cm, wheel radius 4cm, distance between wheels 28cm -->
     <freejoint name="robot_4"></freejoint>
     <site name="front-flag_4" rgba="0.3 0.3 0.9 1" pos="0.12 0 0.22" type="sphere" size="0.05"></site>
 
     <!-- <body name="balancer_4" pos="0 0 0.05">
-        <geom mass="100" type="sphere" size="0.01"></geom>
+        <geom mass="50" type="sphere" size="0.01"></geom>
     </body> -->
 
     <body name="front-wheel_4" pos="0.14 0  0.01">
@@ -184,13 +184,13 @@
 </body>
 
 
-<body name="robot_5" pos="4.5 -0.5671809591552981 0" euler="0 0 230.3715676779086">
+<body name="robot_5" pos="4.000000000000001 6.928203230275509 0" euler="0 0 101.75491033799237">
     <!-- shell radius 17cm, wheel radius 4cm, distance between wheels 28cm -->
     <freejoint name="robot_5"></freejoint>
     <site name="front-flag_5" rgba="0.3 0.3 0.9 1" pos="0.12 0 0.22" type="sphere" size="0.05"></site>
 
     <!-- <body name="balancer_5" pos="0 0 0.05">
-        <geom mass="100" type="sphere" size="0.01"></geom>
+        <geom mass="50" type="sphere" size="0.01"></geom>
     </body> -->
 
     <body name="front-wheel_5" pos="0.14 0  0.01">
@@ -218,13 +218,13 @@
 </body>
 
 
-<body name="robot_6" pos="1.2652509111185113 4.5 0" euler="0 0 51.607183467256704">
+<body name="robot_6" pos="2.4721359549995796 7.608452130361228 0" euler="0 0 123.04947978521677">
     <!-- shell radius 17cm, wheel radius 4cm, distance between wheels 28cm -->
     <freejoint name="robot_6"></freejoint>
     <site name="front-flag_6" rgba="0.3 0.3 0.9 1" pos="0.12 0 0.22" type="sphere" size="0.05"></site>
 
     <!-- <body name="balancer_6" pos="0 0 0.05">
-        <geom mass="100" type="sphere" size="0.01"></geom>
+        <geom mass="50" type="sphere" size="0.01"></geom>
     </body> -->
 
     <body name="front-wheel_6" pos="0.14 0  0.01">
@@ -252,13 +252,13 @@
 </body>
 
 
-<body name="robot_7" pos="-4.5 1.2317741099504178 0" euler="0 0 340.08081013785016">
+<body name="robot_7" pos="0.8362277061412294 7.956175162946186 0" euler="0 0 187.4988707946689">
     <!-- shell radius 17cm, wheel radius 4cm, distance between wheels 28cm -->
     <freejoint name="robot_7"></freejoint>
     <site name="front-flag_7" rgba="0.3 0.3 0.9 1" pos="0.12 0 0.22" type="sphere" size="0.05"></site>
 
     <!-- <body name="balancer_7" pos="0 0 0.05">
-        <geom mass="100" type="sphere" size="0.01"></geom>
+        <geom mass="50" type="sphere" size="0.01"></geom>
     </body> -->
 
     <body name="front-wheel_7" pos="0.14 0  0.01">
@@ -286,13 +286,13 @@
 </body>
 
 
-<body name="robot_8" pos="4.5 0.06688297505865598 0" euler="0 0 187.8653958300258">
+<body name="robot_8" pos="-0.8362277061412267 7.956175162946187 0" euler="0 0 102.82999987320555">
     <!-- shell radius 17cm, wheel radius 4cm, distance between wheels 28cm -->
     <freejoint name="robot_8"></freejoint>
     <site name="front-flag_8" rgba="0.3 0.3 0.9 1" pos="0.12 0 0.22" type="sphere" size="0.05"></site>
 
     <!-- <body name="balancer_8" pos="0 0 0.05">
-        <geom mass="100" type="sphere" size="0.01"></geom>
+        <geom mass="50" type="sphere" size="0.01"></geom>
     </body> -->
 
     <body name="front-wheel_8" pos="0.14 0  0.01">
@@ -320,13 +320,13 @@
 </body>
 
 
-<body name="robot_9" pos="4.5 -1.1515579415200008 0" euler="0 0 149.2782983965885">
+<body name="robot_9" pos="-2.4721359549995787 7.608452130361229 0" euler="0 0 264.263178795489">
     <!-- shell radius 17cm, wheel radius 4cm, distance between wheels 28cm -->
     <freejoint name="robot_9"></freejoint>
     <site name="front-flag_9" rgba="0.3 0.3 0.9 1" pos="0.12 0 0.22" type="sphere" size="0.05"></site>
 
     <!-- <body name="balancer_9" pos="0 0 0.05">
-        <geom mass="100" type="sphere" size="0.01"></geom>
+        <geom mass="50" type="sphere" size="0.01"></geom>
     </body> -->
 
     <body name="front-wheel_9" pos="0.14 0  0.01">
@@ -354,13 +354,13 @@
 </body>
 
 
-<body name="robot_10" pos="4.5 1.2287581139119332 0" euler="0 0 95.24002035766571">
+<body name="robot_10" pos="-3.9999999999999982 6.92820323027551 0" euler="0 0 32.669801687568246">
     <!-- shell radius 17cm, wheel radius 4cm, distance between wheels 28cm -->
     <freejoint name="robot_10"></freejoint>
     <site name="front-flag_10" rgba="0.3 0.3 0.9 1" pos="0.12 0 0.22" type="sphere" size="0.05"></site>
 
     <!-- <body name="balancer_10" pos="0 0 0.05">
-        <geom mass="100" type="sphere" size="0.01"></geom>
+        <geom mass="50" type="sphere" size="0.01"></geom>
     </body> -->
 
     <body name="front-wheel_10" pos="0.14 0  0.01">
@@ -388,13 +388,13 @@
 </body>
 
 
-<body name="robot_11" pos="-4.5 0.6408662387247672 0" euler="0 0 278.72412819631796">
+<body name="robot_11" pos="-5.353044850870863 5.945158603819156 0" euler="0 0 48.75332740168098">
     <!-- shell radius 17cm, wheel radius 4cm, distance between wheels 28cm -->
     <freejoint name="robot_11"></freejoint>
     <site name="front-flag_11" rgba="0.3 0.3 0.9 1" pos="0.12 0 0.22" type="sphere" size="0.05"></site>
 
     <!-- <body name="balancer_11" pos="0 0 0.05">
-        <geom mass="100" type="sphere" size="0.01"></geom>
+        <geom mass="50" type="sphere" size="0.01"></geom>
     </body> -->
 
     <body name="front-wheel_11" pos="0.14 0  0.01">
@@ -422,13 +422,13 @@
 </body>
 
 
-<body name="robot_12" pos="-4.5 0.04520725320537329 0" euler="0 0 164.21411959795748">
+<body name="robot_12" pos="-6.472135954999579 4.702282018339786 0" euler="0 0 306.6042002253721">
     <!-- shell radius 17cm, wheel radius 4cm, distance between wheels 28cm -->
     <freejoint name="robot_12"></freejoint>
     <site name="front-flag_12" rgba="0.3 0.3 0.9 1" pos="0.12 0 0.22" type="sphere" size="0.05"></site>
 
     <!-- <body name="balancer_12" pos="0 0 0.05">
-        <geom mass="100" type="sphere" size="0.01"></geom>
+        <geom mass="50" type="sphere" size="0.01"></geom>
     </body> -->
 
     <body name="front-wheel_12" pos="0.14 0  0.01">
@@ -456,13 +456,13 @@
 </body>
 
 
-<body name="robot_13" pos="-0.5603328810185322 -4.5 0" euler="0 0 204.63622159271344">
+<body name="robot_13" pos="-7.308363661140806 3.2538931446064034 0" euler="0 0 256.653524536923">
     <!-- shell radius 17cm, wheel radius 4cm, distance between wheels 28cm -->
     <freejoint name="robot_13"></freejoint>
     <site name="front-flag_13" rgba="0.3 0.3 0.9 1" pos="0.12 0 0.22" type="sphere" size="0.05"></site>
 
     <!-- <body name="balancer_13" pos="0 0 0.05">
-        <geom mass="100" type="sphere" size="0.01"></geom>
+        <geom mass="50" type="sphere" size="0.01"></geom>
     </body> -->
 
     <body name="front-wheel_13" pos="0.14 0  0.01">
@@ -490,13 +490,13 @@
 </body>
 
 
-<body name="robot_14" pos="0.06244648841609535 4.5 0" euler="0 0 6.764328157087851">
+<body name="robot_14" pos="-7.825180805870445 1.6632935265420778 0" euler="0 0 330.9116634937418">
     <!-- shell radius 17cm, wheel radius 4cm, distance between wheels 28cm -->
     <freejoint name="robot_14"></freejoint>
     <site name="front-flag_14" rgba="0.3 0.3 0.9 1" pos="0.12 0 0.22" type="sphere" size="0.05"></site>
 
     <!-- <body name="balancer_14" pos="0 0 0.05">
-        <geom mass="100" type="sphere" size="0.01"></geom>
+        <geom mass="50" type="sphere" size="0.01"></geom>
     </body> -->
 
     <body name="front-wheel_14" pos="0.14 0  0.01">
@@ -524,13 +524,13 @@
 </body>
 
 
-<body name="robot_15" pos="-4.5 -1.1588389872054508 0" euler="0 0 222.34877894731574">
+<body name="robot_15" pos="-8.0 9.797174393178826e-16 0" euler="0 0 282.78703863731994">
     <!-- shell radius 17cm, wheel radius 4cm, distance between wheels 28cm -->
     <freejoint name="robot_15"></freejoint>
     <site name="front-flag_15" rgba="0.3 0.3 0.9 1" pos="0.12 0 0.22" type="sphere" size="0.05"></site>
 
     <!-- <body name="balancer_15" pos="0 0 0.05">
-        <geom mass="100" type="sphere" size="0.01"></geom>
+        <geom mass="50" type="sphere" size="0.01"></geom>
     </body> -->
 
     <body name="front-wheel_15" pos="0.14 0  0.01">
@@ -558,33 +558,481 @@
 </body>
 
 
-<body pos="5.8 5.8 0.25">
-	<geom rgba="0.5 0 0 1" type="box" pos="4.440886864859097e-16 -4.242635687119286 0" size="4.242640687119286 5e-06 0.25" euler="0 0 5.99731142185992e-15" />
-	<geom rgba="0.5 0 0 1" type="box" pos="4.242635687119286 0.0 0" size="4.242640687119285 5e-06 0.25" euler="0 0 90.0" />
-	<geom rgba="0.5 0 0 1" type="box" pos="4.440886864859097e-16 4.242635687119286 0" size="4.242640687119286 5e-06 0.25" euler="0 0 180.0" />
-	<geom rgba="0.5 0 0 1" type="box" pos="-4.242635687119285 0.0 0" size="4.242640687119286 5e-06 0.25" euler="0 0 -90.0" />
+<body name="robot_16" pos="-7.8251808058704455 -1.6632935265420725 0" euler="0 0 60.79388417314348">
+    <!-- shell radius 17cm, wheel radius 4cm, distance between wheels 28cm -->
+    <freejoint name="robot_16"></freejoint>
+    <site name="front-flag_16" rgba="0.3 0.3 0.9 1" pos="0.12 0 0.22" type="sphere" size="0.05"></site>
+
+    <!-- <body name="balancer_16" pos="0 0 0.05">
+        <geom mass="50" type="sphere" size="0.01"></geom>
+    </body> -->
+
+    <body name="front-wheel_16" pos="0.14 0  0.01">
+        <joint type="ball" pos="0 0 0"></joint>
+        <geom friction="1 0.005 0.0001" contype="2" conaffinity="2" type="sphere" size="0.01"></geom>
+    </body>
+
+    <body name="back-wheel_16" pos="-0.14 0  0.01">
+        <joint type="ball" pos="0 0 0"></joint>
+        <geom friction="1 0.005 0.0001" contype="2" conaffinity="2" type="sphere" size="0.01"></geom>
+    </body>
+
+    <body name="left-wheel_16" pos="0 0.14 0.04" euler="90 0 0">
+        <joint damping="0.3" name="left-wheel_16" type="hinge" pos="0 0 0" axis="0 0 -1"></joint>
+        <geom friction="1 0.005 0.0001" contype="2" conaffinity="2" rgba="0.1 0.1 0.1 1" type="cylinder" size="0.04 0.005"></geom>
+    </body>
+
+    <body name="right-wheel_16" pos="0 -0.14 0.04" euler="-90 0  0">
+        <joint damping="0.3" name="right-wheel_16" type="hinge" pos="0 0 0" axis="0 0 1"></joint>
+        <geom friction="1 0.005 0.0001" contype="2" conaffinity="2" rgba="0.1 0.1 0.1 1" type="cylinder" size="0.04 0.005"></geom>
+    </body>
+    <body name="shell_16">
+      <geom type="cylinder" rgba="0.3 0.9 0.3 1" pos="0 0 0.12" size="0.2 0.1"></geom>
+    </body>
 </body>
 
-<body pos="-5.8 5.8 0.25">
-	<geom rgba="0.5 0 0 1" type="box" pos="4.440886864859097e-16 -4.242635687119286 0" size="4.242640687119286 5e-06 0.25" euler="0 0 5.99731142185992e-15" />
-	<geom rgba="0.5 0 0 1" type="box" pos="4.242635687119286 0.0 0" size="4.242640687119285 5e-06 0.25" euler="0 0 90.0" />
-	<geom rgba="0.5 0 0 1" type="box" pos="4.440886864859097e-16 4.242635687119286 0" size="4.242640687119286 5e-06 0.25" euler="0 0 180.0" />
-	<geom rgba="0.5 0 0 1" type="box" pos="-4.242635687119285 0.0 0" size="4.242640687119286 5e-06 0.25" euler="0 0 -90.0" />
+
+<body name="robot_17" pos="-7.308363661140809 -3.2538931446063986 0" euler="0 0 250.65052055430962">
+    <!-- shell radius 17cm, wheel radius 4cm, distance between wheels 28cm -->
+    <freejoint name="robot_17"></freejoint>
+    <site name="front-flag_17" rgba="0.3 0.3 0.9 1" pos="0.12 0 0.22" type="sphere" size="0.05"></site>
+
+    <!-- <body name="balancer_17" pos="0 0 0.05">
+        <geom mass="50" type="sphere" size="0.01"></geom>
+    </body> -->
+
+    <body name="front-wheel_17" pos="0.14 0  0.01">
+        <joint type="ball" pos="0 0 0"></joint>
+        <geom friction="1 0.005 0.0001" contype="2" conaffinity="2" type="sphere" size="0.01"></geom>
+    </body>
+
+    <body name="back-wheel_17" pos="-0.14 0  0.01">
+        <joint type="ball" pos="0 0 0"></joint>
+        <geom friction="1 0.005 0.0001" contype="2" conaffinity="2" type="sphere" size="0.01"></geom>
+    </body>
+
+    <body name="left-wheel_17" pos="0 0.14 0.04" euler="90 0 0">
+        <joint damping="0.3" name="left-wheel_17" type="hinge" pos="0 0 0" axis="0 0 -1"></joint>
+        <geom friction="1 0.005 0.0001" contype="2" conaffinity="2" rgba="0.1 0.1 0.1 1" type="cylinder" size="0.04 0.005"></geom>
+    </body>
+
+    <body name="right-wheel_17" pos="0 -0.14 0.04" euler="-90 0  0">
+        <joint damping="0.3" name="right-wheel_17" type="hinge" pos="0 0 0" axis="0 0 1"></joint>
+        <geom friction="1 0.005 0.0001" contype="2" conaffinity="2" rgba="0.1 0.1 0.1 1" type="cylinder" size="0.04 0.005"></geom>
+    </body>
+    <body name="shell_17">
+      <geom type="cylinder" rgba="0.3 0.9 0.3 1" pos="0 0 0.12" size="0.2 0.1"></geom>
+    </body>
 </body>
 
-<body pos="5.8 -5.8 0.25">
-	<geom rgba="0.5 0 0 1" type="box" pos="4.440886864859097e-16 -4.242635687119286 0" size="4.242640687119286 5e-06 0.25" euler="0 0 5.99731142185992e-15" />
-	<geom rgba="0.5 0 0 1" type="box" pos="4.242635687119286 0.0 0" size="4.242640687119285 5e-06 0.25" euler="0 0 90.0" />
-	<geom rgba="0.5 0 0 1" type="box" pos="4.440886864859097e-16 4.242635687119286 0" size="4.242640687119286 5e-06 0.25" euler="0 0 180.0" />
-	<geom rgba="0.5 0 0 1" type="box" pos="-4.242635687119285 0.0 0" size="4.242640687119286 5e-06 0.25" euler="0 0 -90.0" />
+
+<body name="robot_18" pos="-6.4721359549995805 -4.702282018339784 0" euler="0 0 320.0202549218056">
+    <!-- shell radius 17cm, wheel radius 4cm, distance between wheels 28cm -->
+    <freejoint name="robot_18"></freejoint>
+    <site name="front-flag_18" rgba="0.3 0.3 0.9 1" pos="0.12 0 0.22" type="sphere" size="0.05"></site>
+
+    <!-- <body name="balancer_18" pos="0 0 0.05">
+        <geom mass="50" type="sphere" size="0.01"></geom>
+    </body> -->
+
+    <body name="front-wheel_18" pos="0.14 0  0.01">
+        <joint type="ball" pos="0 0 0"></joint>
+        <geom friction="1 0.005 0.0001" contype="2" conaffinity="2" type="sphere" size="0.01"></geom>
+    </body>
+
+    <body name="back-wheel_18" pos="-0.14 0  0.01">
+        <joint type="ball" pos="0 0 0"></joint>
+        <geom friction="1 0.005 0.0001" contype="2" conaffinity="2" type="sphere" size="0.01"></geom>
+    </body>
+
+    <body name="left-wheel_18" pos="0 0.14 0.04" euler="90 0 0">
+        <joint damping="0.3" name="left-wheel_18" type="hinge" pos="0 0 0" axis="0 0 -1"></joint>
+        <geom friction="1 0.005 0.0001" contype="2" conaffinity="2" rgba="0.1 0.1 0.1 1" type="cylinder" size="0.04 0.005"></geom>
+    </body>
+
+    <body name="right-wheel_18" pos="0 -0.14 0.04" euler="-90 0  0">
+        <joint damping="0.3" name="right-wheel_18" type="hinge" pos="0 0 0" axis="0 0 1"></joint>
+        <geom friction="1 0.005 0.0001" contype="2" conaffinity="2" rgba="0.1 0.1 0.1 1" type="cylinder" size="0.04 0.005"></geom>
+    </body>
+    <body name="shell_18">
+      <geom type="cylinder" rgba="0.3 0.9 0.3 1" pos="0 0 0.12" size="0.2 0.1"></geom>
+    </body>
 </body>
 
-<body pos="-5.8 -5.8 0.25">
-	<geom rgba="0.5 0 0 1" type="box" pos="4.440886864859097e-16 -4.242635687119286 0" size="4.242640687119286 5e-06 0.25" euler="0 0 5.99731142185992e-15" />
-	<geom rgba="0.5 0 0 1" type="box" pos="4.242635687119286 0.0 0" size="4.242640687119285 5e-06 0.25" euler="0 0 90.0" />
-	<geom rgba="0.5 0 0 1" type="box" pos="4.440886864859097e-16 4.242635687119286 0" size="4.242640687119286 5e-06 0.25" euler="0 0 180.0" />
-	<geom rgba="0.5 0 0 1" type="box" pos="-4.242635687119285 0.0 0" size="4.242640687119286 5e-06 0.25" euler="0 0 -90.0" />
+
+<body name="robot_19" pos="-5.353044850870868 -5.945158603819152 0" euler="0 0 253.17155164047412">
+    <!-- shell radius 17cm, wheel radius 4cm, distance between wheels 28cm -->
+    <freejoint name="robot_19"></freejoint>
+    <site name="front-flag_19" rgba="0.3 0.3 0.9 1" pos="0.12 0 0.22" type="sphere" size="0.05"></site>
+
+    <!-- <body name="balancer_19" pos="0 0 0.05">
+        <geom mass="50" type="sphere" size="0.01"></geom>
+    </body> -->
+
+    <body name="front-wheel_19" pos="0.14 0  0.01">
+        <joint type="ball" pos="0 0 0"></joint>
+        <geom friction="1 0.005 0.0001" contype="2" conaffinity="2" type="sphere" size="0.01"></geom>
+    </body>
+
+    <body name="back-wheel_19" pos="-0.14 0  0.01">
+        <joint type="ball" pos="0 0 0"></joint>
+        <geom friction="1 0.005 0.0001" contype="2" conaffinity="2" type="sphere" size="0.01"></geom>
+    </body>
+
+    <body name="left-wheel_19" pos="0 0.14 0.04" euler="90 0 0">
+        <joint damping="0.3" name="left-wheel_19" type="hinge" pos="0 0 0" axis="0 0 -1"></joint>
+        <geom friction="1 0.005 0.0001" contype="2" conaffinity="2" rgba="0.1 0.1 0.1 1" type="cylinder" size="0.04 0.005"></geom>
+    </body>
+
+    <body name="right-wheel_19" pos="0 -0.14 0.04" euler="-90 0  0">
+        <joint damping="0.3" name="right-wheel_19" type="hinge" pos="0 0 0" axis="0 0 1"></joint>
+        <geom friction="1 0.005 0.0001" contype="2" conaffinity="2" rgba="0.1 0.1 0.1 1" type="cylinder" size="0.04 0.005"></geom>
+    </body>
+    <body name="shell_19">
+      <geom type="cylinder" rgba="0.3 0.9 0.3 1" pos="0 0 0.12" size="0.2 0.1"></geom>
+    </body>
 </body>
+
+
+<body name="robot_20" pos="-4.0000000000000036 -6.928203230275507 0" euler="0 0 229.54536159551188">
+    <!-- shell radius 17cm, wheel radius 4cm, distance between wheels 28cm -->
+    <freejoint name="robot_20"></freejoint>
+    <site name="front-flag_20" rgba="0.3 0.3 0.9 1" pos="0.12 0 0.22" type="sphere" size="0.05"></site>
+
+    <!-- <body name="balancer_20" pos="0 0 0.05">
+        <geom mass="50" type="sphere" size="0.01"></geom>
+    </body> -->
+
+    <body name="front-wheel_20" pos="0.14 0  0.01">
+        <joint type="ball" pos="0 0 0"></joint>
+        <geom friction="1 0.005 0.0001" contype="2" conaffinity="2" type="sphere" size="0.01"></geom>
+    </body>
+
+    <body name="back-wheel_20" pos="-0.14 0  0.01">
+        <joint type="ball" pos="0 0 0"></joint>
+        <geom friction="1 0.005 0.0001" contype="2" conaffinity="2" type="sphere" size="0.01"></geom>
+    </body>
+
+    <body name="left-wheel_20" pos="0 0.14 0.04" euler="90 0 0">
+        <joint damping="0.3" name="left-wheel_20" type="hinge" pos="0 0 0" axis="0 0 -1"></joint>
+        <geom friction="1 0.005 0.0001" contype="2" conaffinity="2" rgba="0.1 0.1 0.1 1" type="cylinder" size="0.04 0.005"></geom>
+    </body>
+
+    <body name="right-wheel_20" pos="0 -0.14 0.04" euler="-90 0  0">
+        <joint damping="0.3" name="right-wheel_20" type="hinge" pos="0 0 0" axis="0 0 1"></joint>
+        <geom friction="1 0.005 0.0001" contype="2" conaffinity="2" rgba="0.1 0.1 0.1 1" type="cylinder" size="0.04 0.005"></geom>
+    </body>
+    <body name="shell_20">
+      <geom type="cylinder" rgba="0.3 0.9 0.3 1" pos="0 0 0.12" size="0.2 0.1"></geom>
+    </body>
+</body>
+
+
+<body name="robot_21" pos="-2.4721359549995805 -7.608452130361228 0" euler="0 0 355.98648334097334">
+    <!-- shell radius 17cm, wheel radius 4cm, distance between wheels 28cm -->
+    <freejoint name="robot_21"></freejoint>
+    <site name="front-flag_21" rgba="0.3 0.3 0.9 1" pos="0.12 0 0.22" type="sphere" size="0.05"></site>
+
+    <!-- <body name="balancer_21" pos="0 0 0.05">
+        <geom mass="50" type="sphere" size="0.01"></geom>
+    </body> -->
+
+    <body name="front-wheel_21" pos="0.14 0  0.01">
+        <joint type="ball" pos="0 0 0"></joint>
+        <geom friction="1 0.005 0.0001" contype="2" conaffinity="2" type="sphere" size="0.01"></geom>
+    </body>
+
+    <body name="back-wheel_21" pos="-0.14 0  0.01">
+        <joint type="ball" pos="0 0 0"></joint>
+        <geom friction="1 0.005 0.0001" contype="2" conaffinity="2" type="sphere" size="0.01"></geom>
+    </body>
+
+    <body name="left-wheel_21" pos="0 0.14 0.04" euler="90 0 0">
+        <joint damping="0.3" name="left-wheel_21" type="hinge" pos="0 0 0" axis="0 0 -1"></joint>
+        <geom friction="1 0.005 0.0001" contype="2" conaffinity="2" rgba="0.1 0.1 0.1 1" type="cylinder" size="0.04 0.005"></geom>
+    </body>
+
+    <body name="right-wheel_21" pos="0 -0.14 0.04" euler="-90 0  0">
+        <joint damping="0.3" name="right-wheel_21" type="hinge" pos="0 0 0" axis="0 0 1"></joint>
+        <geom friction="1 0.005 0.0001" contype="2" conaffinity="2" rgba="0.1 0.1 0.1 1" type="cylinder" size="0.04 0.005"></geom>
+    </body>
+    <body name="shell_21">
+      <geom type="cylinder" rgba="0.3 0.9 0.3 1" pos="0 0 0.12" size="0.2 0.1"></geom>
+    </body>
+</body>
+
+
+<body name="robot_22" pos="-0.8362277061412339 -7.956175162946186 0" euler="0 0 217.76950467242582">
+    <!-- shell radius 17cm, wheel radius 4cm, distance between wheels 28cm -->
+    <freejoint name="robot_22"></freejoint>
+    <site name="front-flag_22" rgba="0.3 0.3 0.9 1" pos="0.12 0 0.22" type="sphere" size="0.05"></site>
+
+    <!-- <body name="balancer_22" pos="0 0 0.05">
+        <geom mass="50" type="sphere" size="0.01"></geom>
+    </body> -->
+
+    <body name="front-wheel_22" pos="0.14 0  0.01">
+        <joint type="ball" pos="0 0 0"></joint>
+        <geom friction="1 0.005 0.0001" contype="2" conaffinity="2" type="sphere" size="0.01"></geom>
+    </body>
+
+    <body name="back-wheel_22" pos="-0.14 0  0.01">
+        <joint type="ball" pos="0 0 0"></joint>
+        <geom friction="1 0.005 0.0001" contype="2" conaffinity="2" type="sphere" size="0.01"></geom>
+    </body>
+
+    <body name="left-wheel_22" pos="0 0.14 0.04" euler="90 0 0">
+        <joint damping="0.3" name="left-wheel_22" type="hinge" pos="0 0 0" axis="0 0 -1"></joint>
+        <geom friction="1 0.005 0.0001" contype="2" conaffinity="2" rgba="0.1 0.1 0.1 1" type="cylinder" size="0.04 0.005"></geom>
+    </body>
+
+    <body name="right-wheel_22" pos="0 -0.14 0.04" euler="-90 0  0">
+        <joint damping="0.3" name="right-wheel_22" type="hinge" pos="0 0 0" axis="0 0 1"></joint>
+        <geom friction="1 0.005 0.0001" contype="2" conaffinity="2" rgba="0.1 0.1 0.1 1" type="cylinder" size="0.04 0.005"></geom>
+    </body>
+    <body name="shell_22">
+      <geom type="cylinder" rgba="0.3 0.9 0.3 1" pos="0 0 0.12" size="0.2 0.1"></geom>
+    </body>
+</body>
+
+
+<body name="robot_23" pos="0.8362277061412239 -7.956175162946187 0" euler="0 0 268.71580253219526">
+    <!-- shell radius 17cm, wheel radius 4cm, distance between wheels 28cm -->
+    <freejoint name="robot_23"></freejoint>
+    <site name="front-flag_23" rgba="0.3 0.3 0.9 1" pos="0.12 0 0.22" type="sphere" size="0.05"></site>
+
+    <!-- <body name="balancer_23" pos="0 0 0.05">
+        <geom mass="50" type="sphere" size="0.01"></geom>
+    </body> -->
+
+    <body name="front-wheel_23" pos="0.14 0  0.01">
+        <joint type="ball" pos="0 0 0"></joint>
+        <geom friction="1 0.005 0.0001" contype="2" conaffinity="2" type="sphere" size="0.01"></geom>
+    </body>
+
+    <body name="back-wheel_23" pos="-0.14 0  0.01">
+        <joint type="ball" pos="0 0 0"></joint>
+        <geom friction="1 0.005 0.0001" contype="2" conaffinity="2" type="sphere" size="0.01"></geom>
+    </body>
+
+    <body name="left-wheel_23" pos="0 0.14 0.04" euler="90 0 0">
+        <joint damping="0.3" name="left-wheel_23" type="hinge" pos="0 0 0" axis="0 0 -1"></joint>
+        <geom friction="1 0.005 0.0001" contype="2" conaffinity="2" rgba="0.1 0.1 0.1 1" type="cylinder" size="0.04 0.005"></geom>
+    </body>
+
+    <body name="right-wheel_23" pos="0 -0.14 0.04" euler="-90 0  0">
+        <joint damping="0.3" name="right-wheel_23" type="hinge" pos="0 0 0" axis="0 0 1"></joint>
+        <geom friction="1 0.005 0.0001" contype="2" conaffinity="2" rgba="0.1 0.1 0.1 1" type="cylinder" size="0.04 0.005"></geom>
+    </body>
+    <body name="shell_23">
+      <geom type="cylinder" rgba="0.3 0.9 0.3 1" pos="0 0 0.12" size="0.2 0.1"></geom>
+    </body>
+</body>
+
+
+<body name="robot_24" pos="2.472135954999578 -7.608452130361229 0" euler="0 0 94.95968614425216">
+    <!-- shell radius 17cm, wheel radius 4cm, distance between wheels 28cm -->
+    <freejoint name="robot_24"></freejoint>
+    <site name="front-flag_24" rgba="0.3 0.3 0.9 1" pos="0.12 0 0.22" type="sphere" size="0.05"></site>
+
+    <!-- <body name="balancer_24" pos="0 0 0.05">
+        <geom mass="50" type="sphere" size="0.01"></geom>
+    </body> -->
+
+    <body name="front-wheel_24" pos="0.14 0  0.01">
+        <joint type="ball" pos="0 0 0"></joint>
+        <geom friction="1 0.005 0.0001" contype="2" conaffinity="2" type="sphere" size="0.01"></geom>
+    </body>
+
+    <body name="back-wheel_24" pos="-0.14 0  0.01">
+        <joint type="ball" pos="0 0 0"></joint>
+        <geom friction="1 0.005 0.0001" contype="2" conaffinity="2" type="sphere" size="0.01"></geom>
+    </body>
+
+    <body name="left-wheel_24" pos="0 0.14 0.04" euler="90 0 0">
+        <joint damping="0.3" name="left-wheel_24" type="hinge" pos="0 0 0" axis="0 0 -1"></joint>
+        <geom friction="1 0.005 0.0001" contype="2" conaffinity="2" rgba="0.1 0.1 0.1 1" type="cylinder" size="0.04 0.005"></geom>
+    </body>
+
+    <body name="right-wheel_24" pos="0 -0.14 0.04" euler="-90 0  0">
+        <joint damping="0.3" name="right-wheel_24" type="hinge" pos="0 0 0" axis="0 0 1"></joint>
+        <geom friction="1 0.005 0.0001" contype="2" conaffinity="2" rgba="0.1 0.1 0.1 1" type="cylinder" size="0.04 0.005"></geom>
+    </body>
+    <body name="shell_24">
+      <geom type="cylinder" rgba="0.3 0.9 0.3 1" pos="0 0 0.12" size="0.2 0.1"></geom>
+    </body>
+</body>
+
+
+<body name="robot_25" pos="3.9999999999999947 -6.928203230275512 0" euler="0 0 191.05496423811874">
+    <!-- shell radius 17cm, wheel radius 4cm, distance between wheels 28cm -->
+    <freejoint name="robot_25"></freejoint>
+    <site name="front-flag_25" rgba="0.3 0.3 0.9 1" pos="0.12 0 0.22" type="sphere" size="0.05"></site>
+
+    <!-- <body name="balancer_25" pos="0 0 0.05">
+        <geom mass="50" type="sphere" size="0.01"></geom>
+    </body> -->
+
+    <body name="front-wheel_25" pos="0.14 0  0.01">
+        <joint type="ball" pos="0 0 0"></joint>
+        <geom friction="1 0.005 0.0001" contype="2" conaffinity="2" type="sphere" size="0.01"></geom>
+    </body>
+
+    <body name="back-wheel_25" pos="-0.14 0  0.01">
+        <joint type="ball" pos="0 0 0"></joint>
+        <geom friction="1 0.005 0.0001" contype="2" conaffinity="2" type="sphere" size="0.01"></geom>
+    </body>
+
+    <body name="left-wheel_25" pos="0 0.14 0.04" euler="90 0 0">
+        <joint damping="0.3" name="left-wheel_25" type="hinge" pos="0 0 0" axis="0 0 -1"></joint>
+        <geom friction="1 0.005 0.0001" contype="2" conaffinity="2" rgba="0.1 0.1 0.1 1" type="cylinder" size="0.04 0.005"></geom>
+    </body>
+
+    <body name="right-wheel_25" pos="0 -0.14 0.04" euler="-90 0  0">
+        <joint damping="0.3" name="right-wheel_25" type="hinge" pos="0 0 0" axis="0 0 1"></joint>
+        <geom friction="1 0.005 0.0001" contype="2" conaffinity="2" rgba="0.1 0.1 0.1 1" type="cylinder" size="0.04 0.005"></geom>
+    </body>
+    <body name="shell_25">
+      <geom type="cylinder" rgba="0.3 0.9 0.3 1" pos="0 0 0.12" size="0.2 0.1"></geom>
+    </body>
+</body>
+
+
+<body name="robot_26" pos="5.353044850870862 -5.945158603819157 0" euler="0 0 162.904061684392">
+    <!-- shell radius 17cm, wheel radius 4cm, distance between wheels 28cm -->
+    <freejoint name="robot_26"></freejoint>
+    <site name="front-flag_26" rgba="0.3 0.3 0.9 1" pos="0.12 0 0.22" type="sphere" size="0.05"></site>
+
+    <!-- <body name="balancer_26" pos="0 0 0.05">
+        <geom mass="50" type="sphere" size="0.01"></geom>
+    </body> -->
+
+    <body name="front-wheel_26" pos="0.14 0  0.01">
+        <joint type="ball" pos="0 0 0"></joint>
+        <geom friction="1 0.005 0.0001" contype="2" conaffinity="2" type="sphere" size="0.01"></geom>
+    </body>
+
+    <body name="back-wheel_26" pos="-0.14 0  0.01">
+        <joint type="ball" pos="0 0 0"></joint>
+        <geom friction="1 0.005 0.0001" contype="2" conaffinity="2" type="sphere" size="0.01"></geom>
+    </body>
+
+    <body name="left-wheel_26" pos="0 0.14 0.04" euler="90 0 0">
+        <joint damping="0.3" name="left-wheel_26" type="hinge" pos="0 0 0" axis="0 0 -1"></joint>
+        <geom friction="1 0.005 0.0001" contype="2" conaffinity="2" rgba="0.1 0.1 0.1 1" type="cylinder" size="0.04 0.005"></geom>
+    </body>
+
+    <body name="right-wheel_26" pos="0 -0.14 0.04" euler="-90 0  0">
+        <joint damping="0.3" name="right-wheel_26" type="hinge" pos="0 0 0" axis="0 0 1"></joint>
+        <geom friction="1 0.005 0.0001" contype="2" conaffinity="2" rgba="0.1 0.1 0.1 1" type="cylinder" size="0.04 0.005"></geom>
+    </body>
+    <body name="shell_26">
+      <geom type="cylinder" rgba="0.3 0.9 0.3 1" pos="0 0 0.12" size="0.2 0.1"></geom>
+    </body>
+</body>
+
+
+<body name="robot_27" pos="6.472135954999579 -4.702282018339787 0" euler="0 0 132.94767515139338">
+    <!-- shell radius 17cm, wheel radius 4cm, distance between wheels 28cm -->
+    <freejoint name="robot_27"></freejoint>
+    <site name="front-flag_27" rgba="0.3 0.3 0.9 1" pos="0.12 0 0.22" type="sphere" size="0.05"></site>
+
+    <!-- <body name="balancer_27" pos="0 0 0.05">
+        <geom mass="50" type="sphere" size="0.01"></geom>
+    </body> -->
+
+    <body name="front-wheel_27" pos="0.14 0  0.01">
+        <joint type="ball" pos="0 0 0"></joint>
+        <geom friction="1 0.005 0.0001" contype="2" conaffinity="2" type="sphere" size="0.01"></geom>
+    </body>
+
+    <body name="back-wheel_27" pos="-0.14 0  0.01">
+        <joint type="ball" pos="0 0 0"></joint>
+        <geom friction="1 0.005 0.0001" contype="2" conaffinity="2" type="sphere" size="0.01"></geom>
+    </body>
+
+    <body name="left-wheel_27" pos="0 0.14 0.04" euler="90 0 0">
+        <joint damping="0.3" name="left-wheel_27" type="hinge" pos="0 0 0" axis="0 0 -1"></joint>
+        <geom friction="1 0.005 0.0001" contype="2" conaffinity="2" rgba="0.1 0.1 0.1 1" type="cylinder" size="0.04 0.005"></geom>
+    </body>
+
+    <body name="right-wheel_27" pos="0 -0.14 0.04" euler="-90 0  0">
+        <joint damping="0.3" name="right-wheel_27" type="hinge" pos="0 0 0" axis="0 0 1"></joint>
+        <geom friction="1 0.005 0.0001" contype="2" conaffinity="2" rgba="0.1 0.1 0.1 1" type="cylinder" size="0.04 0.005"></geom>
+    </body>
+    <body name="shell_27">
+      <geom type="cylinder" rgba="0.3 0.9 0.3 1" pos="0 0 0.12" size="0.2 0.1"></geom>
+    </body>
+</body>
+
+
+<body name="robot_28" pos="7.308363661140804 -3.2538931446064074 0" euler="0 0 332.3233049322984">
+    <!-- shell radius 17cm, wheel radius 4cm, distance between wheels 28cm -->
+    <freejoint name="robot_28"></freejoint>
+    <site name="front-flag_28" rgba="0.3 0.3 0.9 1" pos="0.12 0 0.22" type="sphere" size="0.05"></site>
+
+    <!-- <body name="balancer_28" pos="0 0 0.05">
+        <geom mass="50" type="sphere" size="0.01"></geom>
+    </body> -->
+
+    <body name="front-wheel_28" pos="0.14 0  0.01">
+        <joint type="ball" pos="0 0 0"></joint>
+        <geom friction="1 0.005 0.0001" contype="2" conaffinity="2" type="sphere" size="0.01"></geom>
+    </body>
+
+    <body name="back-wheel_28" pos="-0.14 0  0.01">
+        <joint type="ball" pos="0 0 0"></joint>
+        <geom friction="1 0.005 0.0001" contype="2" conaffinity="2" type="sphere" size="0.01"></geom>
+    </body>
+
+    <body name="left-wheel_28" pos="0 0.14 0.04" euler="90 0 0">
+        <joint damping="0.3" name="left-wheel_28" type="hinge" pos="0 0 0" axis="0 0 -1"></joint>
+        <geom friction="1 0.005 0.0001" contype="2" conaffinity="2" rgba="0.1 0.1 0.1 1" type="cylinder" size="0.04 0.005"></geom>
+    </body>
+
+    <body name="right-wheel_28" pos="0 -0.14 0.04" euler="-90 0  0">
+        <joint damping="0.3" name="right-wheel_28" type="hinge" pos="0 0 0" axis="0 0 1"></joint>
+        <geom friction="1 0.005 0.0001" contype="2" conaffinity="2" rgba="0.1 0.1 0.1 1" type="cylinder" size="0.04 0.005"></geom>
+    </body>
+    <body name="shell_28">
+      <geom type="cylinder" rgba="0.3 0.9 0.3 1" pos="0 0 0.12" size="0.2 0.1"></geom>
+    </body>
+</body>
+
+
+<body name="robot_29" pos="7.825180805870445 -1.663293526542079 0" euler="0 0 141.3699412831144">
+    <!-- shell radius 17cm, wheel radius 4cm, distance between wheels 28cm -->
+    <freejoint name="robot_29"></freejoint>
+    <site name="front-flag_29" rgba="0.3 0.3 0.9 1" pos="0.12 0 0.22" type="sphere" size="0.05"></site>
+
+    <!-- <body name="balancer_29" pos="0 0 0.05">
+        <geom mass="50" type="sphere" size="0.01"></geom>
+    </body> -->
+
+    <body name="front-wheel_29" pos="0.14 0  0.01">
+        <joint type="ball" pos="0 0 0"></joint>
+        <geom friction="1 0.005 0.0001" contype="2" conaffinity="2" type="sphere" size="0.01"></geom>
+    </body>
+
+    <body name="back-wheel_29" pos="-0.14 0  0.01">
+        <joint type="ball" pos="0 0 0"></joint>
+        <geom friction="1 0.005 0.0001" contype="2" conaffinity="2" type="sphere" size="0.01"></geom>
+    </body>
+
+    <body name="left-wheel_29" pos="0 0.14 0.04" euler="90 0 0">
+        <joint damping="0.3" name="left-wheel_29" type="hinge" pos="0 0 0" axis="0 0 -1"></joint>
+        <geom friction="1 0.005 0.0001" contype="2" conaffinity="2" rgba="0.1 0.1 0.1 1" type="cylinder" size="0.04 0.005"></geom>
+    </body>
+
+    <body name="right-wheel_29" pos="0 -0.14 0.04" euler="-90 0  0">
+        <joint damping="0.3" name="right-wheel_29" type="hinge" pos="0 0 0" axis="0 0 1"></joint>
+        <geom friction="1 0.005 0.0001" contype="2" conaffinity="2" rgba="0.1 0.1 0.1 1" type="cylinder" size="0.04 0.005"></geom>
+    </body>
+    <body name="shell_29">
+      <geom type="cylinder" rgba="0.3 0.9 0.3 1" pos="0 0 0.12" size="0.2 0.1"></geom>
+    </body>
+</body>
+
 </worldbody>
 
 <actuator>
@@ -620,5 +1068,33 @@
 	<velocity name="right-velocity-servo_14" joint="right-wheel_14" kv="0.05" />
 	<velocity name="left-velocity-servo_15" joint="left-wheel_15" kv="0.05" />
 	<velocity name="right-velocity-servo_15" joint="right-wheel_15" kv="0.05" />
+	<velocity name="left-velocity-servo_16" joint="left-wheel_16" kv="0.05" />
+	<velocity name="right-velocity-servo_16" joint="right-wheel_16" kv="0.05" />
+	<velocity name="left-velocity-servo_17" joint="left-wheel_17" kv="0.05" />
+	<velocity name="right-velocity-servo_17" joint="right-wheel_17" kv="0.05" />
+	<velocity name="left-velocity-servo_18" joint="left-wheel_18" kv="0.05" />
+	<velocity name="right-velocity-servo_18" joint="right-wheel_18" kv="0.05" />
+	<velocity name="left-velocity-servo_19" joint="left-wheel_19" kv="0.05" />
+	<velocity name="right-velocity-servo_19" joint="right-wheel_19" kv="0.05" />
+	<velocity name="left-velocity-servo_20" joint="left-wheel_20" kv="0.05" />
+	<velocity name="right-velocity-servo_20" joint="right-wheel_20" kv="0.05" />
+	<velocity name="left-velocity-servo_21" joint="left-wheel_21" kv="0.05" />
+	<velocity name="right-velocity-servo_21" joint="right-wheel_21" kv="0.05" />
+	<velocity name="left-velocity-servo_22" joint="left-wheel_22" kv="0.05" />
+	<velocity name="right-velocity-servo_22" joint="right-wheel_22" kv="0.05" />
+	<velocity name="left-velocity-servo_23" joint="left-wheel_23" kv="0.05" />
+	<velocity name="right-velocity-servo_23" joint="right-wheel_23" kv="0.05" />
+	<velocity name="left-velocity-servo_24" joint="left-wheel_24" kv="0.05" />
+	<velocity name="right-velocity-servo_24" joint="right-wheel_24" kv="0.05" />
+	<velocity name="left-velocity-servo_25" joint="left-wheel_25" kv="0.05" />
+	<velocity name="right-velocity-servo_25" joint="right-wheel_25" kv="0.05" />
+	<velocity name="left-velocity-servo_26" joint="left-wheel_26" kv="0.05" />
+	<velocity name="right-velocity-servo_26" joint="right-wheel_26" kv="0.05" />
+	<velocity name="left-velocity-servo_27" joint="left-wheel_27" kv="0.05" />
+	<velocity name="right-velocity-servo_27" joint="right-wheel_27" kv="0.05" />
+	<velocity name="left-velocity-servo_28" joint="left-wheel_28" kv="0.05" />
+	<velocity name="right-velocity-servo_28" joint="right-wheel_28" kv="0.05" />
+	<velocity name="left-velocity-servo_29" joint="left-wheel_29" kv="0.05" />
+	<velocity name="right-velocity-servo_29" joint="right-wheel_29" kv="0.05" />
 </actuator>
 </mujoco>

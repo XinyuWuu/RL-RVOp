@@ -39,19 +39,21 @@ importlib.reload(simulator_cpp)
 PARAMs["framerate"] = 25
 PARAMs["max_ep_len"] = int(PARAMs["max_simu_second"] * PARAMs["framerate"])
 PARAMs["hidden_sizes"] = [1024] * 4
-model_file = "module_saves/nornn29/78h_3min_3999999steps_11547900updates_policy.ptd"
+# model_file = "module_saves/nornn29/78h_3min_3999999steps_11547900updates_policy.ptd"
 # model_file = "module_saves/nornn29/112h_23min_5639999steps_16625150updates_policy.ptd"
-vf_start = "module_saves/nornn29/"
-num_test_episodes = 5
+model_file = "module_saves/nornn31/232h_54min_5719999steps_24636760updates_policy.ptd"
+vf_start = "module_saves/nornn31/"
+num_test_episodes = 100
 
 Nrobot_log = np.zeros(num_test_episodes)
 death_log = np.zeros(num_test_episodes)
 reach_log = np.zeros(num_test_episodes)
 lave_log = np.zeros(num_test_episodes)
+tave_log = np.zeros(num_test_episodes)
 vave_log = np.zeros(num_test_episodes)
 extra_log = np.zeros(num_test_episodes)
 
-MODE, mode = 6, 0
+MODE, mode = 6, 2
 
 PARAMs["tolerance"] = 0.031
 PARAMs["dreach"] = 0.075
@@ -84,6 +86,10 @@ Pi.load_state_dict(torch.load(
 Pi.to(device=PARAMs["device"])
 Pi.act_limit = Pi.act_limit.to(device=PARAMs["device"])
 
+for p in Pi.parameters():
+    p.requires_grad = False
+
+Pi.eval()
 
 def preNNinput(NNinput: tuple, obs_sur_dim: int, max_obs: int, device):
     # NNinput[0] Oself1.5
@@ -118,6 +124,7 @@ for i in range(Nrobot):
     pos0[i] = pos_vel[i][0:2]
 die_mask = np.zeros(Nrobot, dtype=np.uint8)
 len_count = np.zeros(Nrobot, dtype=np.uint64)
+time_count = np.zeros(Nrobot, dtype=np.float64)
 speed_sum = np.zeros(Nrobot, dtype=np.float64)
 for i in range(Nrobot):
     if r[i] < -50:
@@ -130,8 +137,8 @@ ep_len = 0
 eps_count = 0
 # Main loop: collect experience in env and update/log each epoch
 for t in range(PARAMs["max_ep_len"] * (num_test_episodes + 1)):
-
-    a, logp = Pi(o, True, with_logprob=False)
+    with torch.no_grad():
+        a, logp = Pi(o, True, with_logprob=False)
     a = a.cpu().detach().numpy()
 
     # Step the env
@@ -163,9 +170,10 @@ for t in range(PARAMs["max_ep_len"] * (num_test_episodes + 1)):
         for Nth in range(SMLT.Nrobot):
             if len_count[Nth] == 0:
                 len_count[Nth] = ep_len
+                time_count[Nth] = SMLT.mjDATA.time
                 die_mask[Nth] = 1
         print(
-            f"\neps: {eps_count+1}, {Nrobot} robots, mode: {MODE}_{mode}, ep_ret: {ep_ret:.2f}, ep_len: {ep_len}, Nreach: {d.sum()}, Ndeath: {die_mask.sum()}")
+            f"\neps: {eps_count+1}, {Nrobot} robots, obs: {obs.__len__()}, mode: {MODE}_{mode}, ep_ret: {ep_ret:.2f}, ep_len: {ep_len}, Nreach: {d.sum()}, Ndeath: {die_mask.sum()}")
         # print(die_mask)
         # print(len_count)
         if (1 - die_mask).sum() == 0:
@@ -185,7 +193,9 @@ for t in range(PARAMs["max_ep_len"] * (num_test_episodes + 1)):
             posc = np.sqrt(posc[:, 0]**2 + posc[:, 1]**2).reshape((Nrobot))
             p_ave = (posc * (1 - die_mask)).sum() / (1 - die_mask).sum()
             # print(p_ave)
-            m_ave = l_ave / PARAMs["framerate"] * v_ave
+            # m_ave = l_ave / PARAMs["framerate"] * v_ave
+            m_ave = (len_count * (1 - die_mask) * ((speed_sum / len_count))
+                     ).sum() / (1 - die_mask).sum() / PARAMs["framerate"]
             # print(m_ave)
             # print(m_ave / p_ave * 100)
             print(f"die_mask:{die_mask};len_count:{len_count}")
