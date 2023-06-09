@@ -39,10 +39,12 @@ importlib.reload(simulator_cpp)
 PARAMs["framerate"] = 25
 PARAMs["max_ep_len"] = int(PARAMs["max_simu_second"] * PARAMs["framerate"])
 PARAMs["hidden_sizes"] = [1024] * 4
+PARAMs["avevel"] = False
+PARAMs["nullfill"] = 20 * PARAMs["dmax"]
 # model_file = "module_saves/nornn29/78h_3min_3999999steps_11547900updates_policy.ptd"
 # model_file = "module_saves/nornn29/112h_23min_5639999steps_16625150updates_policy.ptd"
-model_file = "module_saves/nornn31/232h_54min_5719999steps_24636760updates_policy.ptd"
-vf_start = "module_saves/nornn31/"
+model_file = "module_saves/nornn33/268h_23min_8499999steps_37664974updates_policy.ptd"
+vf_start = "module_saves/nornn33/"
 num_test_episodes = 100
 
 Nrobot_log = np.zeros(num_test_episodes)
@@ -53,7 +55,7 @@ tave_log = np.zeros(num_test_episodes)
 vave_log = np.zeros(num_test_episodes)
 extra_log = np.zeros(num_test_episodes)
 
-MODE, mode = 6, 2
+MODE, mode = 3, 0
 
 PARAMs["tolerance"] = 0.031
 PARAMs["dreach"] = 0.075

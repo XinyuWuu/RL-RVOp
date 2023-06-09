@@ -8,6 +8,8 @@ CppClass/build/
 CppClass/*.so
 CppClass/cython_idle/build/
 CppClass/cython_idle/*.so
+CppClass/glfw
+CppClass/mujoco
 assets/*.mp4
 assets/*.png
 assets/*.npy

@@ -2,6 +2,7 @@
 #include "RVOcalculator.hpp"
 #include "observator.hpp"
 #include "ctrlConverter.hpp"
+#include "simulator.hpp"
 namespace py = pybind11;
 using namespace pybind11::literals;
 
@@ -60,4 +61,15 @@ PYBIND11_MODULE(CtrlConverter, m)
          .def("v2ctrlbatchG", &CTRL::CtrlConverter::v2ctrlbatchG, "converte a batch of vector v in global codinate to ctrl in mujoco according to posvels",
               py::arg("posvels"), py::arg("vs"))
          .def("get_rmax", &CTRL::CtrlConverter::get_rmax, "get max omega of robot rotation");
+}
+
+PYBIND11_MODULE(Simulator, m)
+{
+     m.doc() = "mujoco simulator";
+     py::class_<SIM::Simulator>(m, "Simulator")
+         .def(py::init<bool, int, int, const char *>(), "init function", "isRender"_a, "W"_a, "H"_a, "modelfile"_a)
+         .def("step", &SIM::Simulator::step, "step the environment")
+         .def("get_rgb", &SIM::Simulator::get_rgb, "get rendered rgb buffer memory view")
+         .def("render", &SIM::Simulator::render, "render once")
+         .def("CloseGLFW", &SIM::Simulator::CloseGLFW, "clean GLFW windows and context");
 }
