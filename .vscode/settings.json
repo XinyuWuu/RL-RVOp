@@ -20,4 +20,7 @@
         "**/.git/objects/**": true,
         "**/.git/subtree-cache/**": true,
     },
+    "terminal.integrated.env.linux": {
+        "LD_LIBRARY_PATH": "CppClass/mujoco/lib;CppClass/glfw/src;mujoco/lib;glfw/src"
+    },
 }
