@@ -3,6 +3,7 @@
 #include "observator.hpp"
 #include "ctrlConverter.hpp"
 #include "simulator.hpp"
+#include "environment.hpp"
 namespace py = pybind11;
 using namespace pybind11::literals;
 
@@ -56,9 +57,9 @@ PYBIND11_MODULE(CtrlConverter, m)
      py::class_<CTRL::CtrlConverter>(m, "CtrlConverter")
          .def(py::init<double, double, double, double, double>(), "init function",
               "vmax"_a = 1, "tau"_a = 0.5, "wheel_r"_a = 0.04, "wheel_d"_a = 0.28, "gain"_a = 7)
-         .def("v2ctrlbatchL", &CTRL::CtrlConverter::v2ctrlbatchL, "converte a batch of vector v in local codinate to ctrl in mujoco according to posvels",
+         .def("v2ctrlbatchL", py::overload_cast<const posvels_t, const points_t>(&CTRL::CtrlConverter::v2ctrlbatchL), "converte a batch of vector v in local coordinate to ctrl in mujoco according to posvels",
               py::arg("posvels"), py::arg("vs"))
-         .def("v2ctrlbatchG", &CTRL::CtrlConverter::v2ctrlbatchG, "converte a batch of vector v in global codinate to ctrl in mujoco according to posvels",
+         .def("v2ctrlbatchG", py::overload_cast<const posvels_t, const points_t>(&CTRL::CtrlConverter::v2ctrlbatchG), "converte a batch of vector v in global coordinate to ctrl in mujoco according to posvels",
               py::arg("posvels"), py::arg("vs"))
          .def("get_rmax", &CTRL::CtrlConverter::get_rmax, "get max omega of robot rotation");
 }
@@ -67,9 +68,31 @@ PYBIND11_MODULE(Simulator, m)
 {
      m.doc() = "mujoco simulator";
      py::class_<SIM::Simulator>(m, "Simulator")
-         .def(py::init<bool, int, int, const char *>(), "init function", "isRender"_a, "W"_a, "H"_a, "modelfile"_a)
-         .def("step", &SIM::Simulator::step, "step the environment")
+         .def(py::init<const char *, int, bool, int, int>(), "init function", "modelfile"_a, "Nrobot"_a,
+              "isRender"_a, "W"_a, "H"_a)
+         .def("step", py::overload_cast<std::vector<double>, int>(&SIM::Simulator::step), "step the environment",
+              py::arg("ctrl"), py::arg("N"))
          .def("get_rgb", &SIM::Simulator::get_rgb, "get rendered rgb buffer memory view")
+         .def("get_posvels", &SIM::Simulator::get_posvels, "get posvels buffer memory view")
          .def("render", &SIM::Simulator::render, "render once")
          .def("CloseGLFW", &SIM::Simulator::CloseGLFW, "clean GLFW windows and context");
+}
+
+PYBIND11_MODULE(Environment, m)
+{
+     m.doc() = "Environment interface";
+     py::class_<ENV::Environment>(m, "Environment")
+         .def(py::init<>(), "init function")
+         .def("setSim", &ENV::Environment::setSim, "init simulator",
+              "modelfile"_a, "Nrobot"_a, "isRender"_a, "W"_a, "H"_a)
+         .def("setCtrl", &ENV::Environment::setCtrl, "init CtrlConverter",
+              "vmax"_a = 1, "tau"_a = 0.5, "wheel_r"_a = 0.04, "wheel_d"_a = 0.28, "gain"_a = 7)
+         .def("get_rgb", &ENV::Environment::get_rgb, "get rgb buffer")
+         .def("get_posvels", &ENV::Environment::get_posvels, "get posvels buffer")
+         .def("render", &ENV::Environment::render, "render once")
+         .def("CloseGLFW", &ENV::Environment::CloseGLFW, "clean GLFW windows and context")
+         .def("stepVL", &ENV::Environment::stepVL, "step with velocity command in local coordinate",
+              "vs"_a, "N"_a, "n"_a)
+         .def("stepVG", &ENV::Environment::stepVG, "step with velocity command in global coordinate",
+              "vs"_a, "N"_a, "n"_a);
 }

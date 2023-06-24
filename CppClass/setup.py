@@ -12,6 +12,7 @@ os.environ['LDFLAGS'] = '-Lmujoco/lib -Lglfw/src -lmujoco -lglfw'
 #                             language_level=3))
 source_list = [
     "simulator.cpp",
+    "environment.cpp",
     "pybind11_bind.cpp",
     "funcsdef.cpp",
     "RVOcalculator.cpp",
@@ -27,25 +28,30 @@ extra_objects = [
 
 ext_modules = [
     Pybind11Extension(
+        "Environment",
+        source_list,
+        extra_objects=extra_objects,
+    ),
+    Pybind11Extension(
         "Simulator",
         source_list,
         extra_objects=extra_objects,
     ),
-    # Pybind11Extension(
-    #     "Observator",
-    #     source_list,
-    #     extra_objects=extra_objects,
-    # ),
-    # Pybind11Extension(
-    #     "RVOcalculator",
-    #     source_list,
-    #     extra_objects=extra_objects,
-    # ),
-    # Pybind11Extension(
-    #     "CtrlConverter",
-    #     source_list,
-    #     extra_objects=extra_objects,
-    # ),
+    Pybind11Extension(
+        "Observator",
+        source_list,
+        extra_objects=extra_objects,
+    ),
+    Pybind11Extension(
+        "RVOcalculator",
+        source_list,
+        extra_objects=extra_objects,
+    ),
+    Pybind11Extension(
+        "CtrlConverter",
+        source_list,
+        extra_objects=extra_objects,
+    ),
 ]
 
 setup(name="CppClass", ext_modules=ext_modules)
@@ -58,3 +64,5 @@ stubgen.generate_stubs(stubgen.parse_options(
     ["-p" "Observator", "-o", "../stub/CppClass/"]))
 stubgen.generate_stubs(stubgen.parse_options(
     ["-p" "CtrlConverter", "-o", "../stub/CppClass/"]))
+stubgen.generate_stubs(stubgen.parse_options(
+    ["-p" "Environment", "-o", "../stub/CppClass/"]))

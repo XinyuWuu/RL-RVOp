@@ -24,19 +24,29 @@ namespace SIM
         glfwMakeContextCurrent(window);
         return true;
     }
-    bool Simulator::InitMujoco(const char *modelfile)
+    bool Simulator::InitMujoco(const char *modelfile, int Nrobot)
     {
+        this->Nrobot = Nrobot;
+        posvels = (double *)std::malloc(sizeof(double) * this->Nrobot * 6);
+        qposadr = (int *)std::malloc(sizeof(int) * this->Nrobot);
+        qveladr = (int *)std::malloc(sizeof(int) * this->Nrobot);
         char error[1000] = "Could not load xml model";
         mjVFS vfs;
         mj_defaultVFS(&vfs);
         mj_makeEmptyFileVFS(&vfs, "model.xml", strlen(modelfile));
-        std::cout << strlen(modelfile) << " point make file" << std::endl;
         std::memcpy(vfs.filedata[vfs.nfile - 1],
                     modelfile, strlen(modelfile));
-        std::cout << vfs.nfile << " point copy file" << std::endl;
         this->m = mj_loadXML("model.xml", &vfs, error, 1000);
         this->d = mj_makeData(this->m);
         mj_forward(this->m, this->d);
+
+        std::string tem_str = std::string("robot_");
+        for (int i = 0; i < Nrobot; i++)
+        {
+            qposadr[i] = this->m->jnt_qposadr[mj_name2id(this->m, mjOBJ_JOINT, (tem_str + std::to_string(i)).c_str())];
+            qveladr[i] = this->m->jnt_dofadr[mj_name2id(this->m, mjOBJ_JOINT, (tem_str + std::to_string(i)).c_str())];
+        }
+
         return true;
     }
     bool Simulator::InitRender(int W, int H)
@@ -57,7 +67,6 @@ namespace SIM
         this->cam->type = mjCAMERA_FIXED;
         this->cam->fixedcamid = 0;
 
-        // mjrRect viewport = mjr_maxViewport(&con);
         this->W = W;
         this->H = H;
         this->viewport = mjrRect{0, 0, this->W, this->H};
@@ -71,7 +80,8 @@ namespace SIM
         }
         return true;
     }
-    Simulator::Simulator(bool isRender, int W, int H, const char *modelfile)
+    Simulator::Simulator() {}
+    Simulator::Simulator(const char *modelfile, int Nrobot, bool isRender, int W, int H)
     {
         this->isRender = isRender;
         this->W = W;
@@ -80,19 +90,15 @@ namespace SIM
         {
             InitGLFW(this->W, this->H);
         }
-        std::cout << "point 1" << std::endl;
-        InitMujoco(modelfile);
-        std::cout << "point 2" << std::endl;
+        InitMujoco(modelfile, Nrobot);
         if (this->isRender)
         {
             InitRender(this->W, this->H);
-            std::cout << "point 3" << std::endl;
         }
     }
 
     Simulator::~Simulator()
     {
-        std::cout << "point destruction" << std::endl;
         mj_deleteModel(this->m);
         mj_deleteData(this->d);
         if (this->isRender)
@@ -105,10 +111,10 @@ namespace SIM
             delete this->con;
             std::free(this->rgb);
             std::free(this->depth);
+            std::free(this->posvels);
             // glfwDestroyWindow(this->window); // moved to CloseGLFW
             // glfwTerminate(); // moved to CloseGLFW
         }
-        std::cout << "point end" << std::endl;
     }
     bool Simulator::CloseGLFW()
     {
@@ -117,11 +123,46 @@ namespace SIM
         glfwTerminate();
         return true;
     }
-    void Simulator::step()
+
+    void Simulator::step(std::vector<double> ctrl, int N)
     {
-        this->d->ctrl[0] = 100;
-        this->d->ctrl[1] = 100;
-        mj_step(this->m, this->d);
+        // for (int i = 0; i < 2 * this->Nrobot; i++)
+        // {
+        //     this->d->ctrl[i] = ctrl[i];
+        // }
+        memcpy(this->d->ctrl, ctrl.data(), ctrl.size() * sizeof(double));
+        for (int i = 0; i < N; i++)
+        {
+            mj_step(this->m, this->d);
+        }
+        for (int i = 0; i < this->Nrobot; i++)
+        {
+            this->posvels[i * 6] = this->d->qpos[qposadr[i]];
+            this->posvels[i * 6 + 1] = this->d->qpos[qposadr[i] + 1];
+            this->posvels[i * 6 + 2] = atan2(2 * this->d->qpos[qposadr[i] + 3] * this->d->qpos[qposadr[i] + 6],
+                                             1 - 2 * this->d->qpos[qposadr[i] + 6] * this->d->qpos[qposadr[i] + 6]);
+            this->posvels[i * 6 + 3] = this->d->qvel[qveladr[i]];
+            this->posvels[i * 6 + 4] = this->d->qvel[qveladr[i] + 1];
+            this->posvels[i * 6 + 5] = this->d->qvel[qveladr[i] + 5];
+        }
+    }
+    void Simulator::step(const double *ctrl, int N)
+    {
+        memcpy(this->d->ctrl, ctrl, 2 * Nrobot * sizeof(double));
+        for (int i = 0; i < N; i++)
+        {
+            mj_step(this->m, this->d);
+        }
+        for (int i = 0; i < this->Nrobot; i++)
+        {
+            this->posvels[i * 6] = this->d->qpos[qposadr[i]];
+            this->posvels[i * 6 + 1] = this->d->qpos[qposadr[i] + 1];
+            this->posvels[i * 6 + 2] = atan2(2 * this->d->qpos[qposadr[i] + 3] * this->d->qpos[qposadr[i] + 6],
+                                             1 - 2 * this->d->qpos[qposadr[i] + 6] * this->d->qpos[qposadr[i] + 6]);
+            this->posvels[i * 6 + 3] = this->d->qvel[qveladr[i]];
+            this->posvels[i * 6 + 4] = this->d->qvel[qveladr[i] + 1];
+            this->posvels[i * 6 + 5] = this->d->qvel[qveladr[i] + 5];
+        }
     }
 
     bool Simulator::render()
@@ -151,6 +192,20 @@ namespace SIM
         // return py::memoryview::from_memory(
         //     this->rgb,                              // buffer pointer
         //     sizeof(uint8_t) * this->H * this->W * 3 // buffer size
+        // );
+    }
+    py::memoryview Simulator::get_posvels()
+    {
+
+        return py::memoryview::from_buffer(
+            this->posvels,
+            {this->Nrobot, 6},
+            {sizeof(double) * 6,
+             sizeof(double)});
+
+        // return py::memoryview::from_memory(
+        //     this->posvels,                    // buffer pointer
+        //     sizeof(double) * this->Nrobot * 6 // buffer size
         // );
     }
 } // namespace SIM
