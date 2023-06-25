@@ -185,9 +185,9 @@ namespace SIM
             {this->H,
              this->W,
              3},
-            {sizeof(uint8_t) * this->W * 3,
-             sizeof(uint8_t) * 3,
-             sizeof(uint8_t)});
+            {sizeof(rgb[0]) * this->W * 3,
+             sizeof(rgb[0]) * 3,
+             sizeof(rgb[0])});
 
         // return py::memoryview::from_memory(
         //     this->rgb,                              // buffer pointer
@@ -200,8 +200,8 @@ namespace SIM
         return py::memoryview::from_buffer(
             this->posvels,
             {this->Nrobot, 6},
-            {sizeof(double) * 6,
-             sizeof(double)});
+            {sizeof(posvels[0]) * 6,
+             sizeof(posvels[0])});
 
         // return py::memoryview::from_memory(
         //     this->posvels,                    // buffer pointer

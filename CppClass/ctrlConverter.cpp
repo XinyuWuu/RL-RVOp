@@ -80,7 +80,7 @@ namespace CTRL
     }
     void CtrlConverter::v2ctrlbatchG(const double *posvels, int Nrobot, double *ctrl)
     {
-        for (size_t i = 0; i < Nrobot; i++)
+        for (int i = 0; i < Nrobot; i++)
         {
             this->v2ctrl(posvels[i * 6 + 2], vsG[i], ctrl + i * 2);
         }

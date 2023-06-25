@@ -84,11 +84,18 @@ PYBIND11_MODULE(Environment, m)
      py::class_<ENV::Environment>(m, "Environment")
          .def(py::init<>(), "init function")
          .def("setSim", &ENV::Environment::setSim, "init simulator",
-              "modelfile"_a, "Nrobot"_a, "isRender"_a, "W"_a, "H"_a)
+              "modelfile"_a, "Nrobot"_a, "target"_a, "contour"_a, "isRender"_a, "W"_a, "H"_a)
          .def("setCtrl", &ENV::Environment::setCtrl, "init CtrlConverter",
               "vmax"_a = 1, "tau"_a = 0.5, "wheel_r"_a = 0.04, "wheel_d"_a = 0.28, "gain"_a = 7)
+         .def("setRwd", &ENV::Environment::setRwd, "set reward paramters",
+              "robot_r"_a, "tolerance"_a, "a"_a, "b"_a, "c"_a, "d"_a, "e"_a, "f"_a, "g"_a, "eta"_a, "h"_a, "mu"_a, "rreach"_a, "dreach"_a, "remix"_a, "rm_middle"_a, "dmax"_a, "w"_a, "tb"_a)
+         .def("setRvop", &ENV::Environment::setRvop, "init RVOpcalculator",
+              "dmax"_a, "robot_r"_a)
          .def("get_rgb", &ENV::Environment::get_rgb, "get rgb buffer")
          .def("get_posvels", &ENV::Environment::get_posvels, "get posvels buffer")
+         .def("get_r", &ENV::Environment::get_r, "get r buffer")
+         .def("get_rm", &ENV::Environment::get_rm, "get rm buffer")
+         .def("get_d", &ENV::Environment::get_d, "get d buffer")
          .def("render", &ENV::Environment::render, "render once")
          .def("CloseGLFW", &ENV::Environment::CloseGLFW, "clean GLFW windows and context")
          .def("stepVL", &ENV::Environment::stepVL, "step with velocity command in local coordinate",

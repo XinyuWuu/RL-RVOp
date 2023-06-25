@@ -29,10 +29,12 @@ namespace RVO
     }
     bool RVOcalculator::inArc(const arc_t &arc, const point_t &x0)
     {
-        // return cross(arc[3:5] - arc[0:2], x0 - arc[0:2]) * \
-            // cross(arc[3:5] - arc[0:2], arc[7:9] - arc[0:2]) >= 0 and\
-            // cross(arc[5:7] - arc[0:2], x0 - arc[0:2]) * \
-            // cross(arc[5:7] - arc[0:2], arc[7:9] - arc[0:2]) >= 0
+        /*
+        return cross(arc[3:5] - arc[0:2], x0 - arc[0:2]) * \
+            cross(arc[3:5] - arc[0:2], arc[7:9] - arc[0:2]) >= 0 and\
+            cross(arc[5:7] - arc[0:2], x0 - arc[0:2]) * \
+            cross(arc[5:7] - arc[0:2], arc[7:9] - arc[0:2]) >= 0
+        */
         return CROSS(arc[3] - arc[0], arc[4] - arc[1], x0[0] - arc[0], x0[1] - arc[1]) *
                        CROSS(arc[3] - arc[0], arc[4] - arc[1], arc[7] - arc[0], arc[8] - arc[1]) >=
                    0 &&
@@ -49,10 +51,11 @@ namespace RVO
         {
             return;
         }
-
-        // x0 = dot(xr - line[2:4], line[4:6] - line[2:4]) / \
-        //     norm(line[4:6] - line[2:4])**2 * \
-        //     (line[4:6] - line[2:4]) + line[2:4]
+        /*
+        x0 = dot(xr - line[2:4], line[4:6] - line[2:4]) / \
+            norm(line[4:6] - line[2:4])**2 * \
+            (line[4:6] - line[2:4]) + line[2:4]
+        */
         double tem = DOT(xr[0] - line[2], xr[1] - line[3],
                          line[4] - line[2], line[5] - line[3]) /
                      NORM2(line[4] - line[2], line[5] - line[3]);
@@ -80,15 +83,17 @@ namespace RVO
         {
             points.push_back(point_t{line[4], line[5]});
         }
-        // if len(points) < 2:
-        //     l = sqrt(abs(self.dmax**2 - norm(xr - x0)**2)) * \
-        //         (line[4:6] - line[2:4]) / norm(line[4:6] - line[2:4])
-        //     xc1 = x0 + l
-        //     xc2 = x0 - l
-        //     if self.inLine(line, xc1):
-        //         points.append(xc1)
-        //     if self.inLine(line, xc2):
-        //         points.append(xc2)
+        /*
+        if len(points) < 2:
+            l = sqrt(abs(self.dmax**2 - norm(xr - x0)**2)) * \
+                (line[4:6] - line[2:4]) / norm(line[4:6] - line[2:4])
+            xc1 = x0 + l
+            xc2 = x0 - l
+            if self.inLine(line, xc1):
+                points.append(xc1)
+            if self.inLine(line, xc2):
+                points.append(xc2)
+        */
         if (points.size() - ps_pre < 2)
         {
             tem = sqrt(abs(this->dmax * this->dmax - NORM2(x0[0] - xr[0], x0[1] - xr[1]))) /
