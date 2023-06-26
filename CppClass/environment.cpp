@@ -75,6 +75,7 @@ namespace ENV
     bool Environment::setRvop(double dmax, double robot_r)
     {
         this->rvopP = std::make_shared<RVO::RVOcalculator>(dmax, robot_r);
+        return true;
     }
     bool Environment::cal_obs(double *posvels, bool avevel)
     {
@@ -96,9 +97,9 @@ namespace ENV
                 observations[j].push_back(obs);
             }
         }
-        for (size_t j = 0; j < this->Nrobot; j++)
+        for (int j = 0; j < this->Nrobot; j++)
         {
-            for (size_t i = 0; i < this->Nrobot; i++)
+            for (int i = 0; i < this->Nrobot; i++)
             {
                 if (i == j)
                 {
@@ -125,7 +126,7 @@ namespace ENV
                 observations[j].push_back(obs);
             }
         }
-        for (size_t j = 0; j < this->Nrobot; j++)
+        for (int j = 0; j < this->Nrobot; j++)
         {
             std::sort(observations[j].begin(), observations[j].end(), [](obs_t const &a, obs_t const &b)
                       { return a[6] * a[6] + a[7] * a[7] < b[6] * b[6] + b[7] * b[7]; });
