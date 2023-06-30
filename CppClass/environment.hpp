@@ -30,6 +30,8 @@ namespace ENV
         double robot_r, rmax, tolerance, a, b, c, d, e, f, g, eta, h, mu, rreach, dreach, dmax, w, tb;
         bool remix;
         int rm_middle;
+        double NNinput1[16][180];
+        std::array<std::array<double, 2>, 2> tranM;
 
     public:
         Environment();
@@ -41,11 +43,13 @@ namespace ENV
         bool stepVL(const points_t vs, int N, int n);
         bool stepVG(const points_t vs, int N, int n);
         bool cal_obs(double *posvels, bool avevel);
+        bool cal_NNinput1(double *posvels, double Nullfill);
         py::memoryview get_rgb();
         py::memoryview get_posvels();
         py::memoryview get_r();
         py::memoryview get_rm();
         py::memoryview get_d();
+        py::memoryview get_NNinput1();
         bool CloseGLFW();
         bool render();
     };

@@ -96,6 +96,10 @@ PYBIND11_MODULE(Environment, m)
          .def("get_r", &ENV::Environment::get_r, "get r buffer")
          .def("get_rm", &ENV::Environment::get_rm, "get rm buffer")
          .def("get_d", &ENV::Environment::get_d, "get d buffer")
+         .def("get_NNinput1", &ENV::Environment::get_NNinput1, "get NNinput1 buffer")
+         .def("cal_NNinput1", &ENV::Environment::cal_NNinput1, "calculate NNinput1")
+         .def("cal_obs", &ENV::Environment::cal_obs, "calculate observations",
+              "posvels"_a, "avevel"_a)
          .def("render", &ENV::Environment::render, "render once")
          .def("CloseGLFW", &ENV::Environment::CloseGLFW, "clean GLFW windows and context")
          .def("stepVL", &ENV::Environment::stepVL, "step with velocity command in local coordinate",
