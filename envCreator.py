@@ -67,6 +67,48 @@ class EnvCreator():
         text += "</body>"
         return '\n' + text + '\n'
 
+    def circle_points(self, r: float, n: int):
+        thetas = np.linspace(0, 2*np.pi, n, endpoint=False)
+        centers = [[np.cos(e) * r, np.sin(e) * r] for e in thetas]
+        return centers
+
+    def line_points(self, s: np.ndarray, e: np.ndarray, n: int):
+        step = (e-s)/(n+1)
+        centers = [s+step*i for i in range(n+1)]
+        return centers
+
+    def obs(self, c: np.ndarray, r: float, mode: int, random_split_num: int = 6):
+        obs_text = ""
+        obs = []
+        if (mode == 0):
+            obs_text = self.cylinder(c, r)
+            obs.append(array([c[0], c[1], r]))
+        if (mode == 1):
+            vs = array(self.circle_points(r, random_split_num))[
+                sorted(random.sample(range(random_split_num), 3))]
+            obs_text = self.polygon(c, list(vs))
+            obs.append(np.hstack((c, (vs + c).reshape((-1,)))))
+        if (mode == 2):
+            vs = array(self.circle_points(r, random_split_num))[
+                sorted(random.sample(range(random_split_num), 4))]
+            obs_text = self.polygon(c, vs)
+            obs.append(np.hstack((c, (array(vs) + c).reshape((-1,)))))
+        return obs_text, obs
+
+    def target_trans(self, centers: list, mode: int):
+        targets = array([])
+        if mode == 0:  # random:
+            targets = array([])
+        if mode == 1:  # spin
+            targets = np.matmul(array(centers),
+                                array([[0.0, 1.0],
+                                       [-1.0, 0.0]]))
+        if mode == 2:  # line
+            targets = array(centers)*array([-1.0, 1.0])
+        if mode == 3:  # circle
+            targets = -array(centers)
+        return list(targets)
+
     def circle_robot(self, n: int = 1, size: str = 'l', start_id=0):
         # max 60 robots for size large, 36 for size small
         r_l = 5
@@ -287,7 +329,7 @@ class EnvCreator():
 
         return text, obs
 
-    def env_text(self, robot_text, obs_text, actuator_text, offwidth: int = 1920, offheight: int = 1080, camheight: int = 15, fovy=45):
+    def env_text(self, robot_text, obs_text, actuator_text, offwidth: int = 1920, offheight: int = 1080, camheight: float = 15.0, fovy=45):
         text = '<mujoco>\n'
         text += '<default>\n'
         text += '\t<geom friction="0.1 0.005 0.0001"/>\n'
