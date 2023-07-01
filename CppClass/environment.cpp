@@ -182,6 +182,11 @@ namespace ENV
         }
         return true;
     }
+    bool Environment::cal_reward()
+    {
+        this->rwdP->calreward(posvels, observations, target, reward, reward_mix, death);
+        return true;
+    }
     py::memoryview Environment::get_rgb()
     {
         return this->simP->get_rgb();

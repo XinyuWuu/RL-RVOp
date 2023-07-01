@@ -45,6 +45,7 @@ namespace ENV
         bool stepVG(const points_t vs, int N, int n);
         bool cal_obs(bool avevel);
         bool cal_NNinput1(double Nullfill);
+        bool cal_reward();
         py::memoryview get_rgb();
         py::memoryview get_posvels();
         py::memoryview get_r();

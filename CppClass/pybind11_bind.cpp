@@ -101,6 +101,7 @@ PYBIND11_MODULE(Environment, m)
               "Nullfill"_a)
          .def("cal_obs", &ENV::Environment::cal_obs, "calculate observations",
               "avevel"_a)
+         .def("cal_reward", &ENV::Environment::cal_reward, "calculate reward")
          .def("render", &ENV::Environment::render, "render once")
          .def("CloseGLFW", &ENV::Environment::CloseGLFW, "clean GLFW windows and context")
          .def("stepVL", &ENV::Environment::stepVL, "step with velocity command in local coordinate",

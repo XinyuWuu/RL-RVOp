@@ -1,5 +1,6 @@
 #include "myreward.hpp"
 #include "funcsdef.hpp"
+#include "iostream"
 namespace RWD
 {
     std::vector<double> Reward::calreward(const posvels_t &posvels,
@@ -105,7 +106,7 @@ namespace RWD
                            const observations_t &observations,
                            const points_t &target, double *reward, double *reward_mix, int *death)
     {
-
+        Nrobot = target.size();
         memset(reward, 0, Nrobot * sizeof(double));
         memset(reward_mix, 0, Nrobot * sizeof(double));
         for (std::size_t Nth = 0; Nth < Nrobot; Nth++)
@@ -158,6 +159,7 @@ namespace RWD
             if (dreach2 > NORM2(posvels[Nth * 6] - target[Nth][0], posvels[Nth * 6 + 1] - target[Nth][1]))
             {
                 reward[Nth] += rreach;
+                death[Nth] = 1;
             }
         }
         if (!this->remix)
@@ -166,12 +168,16 @@ namespace RWD
         }
         for (std::size_t Nth = 0; Nth < Nrobot; Nth++)
         {
+            if (death[Nth] && abs(reward[Nth]) < 1e-3)
+            {
+                continue;
+            }
             remix_count = 0;
             remix_sum = 0.0;
             weight_sum = 0.0;
             for (const obs_t &o : observations[Nth])
             {
-                if (o[16] > -0.5)
+                if (o[16] > -0.5 && (!death[int(o[16])] || abs(reward[int(o[16])]) > 1e-3))
                 {
                     remix_count += 1;
                     weight = w * (this->dmax - NORM(o[6], o[7])) / this->dmax + 1;
@@ -183,9 +189,8 @@ namespace RWD
             remix_count = this->rm_middle ? this->rm_middle < remix_count : remix_count;
             reward_mix[Nth] = reward[Nth] * this->selfw / (this->selfw + remix_count) +
                               remix_sum * remix_count / (this->selfw + remix_count);
-
-            return;
         }
+        return;
     }
     Reward::Reward() {}
     Reward::Reward(double robot_r, double vmax, double rmax, double tolerance, double a, double b, double c, double d, double e, double f, double g, double eta, double h, double mu, bool remix, int rm_middle, double dmax, double w, double tb)
