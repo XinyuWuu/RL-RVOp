@@ -1,4 +1,5 @@
 #include "environment.hpp"
+#include "funcsdef.hpp"
 #include <iostream>
 namespace ENV
 {
@@ -69,6 +70,7 @@ namespace ENV
         this->H = H;
         this->W = W;
         this->simP = std::make_shared<SIM::Simulator>(modelfile, Nrobot, isRender, W, H);
+        this->posvels = simP->posvels;
         memset(this->death, 0, Nrobot * sizeof(int));
         return true;
     }
@@ -77,7 +79,7 @@ namespace ENV
         this->rvopP = std::make_shared<RVO::RVOcalculator>(dmax, robot_r);
         return true;
     }
-    bool Environment::cal_obs(double *posvels, bool avevel)
+    bool Environment::cal_obs(bool avevel)
     {
         observations.clear();
         obs_t obs;
@@ -122,7 +124,6 @@ namespace ENV
                 obs[14] = target[i][0];
                 obs[15] = target[i][1];
                 obs[16] = i;
-                // observations[j].push_back(obs_t{this->RVOplus(lines_t{}, arcs_t{arc_t{posvel[i][0], posvel[i][0], 2 * robot_r, posvel[i][0] - 2 * robot_r, posvel[i][0], posvel[i][0] + 2 * robot_r, posvel[i][0], posvel[i][0], posvel[i][0] + 2 * robot_r}, arc_t{posvel[i][0], posvel[i][0], 2 * robot_r, posvel[i][0] - 2 * robot_r, posvel[i][0], posvel[i][0] + 2 * robot_r, posvel[i][0], posvel[i][0], posvel[i][0] - 2 * robot_r}}, point_t{posvel[j][0], posvel[j][1]}, point_t{posvel[j][3], posvel[j][4]}, point_t{posvel[i][3], posvel[i][4]}), vector3d{posvel[i][0], posvel[i][1], posvel[i][2]}, vector3d{posvel[i][3], posvel[i][4], posvel[i][5]}, this->target[i]});
                 observations[j].push_back(obs);
             }
         }
@@ -133,7 +134,7 @@ namespace ENV
         }
         return true;
     }
-    bool Environment::cal_NNinput1(double *posvels, double Nullfill)
+    bool Environment::cal_NNinput1(double Nullfill)
     {
         std::fill(
             &this->NNinput1[0][0],

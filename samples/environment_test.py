@@ -14,10 +14,12 @@ from matplotlib import pyplot as plt
 import random
 
 robot_r = 0.2
+dmax = 3.0
 EC = envCreator.EnvCreator()
 CG = contourGenerator.ContourGenrator(robot_r)
 env = Environment()
 env.setCtrl(1, 0.5, 0.04, 0.28, 7)
+env.setRvop(dmax, robot_r)
 
 Nrobot = 0
 robot_text = ""
@@ -76,11 +78,16 @@ ctrl = [[1.0, 0]]*Nrobot
 
 env.setSim(modelfile, Nrobot, [list(t)
            for t in target], contour, True, ow, oh)
+env.stepVL(ctrl, 1, 1)
 rgb = env.get_rgb()
 posvels = np.frombuffer(
     env.get_posvels(), dtype=np.float64).reshape((Nrobot, 6))
 img_arr = np.frombuffer(
     rgb, dtype=np.uint8).reshape((ow, oh, 3))
+NNinput1 = np.frombuffer(
+    env.get_NNinput1(), dtype=np.float64
+).reshape(Nrobot, 180)
+
 
 env.render()
 img = Image.fromarray(img_arr, "RGB")
@@ -94,14 +101,23 @@ img.save("assets/test.png")
 posvels2 = posvels.copy()
 print(posvels2-posvels1)
 
+env.cal_obs(True)
+env.cal_NNinput1(6)
+
+print(NNinput1)
 
 env.setSim(modelfile, Nrobot, [list(t)
            for t in target], contour, True, ow, oh)
+env.stepVL(ctrl, 1, 1)
 rgb = env.get_rgb()
 posvels = np.frombuffer(
     env.get_posvels(), dtype=np.float64).reshape((Nrobot, 6))
 img_arr = np.frombuffer(
     rgb, dtype=np.uint8).reshape((ow, oh, 3))
+NNinput1 = np.frombuffer(
+    env.get_NNinput1(), dtype=np.float64
+).reshape(Nrobot, 180)
+
 
 env.render()
 img = Image.fromarray(img_arr, "RGB")
@@ -114,5 +130,10 @@ img = Image.fromarray(img_arr, "RGB")
 img.save("assets/test.png")
 posvels2 = posvels.copy()
 print(posvels2-posvels1)
+
+env.cal_obs(True)
+env.cal_NNinput1(6)
+
+print(NNinput1)
 
 env.CloseGLFW()

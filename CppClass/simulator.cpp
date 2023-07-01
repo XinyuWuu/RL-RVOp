@@ -91,6 +91,7 @@ namespace SIM
             InitGLFW(this->W, this->H);
         }
         InitMujoco(modelfile, Nrobot);
+        cal_posvels();
         if (this->isRender)
         {
             InitRender(this->W, this->H);
@@ -101,6 +102,9 @@ namespace SIM
     {
         mj_deleteModel(this->m);
         mj_deleteData(this->d);
+        std::free(this->qposadr);
+        std::free(this->qveladr);
+        std::free(this->posvels);
         if (this->isRender)
         {
             // mjr_freeContext(this->con); // moved to CloseGLFW
@@ -111,7 +115,6 @@ namespace SIM
             delete this->con;
             std::free(this->rgb);
             std::free(this->depth);
-            std::free(this->posvels);
             // glfwDestroyWindow(this->window); // moved to CloseGLFW
             // glfwTerminate(); // moved to CloseGLFW
         }
@@ -123,18 +126,8 @@ namespace SIM
         glfwTerminate();
         return true;
     }
-
-    void Simulator::step(std::vector<double> ctrl, int N)
+    void Simulator::cal_posvels()
     {
-        // for (int i = 0; i < 2 * this->Nrobot; i++)
-        // {
-        //     this->d->ctrl[i] = ctrl[i];
-        // }
-        memcpy(this->d->ctrl, ctrl.data(), ctrl.size() * sizeof(double));
-        for (int i = 0; i < N; i++)
-        {
-            mj_step(this->m, this->d);
-        }
         for (int i = 0; i < this->Nrobot; i++)
         {
             this->posvels[i * 6] = this->d->qpos[qposadr[i]];
@@ -146,6 +139,19 @@ namespace SIM
             this->posvels[i * 6 + 5] = this->d->qvel[qveladr[i] + 5];
         }
     }
+    void Simulator::step(std::vector<double> ctrl, int N)
+    {
+        // for (int i = 0; i < 2 * this->Nrobot; i++)
+        // {
+        //     this->d->ctrl[i] = ctrl[i];
+        // }
+        memcpy(this->d->ctrl, ctrl.data(), ctrl.size() * sizeof(double));
+        for (int i = 0; i < N; i++)
+        {
+            mj_step(this->m, this->d);
+        }
+        cal_posvels();
+    }
     void Simulator::step(const double *ctrl, int N)
     {
         memcpy(this->d->ctrl, ctrl, 2 * Nrobot * sizeof(double));
@@ -153,16 +159,7 @@ namespace SIM
         {
             mj_step(this->m, this->d);
         }
-        for (int i = 0; i < this->Nrobot; i++)
-        {
-            this->posvels[i * 6] = this->d->qpos[qposadr[i]];
-            this->posvels[i * 6 + 1] = this->d->qpos[qposadr[i] + 1];
-            this->posvels[i * 6 + 2] = atan2(2 * this->d->qpos[qposadr[i] + 3] * this->d->qpos[qposadr[i] + 6],
-                                             1 - 2 * this->d->qpos[qposadr[i] + 6] * this->d->qpos[qposadr[i] + 6]);
-            this->posvels[i * 6 + 3] = this->d->qvel[qveladr[i]];
-            this->posvels[i * 6 + 4] = this->d->qvel[qveladr[i] + 1];
-            this->posvels[i * 6 + 5] = this->d->qvel[qveladr[i] + 5];
-        }
+        cal_posvels();
     }
 
     bool Simulator::render()

@@ -32,26 +32,26 @@ ext_modules = [
         source_list,
         extra_objects=extra_objects,
     ),
-    Pybind11Extension(
-        "Simulator",
-        source_list,
-        extra_objects=extra_objects,
-    ),
-    Pybind11Extension(
-        "Observator",
-        source_list,
-        extra_objects=extra_objects,
-    ),
-    Pybind11Extension(
-        "RVOcalculator",
-        source_list,
-        extra_objects=extra_objects,
-    ),
-    Pybind11Extension(
-        "CtrlConverter",
-        source_list,
-        extra_objects=extra_objects,
-    ),
+    # Pybind11Extension(
+    #     "Simulator",
+    #     source_list,
+    #     extra_objects=extra_objects,
+    # ),
+    # Pybind11Extension(
+    #     "Observator",
+    #     source_list,
+    #     extra_objects=extra_objects,
+    # ),
+    # Pybind11Extension(
+    #     "RVOcalculator",
+    #     source_list,
+    #     extra_objects=extra_objects,
+    # ),
+    # Pybind11Extension(
+    #     "CtrlConverter",
+    #     source_list,
+    #     extra_objects=extra_objects,
+    # ),
 ]
 
 setup(name="CppClass", ext_modules=ext_modules)

@@ -20,6 +20,7 @@ namespace ENV
         double ctrl[200];
         double reward[200], reward_mix[200];
         int death[200];
+        double *posvels;
         points_t target;
         contours_t contour;
         observations_t observations;
@@ -30,7 +31,7 @@ namespace ENV
         double robot_r, rmax, tolerance, a, b, c, d, e, f, g, eta, h, mu, rreach, dreach, dmax, w, tb;
         bool remix;
         int rm_middle;
-        double NNinput1[16][180];
+        double NNinput1[200][180];
         std::array<std::array<double, 2>, 2> tranM;
 
     public:
@@ -42,8 +43,8 @@ namespace ENV
         bool setRvop(double dmax, double robot_r);
         bool stepVL(const points_t vs, int N, int n);
         bool stepVG(const points_t vs, int N, int n);
-        bool cal_obs(double *posvels, bool avevel);
-        bool cal_NNinput1(double *posvels, double Nullfill);
+        bool cal_obs(bool avevel);
+        bool cal_NNinput1(double Nullfill);
         py::memoryview get_rgb();
         py::memoryview get_posvels();
         py::memoryview get_r();

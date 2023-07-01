@@ -38,6 +38,7 @@ namespace SIM
         bool CloseGLFW();
         bool InitMujoco(const char *modelfile, int Nrobot);
         bool InitRender(int W, int H);
+        void cal_posvels();
         void step(std::vector<double> ctrl, int N);
         void step(const double *ctrl, int N);
         bool render();
