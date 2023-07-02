@@ -1,4 +1,5 @@
 # export LD_LIBRARY_PATH="CppClass/mujoco/lib;CppClass/glfw/src"
+# export DISPLAY=:1
 import sys
 from base_config import PARAMs
 from torch import rand

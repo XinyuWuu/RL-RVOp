@@ -94,8 +94,8 @@ namespace RWD
                         weight_sum += weight;
                     }
                 }
-                remix_sum /= weight_sum ? remix_count != 0 : 1;
-                remix_count = this->rm_middle ? this->rm_middle < remix_count : remix_count;
+                remix_sum /= remix_count != 0 ? weight_sum : 1;
+                remix_count = fmin(remix_count, rm_middle);
                 r_m[Nth] = r[Nth] * this->selfw / (this->selfw + remix_count) +
                            remix_sum * remix_count / (this->selfw + remix_count);
             }
@@ -185,8 +185,8 @@ namespace RWD
                     weight_sum += weight;
                 }
             }
-            remix_sum /= weight_sum ? remix_count != 0 : 1;
-            remix_count = this->rm_middle ? this->rm_middle < remix_count : remix_count;
+            remix_sum /= remix_count != 0 ? weight_sum : 1;
+            remix_count = fmin(remix_count, rm_middle);
             reward_mix[Nth] = reward[Nth] * this->selfw / (this->selfw + remix_count) +
                               remix_sum * remix_count / (this->selfw + remix_count);
         }
