@@ -83,12 +83,14 @@ PYBIND11_MODULE(Environment, m)
      m.doc() = "Environment interface";
      py::class_<ENV::Environment>(m, "Environment")
          .def(py::init<>(), "init function")
+         .def(py::init<double, double, double, double, double, double, double, double, double, double, double, double, double, double, double, double, double, double, double, double, bool, int, double, double>(), "init function",
+              "robot_r"_a, "dmax"_a, "vmax"_a, "tau"_a, "wheel_r"_a, "wheel_d"_a, "gain"_a, "tolerance"_a, "a"_a, "b"_a, "c"_a, "d"_a, "e"_a, "f"_a, "g"_a, "eta"_a, "h"_a, "mu"_a, "rreach"_a, "dreach"_a, "remix"_a, "rm_middle"_a, "w"_a, "tb"_a)
          .def("setSim", &ENV::Environment::setSim, "init simulator",
               "modelfile"_a, "Nrobot"_a, "target"_a, "contour"_a, "isRender"_a, "W"_a, "H"_a)
          .def("setCtrl", &ENV::Environment::setCtrl, "init CtrlConverter",
               "vmax"_a = 1, "tau"_a = 0.5, "wheel_r"_a = 0.04, "wheel_d"_a = 0.28, "gain"_a = 7)
          .def("setRwd", &ENV::Environment::setRwd, "set reward paramters",
-              "robot_r"_a, "tolerance"_a, "a"_a, "b"_a, "c"_a, "d"_a, "e"_a, "f"_a, "g"_a, "eta"_a, "h"_a, "mu"_a, "rreach"_a, "dreach"_a, "remix"_a, "rm_middle"_a, "dmax"_a, "w"_a, "tb"_a)
+              "robot_r"_a, "vmax"_a, "rmax"_a, "tolerance"_a, "a"_a, "b"_a, "c"_a, "d"_a, "e"_a, "f"_a, "g"_a, "eta"_a, "h"_a, "mu"_a, "rreach"_a, "dreach"_a, "remix"_a, "rm_middle"_a, "dmax"_a, "w"_a, "tb"_a)
          .def("setRvop", &ENV::Environment::setRvop, "init RVOpcalculator",
               "dmax"_a, "robot_r"_a)
          .def("get_rgb", &ENV::Environment::get_rgb, "get rgb buffer")

@@ -6,6 +6,36 @@ namespace ENV
     Environment::Environment()
     {
     }
+    Environment::Environment(double robot_r, double dmax, double vmax, double tau, double wheel_r, double wheel_d, double gain, double tolerance, double a, double b, double c, double d, double e, double f, double g, double eta, double h, double mu, double rreach, double dreach, bool remix, int rm_middle, double w, double tb)
+    {
+        this->robot_r = robot_r;
+        this->dmax = dmax;
+        this->vmax = vmax;
+        this->tau = tau;
+        this->wheel_r = wheel_r;
+        this->wheel_d = wheel_d;
+        this->gain = gain;
+        this->tolerance = tolerance;
+        this->a = a;
+        this->b = b;
+        this->c = c;
+        this->d = d;
+        this->e = e;
+        this->f = f;
+        this->g = g;
+        this->eta = eta;
+        this->h = h;
+        this->mu = mu;
+        this->rreach = rreach;
+        this->dreach = dreach;
+        this->remix = remix;
+        this->rm_middle = rm_middle;
+        this->w = w;
+        this->tb = tb;
+        this->setRvop(dmax = this->dmax, robot_r = this->robot_r);
+        this->rmax = this->setCtrl(vmax = this->vmax, tau = this->tau, wheel_r = this->wheel_r, wheel_d = this->wheel_d, gain = this->gain);
+        this->setRwd(robot_r = this->robot_r, vmax = this->vmax, rmax = this->rmax, tolerance = this->tolerance, a = this->a, b = this->b, c = this->c, d = this->d, e = this->e, f = this->f, g = this->g, eta = this->eta, h = this->h, mu = this->mu, rreach = this->rreach, dreach = this->dreach, remix = this->remix, rm_middle = this->rm_middle, dmax = this->dmax, w = this->w, tb = this->tb);
+    }
     bool Environment::stepVL(const points_t vs, int N, int n)
     {
         ctrlP->v2ctrlbatchL(this->simP->posvels, vs, this->ctrl);
@@ -25,9 +55,11 @@ namespace ENV
         }
         return true;
     }
-    bool Environment::setRwd(double robot_r, double tolerance, double a, double b, double c, double d, double e, double f, double g, double eta, double h, double mu, double rreach, double dreach, bool remix, int rm_middle, double dmax, double w, double tb)
+    bool Environment::setRwd(double robot_r, double vmax, double rmax, double tolerance, double a, double b, double c, double d, double e, double f, double g, double eta, double h, double mu, double rreach, double dreach, bool remix, int rm_middle, double dmax, double w, double tb)
     {
         this->robot_r = robot_r;
+        this->vmax = vmax;
+        this->rmax = rmax;
         this->tolerance = tolerance;
         this->a = a;
         this->b = b;
@@ -46,7 +78,7 @@ namespace ENV
         this->dmax = dmax;
         this->w = w;
         this->tb = tb;
-        this->rwdP = std::make_shared<RWD::Reward>(robot_r, this->vmax, this->rmax, tolerance,
+        this->rwdP = std::make_shared<RWD::Reward>(robot_r, vmax, rmax, tolerance,
                                                    a, b, c, d, e, f, g, eta, h, mu, rreach, dreach, remix, rm_middle, dmax, w, tb);
         return true;
     }
@@ -76,6 +108,8 @@ namespace ENV
     }
     bool Environment::setRvop(double dmax, double robot_r)
     {
+        this->robot_r = robot_r;
+        this->dmax = dmax;
         this->rvopP = std::make_shared<RVO::RVOcalculator>(dmax, robot_r);
         return true;
     }

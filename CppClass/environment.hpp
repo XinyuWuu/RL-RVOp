@@ -36,10 +36,11 @@ namespace ENV
 
     public:
         Environment();
+        Environment(double robot_r, double dmax, double vmax, double tau, double wheel_r, double wheel_d, double gain, double tolerance, double a, double b, double c, double d, double e, double f, double g, double eta, double h, double mu, double rreach, double dreach, bool remix, int rm_middle, double w, double tb);
         ~Environment();
         bool setSim(const char *modelfile, int Nrobot, points_t target, contours_t contour, bool isRender, int W, int H);
         double setCtrl(double vmax, double tau, double wheel_r, double wheel_d, double gain);
-        bool setRwd(double robot_r, double tolerance, double a, double b, double c, double d, double e, double f, double g, double eta, double h, double mu, double rreach, double dreach, bool remix, int rm_middle, double dmax, double w, double tb);
+        bool setRwd(double robot_r, double vmax, double rmax, double tolerance, double a, double b, double c, double d, double e, double f, double g, double eta, double h, double mu, double rreach, double dreach, bool remix, int rm_middle, double dmax, double w, double tb);
         bool setRvop(double dmax, double robot_r);
         bool stepVL(const points_t vs, int N, int n);
         bool stepVG(const points_t vs, int N, int n);

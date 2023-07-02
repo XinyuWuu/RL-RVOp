@@ -19,11 +19,11 @@ dmax = 3.0
 EC = envCreator.EnvCreator()
 CG = contourGenerator.ContourGenrator(PARAMs["robot_r"])
 env = Environment()
-env.setCtrl(vmax=PARAMs["vmax"], tau=PARAMs["tau"],
-            wheel_d=PARAMs["wheel_d"], wheel_r=PARAMs["wheel_r"],
-            gain=PARAMs["gain"])
+PARAMs["rmax"] = env.setCtrl(vmax=PARAMs["vmax"], tau=PARAMs["tau"],
+                             wheel_d=PARAMs["wheel_d"], wheel_r=PARAMs["wheel_r"],
+                             gain=PARAMs["gain"])
 env.setRvop(dmax=PARAMs["dmax"], robot_r=PARAMs["robot_r"])
-env.setRwd(robot_r=PARAMs["robot_r"], tolerance=PARAMs["tolerance"], dreach=PARAMs["dreach"], tb=PARAMs["tb"],
+env.setRwd(robot_r=PARAMs["robot_r"], vmax=PARAMs["vmax"], rmax=PARAMs["rmax"], tolerance=PARAMs["tolerance"], dreach=PARAMs["dreach"], tb=PARAMs["tb"],
            a=PARAMs["a"], b=PARAMs["b"], c=PARAMs["c"], d=PARAMs["d"], e=PARAMs["e"],
            f=PARAMs["f"], g=PARAMs["g"], eta=PARAMs["eta"],
            h=PARAMs["h"], mu=PARAMs["mu"], rreach=PARAMs["rreach"],
