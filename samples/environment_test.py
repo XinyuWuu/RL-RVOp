@@ -14,10 +14,8 @@ from PIL import Image
 from matplotlib import pyplot as plt
 import random
 
-robot_r = 0.2
-dmax = 3.0
-EC = envCreator.EnvCreator()
-CG = contourGenerator.ContourGenrator(PARAMs["robot_r"])
+
+EC = envCreator.EnvCreator(PARAMs["robot_r"])
 env = Environment()
 PARAMs["rmax"] = env.setCtrl(vmax=PARAMs["vmax"], tau=PARAMs["tau"],
                              wheel_d=PARAMs["wheel_d"], wheel_r=PARAMs["wheel_r"],
@@ -29,64 +27,12 @@ env.setRwd(robot_r=PARAMs["robot_r"], vmax=PARAMs["vmax"], rmax=PARAMs["rmax"], 
            h=PARAMs["h"], mu=PARAMs["mu"], rreach=PARAMs["rreach"],
            remix=PARAMs["remix"], rm_middle=PARAMs["rm_middle"], dmax=PARAMs["dmax"], w=PARAMs["w"])
 
-Nrobot = 0
-robot_text = ""
-obs_text = ""
-obs = []
-robot = []
-target = []
-ow, oh, ch, fovy, w, h = 1920, 1920, 17.5, 75, 22, 22
+modelfile, Nrobot, target, contour, ow, oh, w, h = EC.env_create4(0, 0)
 
-id = Nrobot
-cs = EC.circle_points(7, 20)
-for c in cs:
-    robot_text += EC.robot(id=id, c=np.array(c),
-                           theta=np.random.rand()*np.pi*2)
-    robot.append(c)
-    id += 1
-
-target += EC.target_trans(cs, 3)
-Nrobot += len(cs)
-
-id = Nrobot
-cs = EC.circle_points(5, 10)
-for c in cs:
-    robot_text += EC.robot(id=id, c=np.array(c),
-                           theta=np.random.rand()*np.pi*2)
-    robot.append(c)
-    id += 1
-
-target += EC.target_trans(cs, 1)
-Nrobot += len(cs)
-
-id = Nrobot
-cs = EC.line_points(np.array([-10.0, 5]), np.array([-10.0, -5]), 10)
-for c in cs:
-    robot_text += EC.robot(id=id, c=np.array(c),
-                           theta=np.random.rand()*np.pi*2)
-    robot.append(c)
-    id += 1
-
-target += EC.target_trans(cs, 2)
-Nrobot += len(cs)
-
-cs = EC.circle_points(r=3.5, n=15)
-for c in cs:
-    obs_t, obs_ = EC.obs(np.array(c), 0.15, 1, 5)
-    obs_text += obs_t
-    obs += obs_
-
-actuator_text = EC.actuator(Nrobot)
-
-modelfile = EC.env_text(robot_text, obs_text,
-                        actuator_text, ow, ow, ch, fovy)
-
-contour = CG.generate_contour(obs)
 ctrl = [[1.0, 0]]*Nrobot
 
 
-env.setSim(modelfile, Nrobot, [list(t)
-           for t in target], contour, True, ow, oh)
+env.setSim(modelfile, Nrobot, target, contour, True, ow, oh)
 rgb = env.get_rgb()
 posvels = np.frombuffer(
     env.get_posvels(), dtype=np.float64).reshape((Nrobot, 6))

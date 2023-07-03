@@ -4,6 +4,7 @@ import numpy as np
 from numpy.linalg import norm, det
 from numpy import dot, array
 import random
+import contourGenerator
 
 # obs
 # line: two vertex (4,)
@@ -12,7 +13,7 @@ import random
 
 
 class EnvCreator():
-    def __init__(self) -> None:
+    def __init__(self, robot_r=0.2) -> None:
         self.half_width = 0.000005
         self.half_height = 0.25
         self.kv = 0.05
@@ -22,6 +23,11 @@ class EnvCreator():
         self.gate_ratio = 1 / 2
         with open("assets/robot.xml", 'r') as fp:
             self.robot_base = fp.read()
+        self.setCG(robot_r)
+
+    def setCG(self, robot_r):
+        self.robot_r = robot_r
+        self.CG = contourGenerator.ContourGenrator(robot_r)
 
     def add_id(self, match_obj: re.Match, id: int):
         return match_obj.group(0)[0:-1] + f'_{id}\"'
@@ -73,8 +79,8 @@ class EnvCreator():
         return centers
 
     def line_points(self, s: np.ndarray, e: np.ndarray, n: int):
-        step = (e-s)/(n+1)
-        centers = [s+step*i for i in range(n+1)]
+        step = (e-s)/(n-1)
+        centers = [s+step*i for i in range(n)]
         return centers
 
     def obs(self, c: np.ndarray, r: float, mode: int, random_split_num: int = 6):
@@ -967,7 +973,68 @@ class EnvCreator():
 
         return [Nrobot, robot_text, obs_text1 + obs_text2, obs1 + obs2, target_mode, ow, oh, ch, fovy, w, h]
 
+    def env_create4(self, MODE=0, mode=0):
+        Nrobot = 0
+        robot_text = ""
+        obs_text = ""
+        obs = []
+        robot = []
+        target = []
+        ow, oh, ch, fovy, w, h = 1920, 1920, 15, 45, 16, 16
+        modelfile = ""
+        contour = []
 
+        if MODE == 0 and mode == 0:
+            ow, oh, ch, fovy, w, h = 1920, 1920, 17.5, 75, 22, 22
+
+            id = Nrobot
+            cs = self.circle_points(7, 15)
+            for c in cs:
+                robot_text += self.robot(id=id, c=np.array(c),
+                                         theta=np.random.rand()*np.pi*2)
+                robot.append(c)
+                id += 1
+
+            target += self.target_trans(cs, 3)
+            Nrobot += len(cs)
+
+            # id = Nrobot
+            # cs = self.circle_points(5, 10)
+            # for c in cs:
+            #     robot_text += self.robot(id=id, c=np.array(c),
+            #                              theta=np.random.rand()*np.pi*2)
+            #     robot.append(c)
+            #     id += 1
+
+            # target += self.target_trans(cs, 1)
+            # Nrobot += len(cs)
+
+            # id = Nrobot
+            # cs = self.line_points(
+            #     np.array([-10.0, 5]), np.array([-10.0, -5]), 10)
+            # for c in cs:
+            #     robot_text += self.robot(id=id, c=np.array(c),
+            #                              theta=np.random.rand()*np.pi*2)
+            #     robot.append(c)
+            #     id += 1
+
+            # target += self.target_trans(cs, 2)
+            # Nrobot += len(cs)
+
+            cs = self.circle_points(r=3.5, n=5)
+            for c in cs:
+                obs_t, obs_ = self.obs(np.array(c), 0.15, 1, 5)
+                obs_text += obs_t
+                obs += obs_
+
+            actuator_text = self.actuator(Nrobot)
+
+            modelfile = self.env_text(robot_text, obs_text,
+                                      actuator_text, ow, ow, ch, fovy)
+            contour = self.CG.generate_contour(obs)
+
+        return [modelfile, Nrobot, [list(t)
+                                    for t in target], contour, ow, oh, w, h]
 # EC = EnvCreator()
 # MODE, mode = 3, 5
 # EC.gate_ratio = 1 / 4
