@@ -17,8 +17,6 @@ namespace SIM
         /* data */
         int Nrobot;
         int *qveladr, *qposadr;
-        mjModel *m;
-        mjData *d;
         bool isRender;
         mjvScene *scn;
         mjvCamera *cam;
@@ -29,6 +27,8 @@ namespace SIM
         GLFWwindow *window;
 
     public:
+        mjModel *m;
+        mjData *d;
         double *posvels;
         uint8_t *rgb;
         float *depth;
@@ -42,6 +42,7 @@ namespace SIM
         void step(std::vector<double> ctrl, int N);
         void step(const double *ctrl, int N);
         bool render();
+        double get_time();
         py::memoryview get_rgb();
         py::memoryview get_posvels();
         ~Simulator();

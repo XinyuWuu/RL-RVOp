@@ -188,29 +188,30 @@ namespace ENV
             // surrounding
             for (size_t i = 0; i < std::min(observations[Nth].size(), std::size_t(16)); i++)
             {
-                NNinput1[Nth][i * 10 + 4] = tranM[0][0] * observations[Nth][i][0] + tranM[0][1] * observations[Nth][i][1];
-                NNinput1[Nth][i * 10 + 5] = tranM[1][0] * observations[Nth][i][0] + tranM[1][1] * observations[Nth][i][1];
+                NNinput1[Nth][i * 11 + 4] = 0; // flag bit
+                NNinput1[Nth][i * 11 + 5] = tranM[0][0] * observations[Nth][i][0] + tranM[0][1] * observations[Nth][i][1];
+                NNinput1[Nth][i * 11 + 6] = tranM[1][0] * observations[Nth][i][0] + tranM[1][1] * observations[Nth][i][1];
 
-                NNinput1[Nth][i * 10 + 6] = tranM[0][0] * observations[Nth][i][2] + tranM[0][1] * observations[Nth][i][3];
-                NNinput1[Nth][i * 10 + 7] = tranM[1][0] * observations[Nth][i][2] + tranM[1][1] * observations[Nth][i][3];
+                NNinput1[Nth][i * 11 + 7] = tranM[0][0] * observations[Nth][i][2] + tranM[0][1] * observations[Nth][i][3];
+                NNinput1[Nth][i * 11 + 8] = tranM[1][0] * observations[Nth][i][2] + tranM[1][1] * observations[Nth][i][3];
 
-                NNinput1[Nth][i * 10 + 8] = tranM[0][0] * observations[Nth][i][4] + tranM[0][1] * observations[Nth][i][5];
-                NNinput1[Nth][i * 10 + 9] = tranM[1][0] * observations[Nth][i][4] + tranM[1][1] * observations[Nth][i][5];
+                NNinput1[Nth][i * 11 + 9] = tranM[0][0] * observations[Nth][i][4] + tranM[0][1] * observations[Nth][i][5];
+                NNinput1[Nth][i * 11 + 10] = tranM[1][0] * observations[Nth][i][4] + tranM[1][1] * observations[Nth][i][5];
 
-                NNinput1[Nth][i * 10 + 10] = tranM[0][0] * observations[Nth][i][6] + tranM[0][1] * observations[Nth][i][7];
-                NNinput1[Nth][i * 10 + 11] = tranM[1][0] * observations[Nth][i][6] + tranM[1][1] * observations[Nth][i][7];
+                NNinput1[Nth][i * 11 + 11] = tranM[0][0] * observations[Nth][i][6] + tranM[0][1] * observations[Nth][i][7];
+                NNinput1[Nth][i * 11 + 12] = tranM[1][0] * observations[Nth][i][6] + tranM[1][1] * observations[Nth][i][7];
 
                 if (observations[Nth][i][16] < 0)
                 {
                     // static obstacle
-                    NNinput1[Nth][i * 10 + 12] = 0;
-                    NNinput1[Nth][i * 10 + 13] = 0;
+                    NNinput1[Nth][i * 11 + 13] = 0;
+                    NNinput1[Nth][i * 11 + 14] = 0;
                 }
                 else
                 {
                     // other robot
-                    NNinput1[Nth][i * 10 + 12] = tranM[0][0] * (observations[Nth][i][14] - observations[Nth][i][8]) + tranM[0][1] * (observations[Nth][i][15] - observations[Nth][i][9]);
-                    NNinput1[Nth][i * 10 + 13] = tranM[1][0] * (observations[Nth][i][14] - observations[Nth][i][8]) + tranM[1][1] * (observations[Nth][i][15] - observations[Nth][i][9]);
+                    NNinput1[Nth][i * 11 + 13] = tranM[0][0] * (observations[Nth][i][14] - observations[Nth][i][8]) + tranM[0][1] * (observations[Nth][i][15] - observations[Nth][i][9]);
+                    NNinput1[Nth][i * 11 + 14] = tranM[1][0] * (observations[Nth][i][14] - observations[Nth][i][8]) + tranM[1][1] * (observations[Nth][i][15] - observations[Nth][i][9]);
                 }
             }
         }
@@ -220,6 +221,10 @@ namespace ENV
     {
         this->rwdP->calreward(posvels, observations, target, reward, reward_mix, death);
         return true;
+    }
+    double Environment::get_time()
+    {
+        return this->simP->d->time;
     }
     py::memoryview Environment::get_rgb()
     {

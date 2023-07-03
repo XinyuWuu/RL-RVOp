@@ -173,7 +173,10 @@ namespace SIM
         }
         return false;
     }
-
+    double Simulator::get_time()
+    {
+        return this->d->time;
+    }
     py::memoryview Simulator::get_rgb()
     {
 
