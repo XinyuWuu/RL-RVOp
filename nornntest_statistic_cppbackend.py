@@ -135,7 +135,9 @@ for t in range(PARAMs["max_ep_len"] * (num_test_episodes + 1)):
     with torch.no_grad():
         a, logp = Pi(o, True, with_logprob=False)
     a = a.cpu().detach().numpy()
-
+    for i in range(Nrobot):
+        if d[i] == 1:
+            a[i] = [0, 0]
     # Step the env
     onumpy = o.cpu().detach().numpy()
     if PARAMs["target_bias"]:

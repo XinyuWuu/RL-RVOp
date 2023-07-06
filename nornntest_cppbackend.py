@@ -118,7 +118,7 @@ if not PARAMs["remix"]:
 else:
     r = np.frombuffer(env.get_rm(), dtype=np.float64)
 d = np.frombuffer(env.get_d(), dtype=np.int32)
-env.stepVL([[0.0, 0.0]]*Nrobot, 1, 1)
+env.stepVL([[0.0, 0.0]] * Nrobot, 1, 1)
 env.cal_obs(PARAMs['avevel'])
 env.cal_NNinput1(PARAMs["nullfill"])
 o = torch.as_tensor(NNinput1, dtype=torch.float32, device=PARAMs["device"])
@@ -135,7 +135,7 @@ if PARAMs["isdraw"]:
 ep_ret = 0
 ep_len = 0
 eps_count_r = 0
-N = int(1/PARAMs["framerate"]/0.002)
+N = int(1 / PARAMs["framerate"] / 0.002)
 n = 5
 if N % n != 0:
     n = 3
@@ -146,6 +146,9 @@ for t in range(PARAMs["max_ep_len"] * (num_test_episodes + 1)):
     with torch.no_grad():
         a, logp = Pi(o, True, with_logprob=False)
     a = a.cpu().detach().numpy()
+    for i in range(Nrobot):
+        if d[i] == 1:
+            a[i] = [0, 0]
 
     # Step the env
     aglobal = a.copy()
@@ -193,7 +196,7 @@ for t in range(PARAMs["max_ep_len"] * (num_test_episodes + 1)):
             CV.draw_line(posvels[i][0:2], np.matmul(
                 tranM, oi[0:2]) + posvels[i][0:2])
             for o in range(PARAMs["max_obs"]):
-                if abs(oi[4 + o * 11]-0) > 1e-3:
+                if abs(oi[4 + o * 11] - 0) > 1e-3:
                     break
                 o2draw = oi[5 + o * 11:5 + o * 11 + 8]
                 o2draw[0:2] = np.matmul(tranM, o2draw[0:2])
@@ -240,7 +243,7 @@ for t in range(PARAMs["max_ep_len"] * (num_test_episodes + 1)):
         else:
             r = np.frombuffer(env.get_rm(), dtype=np.float64)
         d = np.frombuffer(env.get_d(), dtype=np.int32)
-        env.stepVL([[0.0, 0.0]]*Nrobot, 1, 1)
+        env.stepVL([[0.0, 0.0]] * Nrobot, 1, 1)
         env.cal_obs(PARAMs['avevel'])
         env.cal_NNinput1(PARAMs["nullfill"])
         o = torch.as_tensor(NNinput1, dtype=torch.float32,

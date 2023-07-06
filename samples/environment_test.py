@@ -1,8 +1,6 @@
 # export LD_LIBRARY_PATH="CppClass/mujoco/lib;CppClass/glfw/src"
 # export DISPLAY=:1
 import sys
-from base_config import PARAMs
-from torch import rand
 if sys.path[0] != '':
     sys.path = [''] + sys.path
 from CppClass.Environment import Environment
@@ -11,8 +9,10 @@ import contourGenerator
 import numpy as np
 from numpy import zeros
 from PIL import Image
+from torch import rand
 from matplotlib import pyplot as plt
 import random
+from base_config import PARAMs
 
 
 EC = envCreator.EnvCreator(PARAMs["robot_r"])
@@ -67,8 +67,7 @@ print(reward_mix)
 print(death)
 
 
-env.setSim(modelfile, Nrobot, [list(t)
-           for t in target], contour, True, ow, oh)
+env.setSim(modelfile, Nrobot, target, contour, True, ow, oh)
 rgb = env.get_rgb()
 posvels = np.frombuffer(
     env.get_posvels(), dtype=np.float64).reshape((Nrobot, 6))
@@ -77,11 +76,11 @@ img_arr = np.frombuffer(
 NNinput1 = np.frombuffer(
     env.get_NNinput1(), dtype=np.float64
 ).reshape(Nrobot, 180)
-reward = env.get_r()
-reward_mix = env.get_rm()
-death = env.get_d()
+reward = np.frombuffer(env.get_r(), dtype=np.float64)
+reward_mix = np.frombuffer(env.get_rm(), dtype=np.float64)
+death = np.frombuffer(env.get_d(), dtype=np.int32)
 
-env.stepVL(ctrl, 0, 5)
+env.stepVL(ctrl, 1, 1)
 env.render()
 img = Image.fromarray(img_arr, "RGB")
 img.save("assets/test.png")
