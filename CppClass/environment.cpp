@@ -38,12 +38,24 @@ namespace ENV
     }
     bool Environment::stepVL(const points_t vs, int N, int n)
     {
-        ctrlP->v2ctrlbatchL(this->simP->posvels, vs, this->ctrl);
+        // only for set vsG
+        ctrlP->v2ctrlbatchL(this->posvels, vs, this->ctrl);
         for (int i = 0; i < N; i += n)
         {
-            ctrlP->v2ctrlbatchG(this->simP->posvels, vs.size(), this->ctrl);
+            // calculate ctrl according to vsG
+            ctrlP->v2ctrlbatchG(this->posvels, vs.size(), this->ctrl);
             this->simP->step(ctrl, n);
         }
+        return true;
+    }
+    bool Environment::setvsG(const points_t vs)
+    {
+        ctrlP->v2ctrlbatchL(this->posvels, vs, this->ctrl);
+        return true;
+    }
+    bool Environment::cal_ctrl_vsG()
+    {
+        ctrlP->v2ctrlbatchG(this->posvels, this->Nrobot, this->ctrl);
         return true;
     }
     bool Environment::stepVG(const points_t vs, int N, int n)
@@ -241,6 +253,27 @@ namespace ENV
     bool Environment::render()
     {
         return this->simP->render();
+    }
+    bool Environment::setReal(int Nrobot, points_t target, contours_t contour)
+    {
+        this->Nrobot = Nrobot;
+        this->target = target;
+        this->contour = contour;
+        posvels_ = std::vector<double>(6 * Nrobot);
+        this->posvels = posvels_.data();
+        return true;
+    }
+    bool Environment::setposvels(std::vector<double> posvels)
+    {
+        memcpy(this->posvels, posvels.data(), sizeof(double) * posvels.size());
+        return true;
+    }
+    py::memoryview Environment::get_ctrl()
+    {
+        return py::memoryview::from_buffer(
+            this->ctrl,
+            {this->Nrobot * 2},
+            {sizeof(ctrl[0])});
     }
     py::memoryview Environment::get_r()
     {

@@ -17,10 +17,11 @@ namespace ENV
         std::shared_ptr<CTRL::CtrlConverter> ctrlP;
         std::shared_ptr<RWD::Reward> rwdP;
         std::shared_ptr<RVO::RVOcalculator> rvopP;
-        double ctrl[200];
+        double ctrl[400];
         double reward[200], reward_mix[200];
         int death[200];
         double *posvels;
+        std::vector<double> posvels_;
         points_t target;
         contours_t contour;
         observations_t observations;
@@ -44,10 +45,15 @@ namespace ENV
         bool setRvop(double dmax, double robot_r);
         bool stepVL(const points_t vs, int N, int n);
         bool stepVG(const points_t vs, int N, int n);
+        bool setvsG(const points_t vs);
+        bool cal_ctrl_vsG();
         bool cal_obs(bool avevel);
         bool cal_NNinput1(double Nullfill);
         bool cal_reward();
         double get_time();
+        bool setReal(int Nrobot, points_t target, contours_t contour);
+        bool setposvels(std::vector<double> posvels);
+        py::memoryview get_ctrl();
         py::memoryview get_rgb();
         py::memoryview get_posvels();
         py::memoryview get_r();

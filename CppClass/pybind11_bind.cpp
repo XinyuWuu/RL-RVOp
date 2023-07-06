@@ -97,6 +97,7 @@ PYBIND11_MODULE(Environment, m)
          .def("get_time", &ENV::Environment::get_time, "get simulation time")
          .def("get_rgb", &ENV::Environment::get_rgb, "get rgb buffer")
          .def("get_posvels", &ENV::Environment::get_posvels, "get posvels buffer")
+         .def("get_ctrl", &ENV::Environment::get_ctrl, "get ctrl buffer")
          .def("get_r", &ENV::Environment::get_r, "get r buffer")
          .def("get_rm", &ENV::Environment::get_rm, "get rm buffer")
          .def("get_d", &ENV::Environment::get_d, "get d buffer")
@@ -111,5 +112,12 @@ PYBIND11_MODULE(Environment, m)
          .def("stepVL", &ENV::Environment::stepVL, "step with velocity command in local coordinate",
               "vs"_a, "N"_a, "n"_a)
          .def("stepVG", &ENV::Environment::stepVG, "step with velocity command in global coordinate",
-              "vs"_a, "N"_a, "n"_a);
+              "vs"_a, "N"_a, "n"_a)
+         .def("setReal", &ENV::Environment::setReal, "set real world model",
+              "Nrobot"_a, "target"_a, "contour"_a)
+         .def("setposvels", &ENV::Environment::setposvels, "set posvels for real world experiment",
+              "posvels"_a)
+         .def("setvsG", &ENV::Environment::setvsG, "set vsG for real world expriment",
+              "vs"_a)
+         .def("cal_ctrl_vsG", &ENV::Environment::cal_ctrl_vsG, "calulate ctrl according to vsG");
 }
