@@ -1,9 +1,15 @@
 {
+    "python.formatting.autopep8Args": [
+        "--ignore",
+        "E402"
+    ],
     "python.analysis.extraPaths": [
-        "./stub"
+        "./stub",
+        "/opt/ros/iron/lib/python3.10/site-packages"
     ],
     "python.autoComplete.extraPaths": [
-        "./stub"
+        "./stub",
+        "/opt/ros/iron/lib/python3.10/site-packages"
     ],
     "search.exclude": {
         "**/env": true,

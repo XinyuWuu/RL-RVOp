@@ -16,3 +16,9 @@ assets/*.npy
 module_saves
 log*.txt
 pyrvo2
+rosws/build
+rosws/install
+rosws/log
+rosws/src/epuck2_connector/epuck2_connector/__pycache__
+rosws/env
+env_
