@@ -5,9 +5,11 @@ PARAMs = {
     "isrender": False,
     "codec": 'h264',
     "framerate": 10,
+    "robot_r": 0.2,
     "dreach": 0.075,
     "tolerance": 0.04,
     "rreach": 30.0,
+    "avevel": True,
     "target_bias": False,
     "gate_ratio": 1 / 3,
     "ave_factor": 0.9,
@@ -26,6 +28,9 @@ PARAMs = {
     "dmax": 3.0,
     "vmax": 1.0,
     "tau": 0.5,
+    "wheel_r": 0.04,
+    "wheel_d": 0.28,
+    "gain": 7,
     "remix": True,
     "rm_middle": 5,
     "w": 5,
@@ -58,3 +63,4 @@ PARAMs["max_ep_len"] = int(PARAMs["max_simu_second"] * PARAMs["framerate"])
 PARAMs["random_steps"] = PARAMs["max_ep_len"] * 10
 PARAMs["update_after"] = PARAMs["max_ep_len"] * 2
 PARAMs["total_steps"] = PARAMs["steps_per_epoch"] * PARAMs["epochs"]
+PARAMs["nullfill"] = 2 * PARAMs["dmax"]

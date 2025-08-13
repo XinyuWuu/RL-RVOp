@@ -20,34 +20,72 @@
 //     return px * px + py * py;
 // }
 
-std::ostream &operator<<(std::ostream &output, line_t const &values)
+std::ostream &operator<<(std::ostream &output, point_t const &values)
 {
     output << "[";
-    for (auto const &value : values)
+    for (double const &value : values)
     {
         output << value << " ";
     }
-    output << "]\n";
+    output << "]";
+    return output;
+}
+
+std::ostream &operator<<(std::ostream &output, line_t const &values)
+{
+    output << "[";
+    for (double const &value : values)
+    {
+        output << value << " ";
+    }
+    output << "]";
     return output;
 }
 
 std::ostream &operator<<(std::ostream &output, arc_t const &values)
 {
     output << "[";
-    for (auto const &value : values)
+    for (double const &value : values)
     {
         output << value << " ";
     }
-    output << "]\n";
+    output << "]";
+    return output;
+}
+
+std::ostream &operator<<(std::ostream &output, const std::vector<point_t> &values)
+{
+    for (size_t i = 0; i < values.size(); i++)
+    {
+        output << values[i];
+    }
+    return output;
+}
+
+std::ostream &operator<<(std::ostream &output, const std::vector<line_t> &values)
+{
+    for (size_t i = 0; i < values.size(); i++)
+    {
+        output << values[i];
+    }
+    return output;
+}
+
+std::ostream &operator<<(std::ostream &output, const std::vector<arc_t> &values)
+{
+    for (size_t i = 0; i < values.size(); i++)
+    {
+        output << values[i];
+    }
     return output;
 }
 
 template <typename T>
-std::ostream &operator<<(std::ostream &output, std::vector<T> const &values)
+std::ostream &operator<<(std::ostream &output, const std::vector<T> &values)
 {
-    for (auto const &value : values)
+    for (size_t i = 0; i < values.size(); i++)
     {
-        output << value;
+        output << values[i];
     }
     return output;
 }

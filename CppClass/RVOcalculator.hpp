@@ -21,8 +21,8 @@ namespace RVO
         void LineP(const line_t &line, const point_t &xr, points_t &points);
         void ArcP(const arc_t &arc, const point_t &xr, points_t &points);
         rvop_t RVOplus(lines_t lines, arcs_t arcs, point_t xr, point_t vr, point_t vo);
-        void RVOplus(const lines_t &lines, const arcs_t &arcs, const point_t &xr, const point_t &vr, const point_t &vo, double *obs);
-        observations_t get_obs(posvels_t posvel);
+        void RVOplus(const lines_t &lines, const arcs_t &arcs, const point_t &xr, const point_t &vr, const point_t &vo, double *obs, bool avevel);
+        observations_t get_obs(posvels_t posvel, bool avevel);
         ~RVOcalculator();
     };
 } // namespace RVO

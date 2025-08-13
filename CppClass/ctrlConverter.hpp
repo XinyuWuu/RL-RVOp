@@ -10,6 +10,7 @@ namespace CTRL
     private:
         // gain = 7 convert omega to real ctrl, determined by mujoco module
         double vmax, rmax, tau, wr, wd, gain;
+        points_t vsG = points_t(200);
 
     public:
         CtrlConverter(/* args */);
@@ -20,6 +21,11 @@ namespace CTRL
         void v2ctrl(const double &ori, const point_t &v, double *ctrl);
         std::vector<double> v2ctrlbatchL(const posvels_t posvels, const points_t vs);
         std::vector<double> v2ctrlbatchG(const posvels_t posvels, const points_t vs);
+
+        void v2ctrlbatchL(const double *posvels, const points_t &vs, double *ctrl);
+        void v2ctrlbatchG(const double *posvels, const points_t &vs, double *ctrl);
+        void v2ctrlbatchG(const double *posvels, int Nrobot, double *ctrl);
+
         double get_rmax();
         ~CtrlConverter();
     };

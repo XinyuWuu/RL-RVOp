@@ -1,0 +1,56 @@
+<mujoco>
+<default>
+	<geom friction="0.1 0.005 0.0001"/>
+</default>
+<visual>
+	 <global offwidth="1920" offheight="1080" />
+</visual>
+<worldbody>
+<light name="uplight_0" diffuse="0.4 0.4 0.4" pos="0 0 20" dir="0 0 -1" />
+<light name="uplight_1" diffuse="0.4 0.4 0.4" pos="10 10 20" dir="0 0 -1" />
+<light name="uplight_2" diffuse="0.4 0.4 0.4" pos="-10 -10 20" dir="0 0 -1" />
+<light name="uplight_3" diffuse="0.4 0.4 0.4" pos="10 -10 20" dir="0 0 -1" />
+<light name="uplight_4" diffuse="0.4 0.4 0.4" pos="-10 10 20" dir="0 0 -1" />
+<geom contype="2" friction="1 0.005 0.0001" pos="0 0 0" euler="0 0 0" type="plane" size="20 20 0.01" rgba="0.5 0.5 0.5 1"/>
+<camera mode="fixed" pos="0 0 15" ></camera>
+
+<body name="robot_0" pos="-7.5 1.014331294648699 0" euler="0 0 358.9822155374681">
+    <!-- shell radius 17cm, wheel radius 4cm, distance between wheels 28cm -->
+    <freejoint name="robot_0"></freejoint>
+    <site name="front-flag_0" rgba="0.3 0.3 0.9 1" pos="0.12 0 0.22" type="sphere" size="0.05"></site>
+
+    <!-- <body name="balancer_0" pos="0 0 0.05">
+        <geom mass="50" type="sphere" size="0.01"></geom>
+    </body> -->
+
+    <body name="front-wheel_0" pos="0.14 0  0.01">
+        <joint type="ball" pos="0 0 0"></joint>
+        <geom friction="1 0.005 0.0001" contype="2" conaffinity="2" type="sphere" size="0.01"></geom>
+    </body>
+
+    <body name="back-wheel_0" pos="-0.14 0  0.01">
+        <joint type="ball" pos="0 0 0"></joint>
+        <geom friction="1 0.005 0.0001" contype="2" conaffinity="2" type="sphere" size="0.01"></geom>
+    </body>
+
+    <body name="left-wheel_0" pos="0 0.14 0.04" euler="90 0 0">
+        <joint damping="0.3" name="left-wheel_0" type="hinge" pos="0 0 0" axis="0 0 -1"></joint>
+        <geom friction="1 0.005 0.0001" contype="2" conaffinity="2" rgba="0.1 0.1 0.1 1" type="cylinder" size="0.04 0.005"></geom>
+    </body>
+
+    <body name="right-wheel_0" pos="0 -0.14 0.04" euler="-90 0  0">
+        <joint damping="0.3" name="right-wheel_0" type="hinge" pos="0 0 0" axis="0 0 1"></joint>
+        <geom friction="1 0.005 0.0001" contype="2" conaffinity="2" rgba="0.1 0.1 0.1 1" type="cylinder" size="0.04 0.005"></geom>
+    </body>
+    <body name="shell_0">
+      <geom type="cylinder" rgba="0.3 0.9 0.3 1" pos="0 0 0.12" size="0.2 0.1"></geom>
+    </body>
+</body>
+
+</worldbody>
+
+<actuator>
+	<velocity name="left-velocity-servo_0" joint="left-wheel_0" kv="0.05" />
+	<velocity name="right-velocity-servo_0" joint="right-wheel_0" kv="0.05" />
+</actuator>
+</mujoco>

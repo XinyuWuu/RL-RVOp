@@ -27,7 +27,7 @@ namespace OBS
         this->RVOp = RVO::RVOcalculator(dmax, robot_r);
     }
 
-    OBSreturn Observator::get_obs(posvels_t posvels)
+    OBSreturn Observator::get_obs(posvels_t posvels, bool avevel)
     {
 
         observations_t observations;
@@ -47,7 +47,7 @@ namespace OBS
             {
                 this->RVOp.RVOplus(this->contours[i].first, this->contours[i].second,
                                    point_t{posvels[j][0], posvels[j][1]}, point_t{posvels[j][3], posvels[j][4]},
-                                   point_t{0, 0}, obs.data());
+                                   point_t{0, 0}, obs.data(), avevel);
                 if (obs[0] > this->RVOp.dmax)
                 {
                     continue;
@@ -89,7 +89,7 @@ namespace OBS
 
                 this->RVOp.RVOplus(lines_t{}, arcs_t{arc_t{posvels[i][0], posvels[i][1], 2 * this->RVOp.robot_r, posvels[i][0] - 2 * this->RVOp.robot_r, posvels[i][1], posvels[i][0] + 2 * this->RVOp.robot_r, posvels[i][1], posvels[i][0], posvels[i][1] + 2 * this->RVOp.robot_r}, arc_t{posvels[i][0], posvels[i][1], 2 * this->RVOp.robot_r, posvels[i][0] - 2 * this->RVOp.robot_r, posvels[i][1], posvels[i][0] + 2 * this->RVOp.robot_r, posvels[i][1], posvels[i][0], posvels[i][1] - 2 * this->RVOp.robot_r}},
                                    point_t{posvels[j][0], posvels[j][1]}, point_t{posvels[j][3], posvels[j][4]},
-                                   point_t{posvels[i][3], posvels[i][4]}, obs.data());
+                                   point_t{posvels[i][3], posvels[i][4]}, obs.data(), avevel);
                 if (obs[0] > this->RVOp.dmax)
                 {
                     continue;

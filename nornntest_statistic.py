@@ -39,11 +39,23 @@ importlib.reload(simulator_cpp)
 PARAMs["framerate"] = 25
 PARAMs["max_ep_len"] = int(PARAMs["max_simu_second"] * PARAMs["framerate"])
 PARAMs["hidden_sizes"] = [1024] * 4
-model_file = "module_saves/nornn29/112h_23min_5639999steps_16625150updates_policy.ptd"
-vf_start = "module_saves/nornn29/"
-num_test_episodes = 5
+PARAMs["avevel"] = False
+PARAMs["nullfill"] = 20 * PARAMs["dmax"]
+# model_file = "module_saves/nornn29/78h_3min_3999999steps_11547900updates_policy.ptd"
+# model_file = "module_saves/nornn29/112h_23min_5639999steps_16625150updates_policy.ptd"
+model_file = "module_saves/nornn33/268h_23min_8499999steps_37664974updates_policy.ptd"
+vf_start = "module_saves/nornn33/"
+num_test_episodes = 100
 
-MODE, mode = 2, 0
+Nrobot_log = np.zeros(num_test_episodes)
+death_log = np.zeros(num_test_episodes)
+reach_log = np.zeros(num_test_episodes)
+lave_log = np.zeros(num_test_episodes)
+tave_log = np.zeros(num_test_episodes)
+vave_log = np.zeros(num_test_episodes)
+extra_log = np.zeros(num_test_episodes)
+
+MODE, mode = 3, 0
 
 PARAMs["tolerance"] = 0.031
 PARAMs["dreach"] = 0.075
@@ -61,7 +73,7 @@ torch.set_num_threads(torch.get_num_threads())
 CCcpp = CtrlConverter(vmax=PARAMs["vmax"], tau=PARAMs["tau"])
 PARAMs["rmax"] = CCcpp.get_rmax()
 SMLT = simulator_cpp.Simulator(
-    dmax=PARAMs["dmax"], framerate=PARAMs["framerate"], dreach=PARAMs["dreach"])
+    dmax=PARAMs["dmax"], framerate=PARAMs["framerate"], dreach=PARAMs["dreach"], avevel=PARAMs["avevel"])
 SMLT.set_reward(vmax=PARAMs["vmax"], rmax=PARAMs["rmax"], tolerance=PARAMs["tolerance"],
                 a=PARAMs["a"], b=PARAMs["b"], c=PARAMs["c"], d=PARAMs["d"], e=PARAMs["e"],
                 f=PARAMs["f"], g=PARAMs["g"], eta=PARAMs["eta"],
@@ -76,12 +88,17 @@ Pi.load_state_dict(torch.load(
 Pi.to(device=PARAMs["device"])
 Pi.act_limit = Pi.act_limit.to(device=PARAMs["device"])
 
+for p in Pi.parameters():
+    p.requires_grad = False
+
+Pi.eval()
+
 
 def preNNinput(NNinput: tuple, obs_sur_dim: int, max_obs: int, device):
     # NNinput[0] Oself1.5
     # NNinput[1] Osur
     Osur = np.ones((NNinput[0].__len__(), max_obs,
-                    obs_sur_dim + 1), dtype=np.float32) * 2 * SMLT.dmax
+                    obs_sur_dim + 1), dtype=np.float32) * PARAMs["nullfill"]
     for Nth in range(NNinput[0].__len__()):
         true_len = min(NNinput[1][Nth].__len__(), max_obs)
         if true_len == 0:
@@ -101,15 +118,16 @@ def preNNinput(NNinput: tuple, obs_sur_dim: int, max_obs: int, device):
 # init environment get initial observation
 # init model
 SMLT.EC.gate_ratio = PARAMs["gate_ratio"]
-Nrobot, robot_text, obs_text, obs, target_mode = SMLT.EC.env_create2(
+Nrobot, robot_text, obs_text, obs, target_mode, ow, oh, ch, fovy, w, h = SMLT.EC.env_create3(
     MODE=MODE, mode=mode)
 pos_vel, observation, r, NNinput, d, dpre = SMLT.set_model(
-    Nrobot, robot_text, obs_text, obs, target_mode)
+    Nrobot, robot_text, obs_text, obs, target_mode, ow, oh, ch, fovy)
 pos0 = np.zeros((Nrobot, 2), dtype=np.float64)
 for i in range(Nrobot):
     pos0[i] = pos_vel[i][0:2]
 die_mask = np.zeros(Nrobot, dtype=np.uint8)
 len_count = np.zeros(Nrobot, dtype=np.uint64)
+time_count = np.zeros(Nrobot, dtype=np.float64)
 speed_sum = np.zeros(Nrobot, dtype=np.float64)
 for i in range(Nrobot):
     if r[i] < -50:
@@ -122,8 +140,8 @@ ep_len = 0
 eps_count = 0
 # Main loop: collect experience in env and update/log each epoch
 for t in range(PARAMs["max_ep_len"] * (num_test_episodes + 1)):
-
-    a, logp = Pi(o, True, with_logprob=False)
+    with torch.no_grad():
+        a, logp = Pi(o, True, with_logprob=False)
     a = a.cpu().detach().numpy()
 
     # Step the env
@@ -152,16 +170,19 @@ for t in range(PARAMs["max_ep_len"] * (num_test_episodes + 1)):
 
     # End of trajectory handling
     if (d == 1).all() or (ep_len == PARAMs["max_ep_len"]):
-        print(
-            f"\neps: {eps_count+1}, {Nrobot} robots, mode: {MODE}_{mode}, ep_ret: {ep_ret:.2f}, ep_len: {ep_len}, Nreach: {d.sum()}, Ndeath: {die_mask.sum()}")
-        # print(die_mask)
-        # print(len_count)
         for Nth in range(SMLT.Nrobot):
             if len_count[Nth] == 0:
                 len_count[Nth] = ep_len
+                time_count[Nth] = SMLT.mjDATA.time
                 die_mask[Nth] = 1
+        print(
+            f"\neps: {eps_count+1}, {Nrobot} robots, obs: {obs.__len__()}, mode: {MODE}_{mode}, ep_ret: {ep_ret:.2f}, ep_len: {ep_len}, Nreach: {d.sum()}, Ndeath: {die_mask.sum()}")
+        # print(die_mask)
+        # print(len_count)
         if (1 - die_mask).sum() == 0:
             print("all died")
+            Nrobot_log[eps_count] = SMLT.Nrobot
+            death_log[eps_count] = die_mask.sum()
         else:
             l_ave = (len_count * (1 - die_mask)).sum() / (1 - die_mask).sum()
             # print(l_ave)
@@ -175,19 +196,28 @@ for t in range(PARAMs["max_ep_len"] * (num_test_episodes + 1)):
             posc = np.sqrt(posc[:, 0]**2 + posc[:, 1]**2).reshape((Nrobot))
             p_ave = (posc * (1 - die_mask)).sum() / (1 - die_mask).sum()
             # print(p_ave)
-            m_ave = l_ave / PARAMs["framerate"] * v_ave
+            # m_ave = l_ave / PARAMs["framerate"] * v_ave
+            m_ave = (len_count * (1 - die_mask) * ((speed_sum / len_count))
+                     ).sum() / (1 - die_mask).sum() / PARAMs["framerate"]
             # print(m_ave)
             # print(m_ave / p_ave * 100)
             print(f"die_mask:{die_mask};len_count:{len_count}")
             print(
                 f"l_ave {l_ave}; v_ave {v_ave}; p_ave {p_ave}; m_ave {m_ave}; m/p {m_ave / p_ave * 100}%")
+            Nrobot_log[eps_count] = SMLT.Nrobot
+            death_log[eps_count] = die_mask.sum()
+            reach_log[eps_count] = d.sum()
+            lave_log[eps_count] = l_ave
+            vave_log[eps_count] = v_ave
+            extra_log[eps_count] = m_ave / p_ave
+
         eps_count += 1
         if eps_count == num_test_episodes:
             break
-        Nrobot, robot_text, obs_text, obs, target_mode = SMLT.EC.env_create2(
+        Nrobot, robot_text, obs_text, obs, target_mode, ow, oh, ch, fovy, w, h = SMLT.EC.env_create3(
             MODE=MODE, mode=mode)
         pos_vel, observation, r, NNinput, d, dpre = SMLT.set_model(
-            Nrobot, robot_text, obs_text, obs, target_mode)
+            Nrobot, robot_text, obs_text, obs, target_mode, ow, oh, ch, fovy)
         pos0 = np.zeros((Nrobot, 2), dtype=np.float64)
         for i in range(Nrobot):
             pos0[i] = pos_vel[i][0:2]
@@ -201,3 +231,13 @@ for t in range(PARAMs["max_ep_len"] * (num_test_episodes + 1)):
                        PARAMs["max_obs"], PARAMs["device"])
         ep_ret = 0
         ep_len = 0
+
+print("##########################Over All Performance#####################################")
+print(f"sucess rate: {(Nrobot_log - death_log).sum() / Nrobot_log.sum()}")
+print(f"reach rate: {reach_log.sum() / Nrobot_log.sum()}")
+print(
+    f"average velocity: {(vave_log * (Nrobot_log - death_log)).sum() / (Nrobot_log - death_log).sum()}")
+print(
+    f"average time: {(lave_log * (Nrobot_log - death_log)).sum() / (Nrobot_log - death_log).sum()*(1/PARAMs['framerate'])}")
+print(
+    f"extra length: {(extra_log * (Nrobot_log - death_log)).sum() / (Nrobot_log - death_log).sum()}")

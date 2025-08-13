@@ -62,6 +62,29 @@ namespace CTRL
         }
         return ctrl;
     }
+    void CtrlConverter::v2ctrlbatchL(const double *posvels, const points_t &vs, double *ctrl)
+    {
+        for (size_t Nth = 0; Nth < vs.size(); Nth++)
+        {
+            vsG[Nth][0] = cos(posvels[Nth * 6 + 2]) * vs[Nth][0] - sin(posvels[Nth * 6 + 2]) * vs[Nth][1];
+            vsG[Nth][1] = sin(posvels[Nth * 6 + 2]) * vs[Nth][0] + cos(posvels[Nth * 6 + 2]) * vs[Nth][1];
+            this->v2ctrl(posvels[Nth * 6 + 2], vsG[Nth], ctrl + Nth * 2);
+        }
+    }
+    void CtrlConverter::v2ctrlbatchG(const double *posvels, const points_t &vs, double *ctrl)
+    {
+        for (size_t i = 0; i < vs.size(); i++)
+        {
+            this->v2ctrl(posvels[i * 6 + 2], vs[i], ctrl + i * 2);
+        }
+    }
+    void CtrlConverter::v2ctrlbatchG(const double *posvels, int Nrobot, double *ctrl)
+    {
+        for (int i = 0; i < Nrobot; i++)
+        {
+            this->v2ctrl(posvels[i * 6 + 2], vsG[i], ctrl + i * 2);
+        }
+    }
     CtrlConverter::CtrlConverter() {}
     CtrlConverter::CtrlConverter(double vmax, double tau, double wheel_r, double wheel_d, double gain)
     {
