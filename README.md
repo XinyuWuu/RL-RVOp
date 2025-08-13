@@ -3,7 +3,7 @@
 An open-source implementation of a high-performance, fully distributed multi-robot collision avoidance algorithm using deep reinforcement learning, designed for scalability and deployment in complex, dense environments.
 
 > [!NOTE]
-> For the most comprehensive and authoritative information, please refer to the original bachelor's thesis upon which this project is based: "190320321_吴新裕_梅杰_基于强化学习的多移动机器人分布式避障导航.pdf"
+> For the most comprehensive and authoritative information, please refer to the original bachelor's thesis upon which this project is based: "[190320321_吴新裕_梅杰_基于强化学习的多移动机器人分布式避障导航.pdf](https://github.com/XinyuWuu/FinalProject/blob/master/190320321_%E5%90%B4%E6%96%B0%E8%A3%95_%E6%A2%85%E6%9D%B0_%E5%9F%BA%E4%BA%8E%E5%BC%BA%E5%8C%96%E5%AD%A6%E4%B9%A0%E7%9A%84%E5%A4%9A%E7%A7%BB%E5%8A%A8%E6%9C%BA%E5%99%A8%E4%BA%BA%E5%88%86%E5%B8%83%E5%BC%8F%E9%81%BF%E9%9A%9C%E5%AF%BC%E8%88%AA.pdf)"
 
 https://github.com/user-attachments/assets/df23ba7d-8a0e-4d1d-9cc8-7967ab54ccda
 
