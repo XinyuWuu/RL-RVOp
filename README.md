@@ -1,4 +1,4 @@
-# Distributed Multi-Robot Navigation with Deep Reinforcement Learning (RVO-SAC)
+# Distributed Multi-Robot Navigation with Deep Reinforcement Learning (RVOp-SAC)
 
 An open-source implementation of a high-performance, fully distributed multi-robot collision avoidance algorithm using deep reinforcement learning, designed for scalability and deployment in complex, dense environments.
 
